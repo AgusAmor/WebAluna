@@ -1,9 +1,12 @@
+import { Hero } from "../../components/Hero/Hero";
 import "./home.css";
 
 export function HomePage() {
   return (
     <>
-      <h1>Bienvenido</h1>
+      <div className="home-container">
+        <Hero title="Bienvenido" subtitle={"Somos Aluna"} />
+      </div>
     </>
   );
 }

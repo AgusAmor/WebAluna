@@ -18,9 +18,6 @@ export function Header() {
           <li>
             <Link to="/catalogo">Catálogo</Link>
           </li>
-          <li>
-            <Link to="/carrito">Carrito</Link>
-          </li>
         </ul>
       </nav>
     </header>

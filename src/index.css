@@ -8,4 +8,19 @@
 
 body {
   background-color: var(--blanco);
+  font-family: "Sora";
+}
+
+@font-face {
+  font-family: "Sora";
+  src: url("./assets/fonts/Sora-VariableFont_wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Comfortaa";
+  src: url("./assets/fonts/Comfortaa-VariableFont_wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-display: swap;
 }

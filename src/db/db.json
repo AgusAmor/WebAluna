@@ -1,0 +1,62 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Fold",
+      "price": "30.000",
+      "family": "AENOR",
+      "img": "/products/fold.png",
+      "size": "DEFAULT"
+    },
+    {
+      "id": 2,
+      "name": "Loom",
+      "price": "30.000",
+      "family": "AENOR",
+      "img": "/products/loom.png",
+      "size": "DEFAULT"
+    },
+    {
+      "id": 3,
+      "name": "Sava",
+      "price": "40.000",
+      "family": "AENOR",
+      "img": "/products/sava.png",
+      "size": "DEFAULT"
+    },
+    {
+      "id": 4,
+      "name": "Halo",
+      "price": "35.000",
+      "family": "CORE",
+      "img": "/products/halo.png",
+      "size": "DEFAULT"
+    },
+    {
+      "id": 5,
+      "name": "Rift",
+      "price": "45.000",
+      "family": "CORE",
+      "img": "/products/rift.png",
+      "size": "DEFAULT"
+    }
+  ],
+
+  "users": [
+    {
+      "id": "1",
+      "userName": "amor.agus",
+      "name": "Agustin",
+      "surname": "Amor",
+      "type": "ADMIN",
+      "email": "agustinwalteramor@gmail.com",
+      "phone": "1157731233"
+    }
+  ],
+
+  "cart": [
+    {
+      "productIDs": []
+    }
+  ]
+}
