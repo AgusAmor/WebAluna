@@ -1,0 +1,45 @@
+@import "../../styles/colors.css";
+
+.header {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: auto;
+  padding: 1rem 2rem;
+  background-color: var(--azul-1);
+  color: var(--blanco);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.logo img {
+  height: 70px;
+  width: auto;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.navbar {
+  list-style: none;
+  display: flex;
+  gap: 2rem;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar li a {
+  color: var(--blanco);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: all 0.2s ease-in-out;
+  padding-bottom: 2px;
+  border-bottom: 2px solid transparent;
+}
+
+.navbar li a:hover {
+  color: var(--dorado);
+  border-bottom: 2px solid var(--dorado);
+}

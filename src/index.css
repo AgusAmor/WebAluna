@@ -1,5 +1,11 @@
+@import "/src/styles/colors.css";
+
 * {
   padding: 0px;
   margin: 0px;
   box-sizing: border-box;
+}
+
+body {
+  background-color: var(--blanco);
 }
