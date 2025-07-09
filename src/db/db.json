@@ -5,7 +5,7 @@
       "name": "Fold",
       "price": "30.000",
       "family": "AENOR",
-      "img": "/products/fold.png",
+      "img": "/img/products/fold.png",
       "size": "DEFAULT"
     },
     {
@@ -13,7 +13,7 @@
       "name": "Loom",
       "price": "30.000",
       "family": "AENOR",
-      "img": "/products/loom.png",
+      "img": "/img/products/loom.png",
       "size": "DEFAULT"
     },
     {
@@ -21,7 +21,7 @@
       "name": "Sava",
       "price": "40.000",
       "family": "AENOR",
-      "img": "/products/sava.png",
+      "img": "/img/products/sava.png",
       "size": "DEFAULT"
     },
     {
@@ -29,7 +29,7 @@
       "name": "Halo",
       "price": "35.000",
       "family": "CORE",
-      "img": "/products/halo.png",
+      "img": "/img/products/halo.png",
       "size": "DEFAULT"
     },
     {
@@ -37,7 +37,7 @@
       "name": "Rift",
       "price": "45.000",
       "family": "CORE",
-      "img": "/products/rift.png",
+      "img": "/img/products/rift.png",
       "size": "DEFAULT"
     }
   ],
