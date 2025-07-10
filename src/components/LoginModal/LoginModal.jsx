@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import "./LoginModal.css";
 
-export function LoginModal({ onClose }) {
+export function LoginModal({ onClose, onLogin }) {
   const { login } = useAuth();
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
@@ -18,7 +18,7 @@ export function LoginModal({ onClose }) {
       .then((data) => {
         if (data.length === 1) {
           login(data[0]);
-          onClose();
+          onLogin(data[0]);
         } else {
           setError("Usuario o contraseña incorrectos.");
         }

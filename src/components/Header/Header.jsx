@@ -1,48 +1,65 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { LoginModal } from "../LoginModal/LoginModal";
 import { useAuth } from "../../context/AuthContext";
-import { ToastContainer } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import "./header.css";
 
 export function Header() {
   const [showLogin, setShowLogin] = useState(false);
   const { isLogged, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isAdminPage = location.pathname.startsWith("/admin");
 
   return (
     <>
-      <header className="header">
+      <header className={`header ${isAdminPage ? "admin-header" : ""}`}>
         <div className="logo">
-          <a href="/">
-            <img src="/img/logo.png" alt="Logo" />
+          <a href={`${isAdminPage ? "/admin" : "/"}`}>
+            <img
+              src={`/img/logo.png ${
+                isAdminPage ? "../../../public/img/logoAdmin.png" : ""
+              }`}
+              alt="Logo"
+            />
           </a>
         </div>
 
         <nav className="nav-container">
           <ul className="navbar">
-            <li>
-              <Link to="/">Inicio</Link>
-            </li>
-            <li>
-              <Link to="/catalogo">Catálogo</Link>
-            </li>
+            {isAdminPage ? (
+              <>
+                <li>
+                  <Link to="/admin">Dashboard</Link>
+                </li>
+                <li>
+                  <Link to="/admin/productos">Productos</Link>
+                </li>
+                <li>
+                  <Link to="/admin/usuarios">Usuarios</Link>
+                </li>
+              </>
+            ) : (
+              <>
+                <li>
+                  <Link to="/">Inicio</Link>
+                </li>
+                <li>
+                  <Link to="/catalogo">Catálogo</Link>
+                </li>
+              </>
+            )}
           </ul>
 
           {isLogged ? (
-            <button
-              className="login-btn"
-              onClick={logout}
-              aria-label="Cerrar sesión"
-            >
+            <button className="login-btn" onClick={logout}>
               Logout
             </button>
           ) : (
-            <button
-              className="login-btn"
-              onClick={() => setShowLogin(true)}
-              aria-label="Iniciar sesión"
-            >
+            <button className="login-btn" onClick={() => setShowLogin(true)}>
               Login
             </button>
           )}
@@ -56,6 +73,12 @@ export function Header() {
             console.log("Usuario logueado:", user);
             localStorage.setItem("userLogged", JSON.stringify(user));
             setShowLogin(false);
+
+            if (user.type === "ADMIN") {
+              navigate("/admin");
+            } else {
+              navigate("/");
+            }
           }}
         />
       )}

@@ -52,6 +52,16 @@
       "type": "ADMIN",
       "email": "agustinwamor@gmail.com",
       "phone": "1157731233"
+    },
+    {
+      "id": "2",
+      "username": "q",
+      "password": "qwe123",
+      "name": "Agustin",
+      "surname": "Amor",
+      "type": "CLIENT",
+      "email": "q@q",
+      "phone": "1157731233"
     }
   ],
 
