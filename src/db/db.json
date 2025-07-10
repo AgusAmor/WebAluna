@@ -45,11 +45,12 @@
   "users": [
     {
       "id": "1",
-      "userName": "amor.agus",
+      "username": "amor.agus",
+      "password": "qwe123",
       "name": "Agustin",
       "surname": "Amor",
       "type": "ADMIN",
-      "email": "agustinwalteramor@gmail.com",
+      "email": "agustinwamor@gmail.com",
       "phone": "1157731233"
     }
   ],

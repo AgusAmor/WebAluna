@@ -35,11 +35,12 @@ section.about-container p {
 }
 
 .carousel-container {
-  margin: 3rem 0;
+  margin: 1rem 0;
+  padding-top: 1rem;
   text-align: center;
   overflow: hidden;
   position: relative;
-  height: 550px;
+  height: 500px;
   width: 100%;
 }
 
