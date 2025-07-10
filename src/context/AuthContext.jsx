@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { useCart } from "./CartContext";
 import { toast } from "react-toastify";
 
 const AuthContext = createContext();
@@ -6,6 +7,7 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [isLogged, setIsLogged] = useState(false);
   const [user, setUser] = useState(null);
+  const { clearCart } = useCart();
 
   const isAdmin = () => isLogged && user?.type === "ADMIN";
 
@@ -36,6 +38,7 @@ export function AuthProvider({ children }) {
     setUser(null);
     setIsLogged(false);
     localStorage.removeItem("userLogged");
+    clearCart();
     toast.success("Se cerró la sesión", {
       icon: (
         <img

@@ -7,6 +7,7 @@ import { CatalogPage } from "./pages/catalog/CatalogPage";
 import { HomeAdmin } from "./admin/home/HomeAdmin";
 import { Users } from "./admin/users/Users";
 import { Products } from "./admin/products/Products";
+import FloatingCartButton from "./components/Cart/button/FloatingCartButton";
 
 export function App() {
   return (
@@ -19,6 +20,7 @@ export function App() {
         <Route path="/admin/usuarios" element={<Users />} />
         <Route path="/admin/productos" element={<Products />} />
       </Routes>
+      <FloatingCartButton />
       <ToastContainer
         position="bottom-right"
         autoClose={2000}
