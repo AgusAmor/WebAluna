@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, Navigate, useLocation } from "react-router-dom";
 import { LoginModal } from "../LoginModal/LoginModal";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -8,11 +8,15 @@ import "./header.css";
 
 export function Header() {
   const [showLogin, setShowLogin] = useState(false);
-  const { isLogged, logout } = useAuth();
+  const { isLogged, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const isAdminPage = location.pathname.startsWith("/admin");
+
+  const handleSwitchView = () => {
+    navigate(isAdminPage ? "/" : "/admin");
+  };
 
   return (
     <>
@@ -53,6 +57,16 @@ export function Header() {
               </>
             )}
           </ul>
+
+          {isAdmin() && (
+            <button
+              className="admin-switch-btn"
+              onClick={handleSwitchView}
+              aria-label="Cambiar vista"
+            >
+              {isAdminPage ? "Home" : "Panel"}
+            </button>
+          )}
 
           {isLogged ? (
             <button className="login-btn" onClick={logout}>

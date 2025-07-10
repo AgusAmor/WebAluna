@@ -7,6 +7,8 @@ export function AuthProvider({ children }) {
   const [isLogged, setIsLogged] = useState(false);
   const [user, setUser] = useState(null);
 
+  const isAdmin = () => isLogged && user?.type === "ADMIN";
+
   useEffect(() => {
     const storedUser = localStorage.getItem("userLogged");
     if (storedUser) {
@@ -46,7 +48,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLogged, login, logout }}>
+    <AuthContext.Provider value={{ user, isLogged, login, logout, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );

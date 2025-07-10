@@ -94,3 +94,24 @@
 .admin-header .logo img {
   filter: brightness(1.1);
 }
+
+.admin-switch-btn {
+  background-color: transparent;
+  border: 2px solid #b6a269;
+  color: #b6a269;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  margin-left: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  position: absolute;
+  margin-top: 3rem;
+  margin-right: 3rem;
+  left: 0;
+  top: 0;
+}
+
+.admin-switch-btn:hover {
+  background-color: #b6a269;
+  color: white;
+}

@@ -1,8 +1,12 @@
 import { Link } from "react-router-dom";
 import { Hero } from "../../components/Hero/Hero";
+import { useAuth } from "../../context/AuthContext";
+import { Navigate } from "react-router-dom";
 import "./homeAdmin.css";
 
 export function HomeAdmin() {
+  const { isAdmin } = useAuth();
+  if (!isAdmin()) return <Navigate to="/" />;
   return (
     <>
       <div className="admin-container">
