@@ -1,0 +1,41 @@
+.user-manager {
+  max-width: 95%;
+  margin: 0 auto;
+  font-family: "Sora";
+  color: var(--azul-1);
+}
+
+.user-manager h2 {
+  margin-bottom: 1rem;
+}
+
+.user-manager table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.user-manager th,
+.user-manager td {
+  border: 1px solid #ccc;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.user-manager button {
+  margin-right: 0.5rem;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+}
+
+.user-form {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 400px;
+}
+
+.add-user-btn {
+  margin-top: 1rem;
+}

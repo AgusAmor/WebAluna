@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, Navigate, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { LoginModal } from "../LoginModal/LoginModal";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -16,6 +16,11 @@ export function Header() {
 
   const handleSwitchView = () => {
     navigate(isAdminPage ? "/" : "/admin");
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
   };
 
   return (
@@ -69,7 +74,7 @@ export function Header() {
           )}
 
           {isLogged ? (
-            <button className="login-btn" onClick={logout}>
+            <button className="login-btn" onClick={handleLogout}>
               Logout
             </button>
           ) : (

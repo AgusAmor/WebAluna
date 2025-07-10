@@ -41,7 +41,6 @@
       "size": "DEFAULT"
     }
   ],
-
   "users": [
     {
       "id": "1",
@@ -62,9 +61,18 @@
       "type": "CLIENT",
       "email": "q@q",
       "phone": "1157731233"
+    },
+    {
+      "id": "6b2a",
+      "username": "dsad",
+      "password": "asd",
+      "name": "asd",
+      "surname": "asd",
+      "email": "q@q",
+      "phone": "123123123123",
+      "type": "ADMIN"
     }
   ],
-
   "cart": [
     {
       "productIDs": []
