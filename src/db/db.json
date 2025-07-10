@@ -1,43 +1,43 @@
 {
   "products": [
     {
-      "id": 1,
+      "id": "17cb",
       "name": "Fold",
-      "price": "30.000",
+      "price": "30000",
       "family": "AENOR",
-      "img": "/img/products/fold.png",
+      "img": "blob:http://localhost:5173/cebad8bb-dd24-4913-abc3-07068fc8e1cc",
       "size": "DEFAULT"
     },
     {
-      "id": 2,
+      "id": "b821",
       "name": "Loom",
-      "price": "30.000",
+      "price": "30000",
       "family": "AENOR",
-      "img": "/img/products/loom.png",
+      "img": "blob:http://localhost:5173/44cb8773-4948-4910-883e-abcf4f173c77",
       "size": "DEFAULT"
     },
     {
-      "id": 3,
+      "id": "1942",
       "name": "Sava",
-      "price": "40.000",
+      "price": "40000",
       "family": "AENOR",
-      "img": "/img/products/sava.png",
+      "img": "blob:http://localhost:5173/e4d8a6d3-adac-4229-b336-c77dbfeb1b68",
       "size": "DEFAULT"
     },
     {
-      "id": 4,
+      "id": "d520",
       "name": "Halo",
-      "price": "35.000",
+      "price": "35000",
       "family": "CORE",
-      "img": "/img/products/halo.png",
+      "img": "blob:http://localhost:5173/0681776f-8c13-468c-b177-5f8707f3ee2a",
       "size": "DEFAULT"
     },
     {
-      "id": 5,
+      "id": "d407",
       "name": "Rift",
-      "price": "45.000",
+      "price": "45000",
       "family": "CORE",
-      "img": "/img/products/rift.png",
+      "img": "blob:http://localhost:5173/8f5e3ed5-7e41-4287-a461-8953ac41d239",
       "size": "DEFAULT"
     }
   ],
@@ -54,28 +54,29 @@
     },
     {
       "id": "2",
-      "username": "q",
+      "username": "agus.amor",
       "password": "qwe123",
       "name": "Agustin",
       "surname": "Amor",
       "type": "CLIENT",
-      "email": "q@q",
+      "email": "agustinwalteramor@gmail.com",
       "phone": "1157731233"
     },
     {
-      "id": "6b2a",
-      "username": "dsad",
+      "id": "e81a",
+      "username": "dsa",
       "password": "asd",
       "name": "asd",
       "surname": "asd",
       "email": "q@q",
-      "phone": "123123123123",
-      "type": "ADMIN"
+      "phone": "1157731233",
+      "type": "CLIENT"
     }
   ],
   "cart": [
     {
-      "productIDs": []
+      "productIDs": [],
+      "id": "cb5e"
     }
   ]
 }

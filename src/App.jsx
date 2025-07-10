@@ -6,7 +6,7 @@ import { HomePage } from "./pages/home/HomePage";
 import { CatalogPage } from "./pages/catalog/CatalogPage";
 import { HomeAdmin } from "./admin/home/HomeAdmin";
 import { Users } from "./admin/users/Users";
-// import { Products } from "./admin/products/Products";
+import { Products } from "./admin/products/Products";
 
 export function App() {
   return (
@@ -17,7 +17,7 @@ export function App() {
         <Route path="/catalogo" element={<CatalogPage />} />
         <Route path="/admin" element={<HomeAdmin />} />
         <Route path="/admin/usuarios" element={<Users />} />
-        {/* <Route path="/admin/productos" element={<Products />} /> */}
+        <Route path="/admin/productos" element={<Products />} />
       </Routes>
       <ToastContainer
         position="bottom-right"
