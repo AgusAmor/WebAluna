@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Hero } from "../../components/Hero/Hero";
+import { Hero } from "../../components/hero/Hero";
 import { useAuth } from "../../context/AuthContext";
 import { Navigate } from "react-router-dom";
 import "./homeAdmin.css";

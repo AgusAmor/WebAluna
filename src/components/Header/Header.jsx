@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LoginModal } from "../LoginModal/LoginModal";
+import { LoginModal } from "../loginModal/LoginModal";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
@@ -27,14 +27,15 @@ export function Header() {
     <>
       <header className={`header ${isAdminPage ? "admin-header" : ""}`}>
         <div className="logo">
-          <a href={`${isAdminPage ? "/admin" : "/"}`}>
-            <img
-              src={`/img/logo.png ${
-                isAdminPage ? "../../../public/img/logoAdmin.png" : ""
-              }`}
-              alt="Logo"
-            />
-          </a>
+          {isAdminPage ? (
+            <Link to="/admin">
+              <img src="/img/logoAdmin.png" alt="Logo Admin" />
+            </Link>
+          ) : (
+            <Link to="/">
+              <img src="/img/logo.png" alt="Logo" />
+            </Link>
+          )}
         </div>
 
         <nav className="nav-container">

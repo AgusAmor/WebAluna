@@ -1,5 +1,5 @@
-import "./hero.css";
 import { useLocation } from "react-router-dom";
+import "./hero.css";
 
 export function Hero({ title, subtitle }) {
   const location = useLocation();

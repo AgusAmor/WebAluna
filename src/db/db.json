@@ -5,7 +5,7 @@
       "name": "Fold",
       "price": "30000",
       "family": "AENOR",
-      "img": "blob:http://localhost:5173/cebad8bb-dd24-4913-abc3-07068fc8e1cc",
+      "img": "blob:http://localhost:5173/f9201cee-aee6-4b3b-b10e-9a5f7f6a2643",
       "size": "DEFAULT"
     },
     {
@@ -13,7 +13,7 @@
       "name": "Loom",
       "price": "30000",
       "family": "AENOR",
-      "img": "blob:http://localhost:5173/44cb8773-4948-4910-883e-abcf4f173c77",
+      "img": "blob:http://localhost:5173/8081cc6b-0946-4eff-9a5d-2a8233e438cd",
       "size": "DEFAULT"
     },
     {
@@ -21,7 +21,7 @@
       "name": "Sava",
       "price": "40000",
       "family": "AENOR",
-      "img": "blob:http://localhost:5173/e4d8a6d3-adac-4229-b336-c77dbfeb1b68",
+      "img": "blob:http://localhost:5173/f1964076-cb48-44fb-82af-50efe390f47b",
       "size": "DEFAULT"
     },
     {
@@ -29,7 +29,7 @@
       "name": "Halo",
       "price": "35000",
       "family": "CORE",
-      "img": "blob:http://localhost:5173/0681776f-8c13-468c-b177-5f8707f3ee2a",
+      "img": "blob:http://localhost:5173/c94779c7-3c02-4e82-93f6-279243bb53a1",
       "size": "DEFAULT"
     },
     {
@@ -37,7 +37,7 @@
       "name": "Rift",
       "price": "45000",
       "family": "CORE",
-      "img": "blob:http://localhost:5173/8f5e3ed5-7e41-4287-a461-8953ac41d239",
+      "img": "blob:http://localhost:5173/d8e0743f-2734-400e-84f5-6ee2c610021c",
       "size": "DEFAULT"
     }
   ],
@@ -61,16 +61,6 @@
       "type": "CLIENT",
       "email": "agustinwalteramor@gmail.com",
       "phone": "1157731233"
-    },
-    {
-      "id": "e81a",
-      "username": "dsa",
-      "password": "asd",
-      "name": "asd",
-      "surname": "asd",
-      "email": "q@q",
-      "phone": "1157731233",
-      "type": "CLIENT"
     }
   ]
 }

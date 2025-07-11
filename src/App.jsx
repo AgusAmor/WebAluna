@@ -7,7 +7,8 @@ import { CatalogPage } from "./pages/catalog/CatalogPage";
 import { HomeAdmin } from "./admin/home/HomeAdmin";
 import { Users } from "./admin/users/Users";
 import { Products } from "./admin/products/Products";
-import FloatingCartButton from "./components/Cart/button/FloatingCartButton";
+import FloatingCartButton from "./components/cart/button/FloatingCartButton";
+import { Footer } from "./components/footer/Footer";
 
 export function App() {
   return (
@@ -29,6 +30,7 @@ export function App() {
         pauseOnHover
         draggable
       />
+      <Footer />
     </BrowserRouter>
   );
 }

@@ -1,4 +1,4 @@
-import { Hero } from "../../components/Hero/Hero";
+import { Hero } from "../../components/hero/Hero";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./home.css";

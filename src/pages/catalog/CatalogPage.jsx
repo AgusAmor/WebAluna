@@ -1,4 +1,4 @@
-import { Hero } from "../../components/Hero/Hero";
+import { Hero } from "../../components/hero/Hero";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
@@ -84,6 +84,7 @@ export function CatalogPage() {
               <p className="product-price">${product.price}</p>
 
               <button
+                className="add-to-cart-btn"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleAddToCart(product);

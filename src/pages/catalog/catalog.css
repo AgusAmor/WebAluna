@@ -82,6 +82,29 @@
   margin-bottom: 1rem;
 }
 
+.add-to-cart-btn {
+  background-color: var(--azul-2);
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  margin: 0.5rem 0rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: "Comfortaa";
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.add-to-cart-btn:hover {
+  background-color: var(--dorado);
+  transform: translateY(-2px);
+}
+
+.add-to-cart-btn:active {
+  transform: scale(0.97);
+}
+
 @keyframes fadeInScale {
   0% {
     opacity: 0;

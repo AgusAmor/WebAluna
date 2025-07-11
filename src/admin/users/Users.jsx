@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import "./users.css";
-import { Hero } from "../../components/Hero/Hero";
+import { Hero } from "../../components/hero/Hero";
 import { useAuth } from "../../context/AuthContext";
+import "./users.css";
 
 export function Users() {
   const { user, isLogged } = useAuth();
@@ -85,104 +85,107 @@ export function Users() {
   };
 
   return (
-    <div className="user-manager">
+    <div className="container">
       <Hero title="Usuarios" subtitle="Gestor de usuarios" />
+      <div className="user-manager">
+        <table>
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Nombre</th>
+              <th>Apellido</th>
+              <th>Email</th>
+              <th>Teléfono</th>
+              <th>Tipo</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users
+              .filter((u) => u.id !== user.id)
+              .map((u) => (
+                <tr key={u.id}>
+                  <td>{u.username}</td>
+                  <td>{u.name}</td>
+                  <td>{u.surname}</td>
+                  <td>{u.email}</td>
+                  <td>{u.phone}</td>
+                  <td>{u.type}</td>
+                  <td>
+                    {u.type === "ADMIN" ? (
+                      <span style={{ color: "gray" }}>Admin protegido</span>
+                    ) : (
+                      <>
+                        <button onClick={() => handleEdit(u)}>Modificar</button>
+                        <button onClick={() => handleDelete(u.id)}>
+                          Borrar
+                        </button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Usuario</th>
-            <th>Nombre</th>
-            <th>Apellido</th>
-            <th>Email</th>
-            <th>Teléfono</th>
-            <th>Tipo</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users
-            .filter((u) => u.id !== user.id)
-            .map((u) => (
-              <tr key={u.id}>
-                <td>{u.username}</td>
-                <td>{u.name}</td>
-                <td>{u.surname}</td>
-                <td>{u.email}</td>
-                <td>{u.phone}</td>
-                <td>{u.type}</td>
-                <td>
-                  {u.type === "ADMIN" ? (
-                    <span style={{ color: "gray" }}>Admin protegido</span>
-                  ) : (
-                    <>
-                      <button onClick={() => handleEdit(u)}>Modificar</button>
-                      <button onClick={() => handleDelete(u.id)}>Borrar</button>
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
-        </tbody>
-      </table>
+        <button className="add-user-btn" onClick={handleAddNew}>
+          Agregar nuevo usuario
+        </button>
 
-      <button className="add-user-btn" onClick={handleAddNew}>
-        Agregar nuevo usuario
-      </button>
+        {showForm && (
+          <form onSubmit={handleSubmit} className="user-form">
+            <h3>{selectedUser ? "Modificar Usuario" : "Agregar Usuario"}</h3>
+            <input
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              placeholder="Nombre de usuario"
+              required
+            />
+            <input
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Contraseña"
+              type="password"
+              required
+            />
+            <input
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Nombre"
+            />
+            <input
+              name="surname"
+              value={formData.surname}
+              onChange={handleChange}
+              placeholder="Apellido"
+            />
+            <input
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Email"
+              type="email"
+            />
+            <input
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="Teléfono"
+            />
+            <select name="type" value={formData.type} onChange={handleChange}>
+              <option value="ADMIN">Administrador</option>
+              <option value="CLIENT">Cliente</option>
+            </select>
 
-      {showForm && (
-        <form onSubmit={handleSubmit} className="user-form">
-          <h3>{selectedUser ? "Modificar Usuario" : "Agregar Usuario"}</h3>
-          <input
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            placeholder="Nombre de usuario"
-            required
-          />
-          <input
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Contraseña"
-            type="password"
-            required
-          />
-          <input
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Nombre"
-          />
-          <input
-            name="surname"
-            value={formData.surname}
-            onChange={handleChange}
-            placeholder="Apellido"
-          />
-          <input
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="Email"
-            type="email"
-          />
-          <input
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            placeholder="Teléfono"
-          />
-          <select name="type" value={formData.type} onChange={handleChange}>
-            <option value="ADMIN">Administrador</option>
-            <option value="CLIENT">Cliente</option>
-          </select>
-
-          <button type="submit">
-            {selectedUser ? "Guardar cambios" : "Crear usuario"}
-          </button>
-        </form>
-      )}
+            <button type="submit">
+              {selectedUser ? "Guardar cambios" : "Crear usuario"}
+            </button>
+          </form>
+        )}
+      </div>
     </div>
   );
 }

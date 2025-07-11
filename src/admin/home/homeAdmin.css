@@ -19,8 +19,8 @@
 }
 
 .admin-card {
-  background-color: var(--gris-2);
-  color: var(--negro);
+  background-color: var(--blanco);
+  color: var(--dorado);
   border-left: 8px solid var(--dorado);
   padding: 1.5rem;
   border-radius: 12px;
