@@ -1,14 +1,17 @@
-import { db } from "../config/firebase.js";
+import { admin, db } from "../config/firebase.js";
 
 // Login
 export const loginUser = async (req, res) => {
   const { idToken } = req.body;
 
   try {
-    const decodedToken = await auth.verifyIdToken(idToken);
-    const uid = decodedToken.uid;
+    console.log("Recibido token:", idToken);
 
-    // Traer datos desde Firestore
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+
+    console.log("Token decodificado:", decodedToken);
+
+    const uid = decodedToken.uid;
     const userDoc = await db.collection("users").doc(uid).get();
 
     if (!userDoc.exists) {
@@ -18,9 +21,11 @@ export const loginUser = async (req, res) => {
     }
 
     const userData = userDoc.data();
+    console.log("Datos del usuario:", userData);
+
     return res.status(200).json(userData);
   } catch (error) {
-    console.error("Error al verificar token:", error);
+    console.error("Error al verificar token:", error.code, error.message);
     return res.status(401).json({ message: "Token inválido o expirado" });
   }
 };
