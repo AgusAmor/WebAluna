@@ -1,0 +1,15 @@
+:root {
+  --azul-1: #264e60;
+  --azul-2: #427385; /*principal */
+  --azul-3: #81a5ae;
+
+  --gris-1: #a9b2b9;
+  --gris-2: #c3c9ce; /*secundario */
+  --gris-3: #d9dce0;
+
+  /* fondos o fuentes */
+  --negro: #2b2b2b;
+  --blanco: #f4f4f4;
+
+  --dorado: #b6a269; /*acentuaciones */
+}
