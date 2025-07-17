@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Hero } from "../../components/hero/Hero";
 import "./products.css";
 
@@ -6,6 +6,7 @@ export function Products() {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const formRef = useRef(null);
 
   const initialForm = {
     name: "",
@@ -29,14 +30,28 @@ export function Products() {
 
   const handleEdit = (product) => {
     setSelectedProduct(product);
-    setFormData(product);
+
+    setFormData({
+      name: product.name || "",
+      price: product.price || "",
+      family: product.family || "AENOR",
+      size: product.size || "DEFAULT",
+      img: `data:image/jpeg;base64,${product.imageBase64}` || "",
+      imageBase64: product.imageBase64 || "",
+    });
+
     setShowForm(true);
+
+    setTimeout(
+      () => formRef.current?.scrollIntoView({ behavior: "smooth" }),
+      100
+    );
   };
 
   const handleDelete = (id) => {
     if (!confirm("¿Estás seguro de eliminar este producto?")) return;
 
-    fetch(`http://localhost:3000/products/${id}`, {
+    fetch(`http://localhost:5000/products/${id}`, {
       method: "DELETE",
     })
       .then(() => setProducts(products.filter((p) => p.id !== id)))
@@ -48,8 +63,8 @@ export function Products() {
 
     const method = selectedProduct ? "PUT" : "POST";
     const url = selectedProduct
-      ? `http://localhost:3000/products/${selectedProduct.id}`
-      : `http://localhost:3000/products`;
+      ? `http://localhost:5000/products/${selectedProduct.id}`
+      : `http://localhost:5000/products`;
 
     fetch(url, {
       method,
@@ -77,6 +92,10 @@ export function Products() {
     setFormData(initialForm);
     setSelectedProduct(null);
     setShowForm(true);
+    setTimeout(
+      () => formRef.current?.scrollIntoView({ behavior: "smooth" }),
+      100
+    );
   };
 
   return (
@@ -102,7 +121,11 @@ export function Products() {
                 <td>{p.family}</td>
                 <td>{p.size}</td>
                 <td>
-                  <img src={p.img} alt={p.name} style={{ width: "60px" }} />
+                  <img
+                    src={`data:image/jpeg;base64,${p.imageBase64}`}
+                    alt={p.name}
+                    style={{ width: "60px" }}
+                  />
                 </td>
                 <td>
                   <button onClick={() => handleEdit(p)}>Modificar</button>
@@ -118,7 +141,12 @@ export function Products() {
         </button>
 
         {showForm && (
-          <form onSubmit={handleSubmit} className="product-form">
+          <form
+            ref={formRef}
+            onSubmit={handleSubmit}
+            className="product-form"
+            id="edit-form"
+          >
             <h3>
               {selectedProduct ? "Modificar producto" : "Agregar producto"}
             </h3>
@@ -165,20 +193,26 @@ export function Products() {
               accept="image/*"
               onChange={(e) => {
                 const file = e.target.files[0];
-                if (file) {
-                  const imageUrl = URL.createObjectURL(file);
-                  setFormData({
-                    ...formData,
-                    img: imageUrl,
-                  });
-                }
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    img: reader.result,
+                    imageBase64: reader.result.split(",")[1],
+                  }));
+                };
+                reader.readAsDataURL(file);
               }}
             />
 
-            {formData.img && (
-              <div className="preview">
-                <img src={formData.img} alt="Preview" height="100" />
-              </div>
+            {formData.imageBase64 && (
+              <img
+                src={`data:image/jpeg;base64,${formData.imageBase64}`}
+                alt={formData.name}
+                style={{ width: "50%", margin: "0px 25%" }}
+              />
             )}
 
             <button type="submit">

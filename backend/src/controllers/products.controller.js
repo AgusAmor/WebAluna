@@ -51,19 +51,16 @@ export const createProduct = async (req, res) => {
 
 // Actualizar un producto
 export const updateProduct = async (req, res) => {
-  const { id } = req.params;
-  const updatedData = req.body;
-
   try {
-    const docRef = db.collection("products").doc(id);
-    const doc = await docRef.get();
+    const { id } = req.params;
+    const data = req.body;
 
-    if (!doc.exists) {
-      return res.status(404).json({ message: "Producto no encontrado" });
+    if (!data.imageBase64) {
+      return res.status(400).json({ message: "Falta la imagen del producto" });
     }
 
-    await docRef.update(updatedData);
-    res.status(200).json({ id, ...updatedData });
+    await db.collection("products").doc(id).update(data);
+    res.status(200).json({ id, ...data });
   } catch (error) {
     console.error("Error al actualizar producto:", error);
     res.status(500).json({ message: "Error al actualizar producto" });

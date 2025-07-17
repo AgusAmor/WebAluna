@@ -10,7 +10,7 @@ export function Users() {
   const [showForm, setShowForm] = useState(false);
 
   const initialForm = {
-    username: "",
+    userName: "",
     password: "",
     name: "",
     surname: "",
@@ -105,7 +105,7 @@ export function Users() {
               .filter((u) => u.id !== user.id)
               .map((u) => (
                 <tr key={u.id}>
-                  <td>{u.username}</td>
+                  <td>{u.userName}</td>
                   <td>{u.name}</td>
                   <td>{u.surname}</td>
                   <td>{u.email}</td>
@@ -136,18 +136,10 @@ export function Users() {
           <form onSubmit={handleSubmit} className="user-form">
             <h3>{selectedUser ? "Modificar Usuario" : "Agregar Usuario"}</h3>
             <input
-              name="username"
-              value={formData.username}
+              name="userName"
+              value={formData.userName}
               onChange={handleChange}
               placeholder="Nombre de usuario"
-              required
-            />
-            <input
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Contraseña"
-              type="password"
               required
             />
             <input
