@@ -22,7 +22,7 @@ export function Users() {
   const [formData, setFormData] = useState(initialForm);
 
   useEffect(() => {
-    fetch("http://localhost:3000/users")
+    fetch("http://localhost:5000/users")
       .then((res) => res.json())
       .then((data) => setUsers(data));
   }, []);
@@ -43,7 +43,7 @@ export function Users() {
   const handleDelete = (id) => {
     if (!confirm("¿Estás seguro de eliminar este usuario?")) return;
 
-    fetch(`http://localhost:3000/users/${id}`, { method: "DELETE" })
+    fetch(`http://localhost:5000/users/${id}`, { method: "DELETE" })
       .then(() => setUsers(users.filter((u) => u.id !== id)))
       .catch((err) => console.error("Error eliminando usuario:", err));
   };
@@ -53,8 +53,8 @@ export function Users() {
 
     const method = selectedUser ? "PUT" : "POST";
     const url = selectedUser
-      ? `http://localhost:3000/users/${selectedUser.id}`
-      : `http://localhost:3000/users`;
+      ? `http://localhost:5000/users/${selectedUser.id}`
+      : `http://localhost:5000/users`;
 
     fetch(url, {
       method,

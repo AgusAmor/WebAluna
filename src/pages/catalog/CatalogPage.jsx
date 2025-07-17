@@ -13,7 +13,7 @@ export function CatalogPage() {
   const { addToCart } = useCart();
 
   useEffect(() => {
-    fetch("http://localhost:3000/products")
+    fetch("http://localhost:5000/products")
       .then((res) => res.json())
       .then((data) => {
         setProductos(data);
@@ -75,7 +75,7 @@ export function CatalogPage() {
               onClick={() => handleCardClick(product)}
             >
               <img
-                src={product.img}
+                src={`data:image/jpeg;base64,${product.imageBase64}`}
                 alt={product.name}
                 className="product-image"
               />
@@ -101,7 +101,7 @@ export function CatalogPage() {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <img
-              src={selectedProduct.img}
+              src={`data:image/jpeg;base64,${selectedProduct.imageBase64}`}
               alt={selectedProduct.name}
               className="modal-image"
               onLoad={() => setImgLoaded(true)}

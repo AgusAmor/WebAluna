@@ -18,7 +18,7 @@ export function Products() {
   const [formData, setFormData] = useState(initialForm);
 
   useEffect(() => {
-    fetch("http://localhost:3000/products")
+    fetch("http://localhost:5000/products")
       .then((res) => res.json())
       .then((data) => setProducts(data));
   }, []);

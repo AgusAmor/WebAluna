@@ -8,24 +8,10 @@ export function LoginModal({ onClose, onLogin }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-
-    fetch(
-      `http://localhost:3000/users?username=${username}&password=${password}`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.length === 1) {
-          login(data[0]);
-          onLogin(data[0]);
-        } else {
-          setError("Usuario o contraseña incorrectos.");
-        }
-      })
-      .catch(() => {
-        setError("Error al iniciar sesión.");
-      });
+    await login(username, password);
+    onClose();
   };
 
   return (

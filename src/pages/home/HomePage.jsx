@@ -4,17 +4,17 @@ import { useNavigate } from "react-router-dom";
 import "./home.css";
 
 export function HomePage() {
-  const [productos, setProductos] = useState([]);
+  const [products, setProducts] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:3000/products")
+    fetch("http://localhost:5000/products")
       .then((res) => res.json())
-      .then((data) => setProductos(data))
+      .then((data) => setProducts(data))
       .catch((err) => console.error("Error al cargar productos:", err));
   }, []);
 
-  const irACatalogo = () => navigate("/catalogo");
+  const goCatalog = () => navigate("/catalogo");
 
   return (
     <div className="home-container">
@@ -41,12 +41,18 @@ export function HomePage() {
         <h2>Nuestros productos</h2>
         <div className="carousel-container">
           <div className="carousel">
-            {[...productos, ...productos].map((producto, index) => (
-              <div key={index} className="carousel-item" onClick={irACatalogo}>
-                <img src={producto.img} alt={producto.name} />
-                <p>{producto.name}</p>
-              </div>
-            ))}
+            {[...products, ...products].map((product, index) => {
+              console.log(product);
+              return (
+                <div key={index} className="carousel-item" onClick={goCatalog}>
+                  <img
+                    src={`data:image/jpeg;base64,${product.imageBase64}`}
+                    alt={product.name}
+                  />
+                  <p>{product.name}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
 
