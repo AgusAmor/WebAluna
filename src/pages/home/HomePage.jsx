@@ -42,7 +42,6 @@ export function HomePage() {
         <div className="carousel-container">
           <div className="carousel">
             {[...products, ...products].map((product, index) => {
-              console.log(product);
               return (
                 <div key={index} className="carousel-item" onClick={goCatalog}>
                   <img
