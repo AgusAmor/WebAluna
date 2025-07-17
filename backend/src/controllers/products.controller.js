@@ -1,4 +1,4 @@
-import { db } from "../config/firebase.js";
+import { db } from "../../config/firebase.js";
 
 // Obtener todos los productos
 export const getAllProducts = async (req, res) => {
