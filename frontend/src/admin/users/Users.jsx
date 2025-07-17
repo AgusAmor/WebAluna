@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Hero } from "../../components/hero/Hero";
 import { useAuth } from "../../context/AuthContext";
+import { Navigate } from "react-router-dom";
 import "./users.css";
 
 export function Users() {
+  const { isAdmin } = useAuth();
+  if (!isAdmin()) return <Navigate to="/" />;
   const { user, isLogged } = useAuth();
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);

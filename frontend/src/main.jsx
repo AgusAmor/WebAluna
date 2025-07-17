@@ -6,11 +6,11 @@ import { CartProvider } from "./context/CartContext";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <CartProvider>
-    <AuthProvider>
+  <AuthProvider>
+    <CartProvider>
       <React.StrictMode>
         <App />
       </React.StrictMode>
-    </AuthProvider>
-  </CartProvider>
+    </CartProvider>
+  </AuthProvider>
 );

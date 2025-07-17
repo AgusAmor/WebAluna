@@ -6,14 +6,12 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 import { toast } from "react-toastify";
-import { useCart } from "./CartContext";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [isLogged, setIsLogged] = useState(false);
   const [user, setUser] = useState(null);
-  const { clearCart } = useCart();
 
   const isAdmin = () => isLogged && user?.type === "ADMIN";
 
@@ -41,7 +39,6 @@ export function AuthProvider({ children }) {
         setUser(null);
         setIsLogged(false);
         localStorage.removeItem("userLogged");
-        clearCart();
       }
     });
 
@@ -57,7 +54,11 @@ export function AuthProvider({ children }) {
         ),
       });
     } catch (error) {
-      toast.error("Error al iniciar sesión: " + error.message);
+      toast.error("Email o contraseña incorrectos.", {
+        icon: (
+          <img src="/img/iso.png" alt="iso" style={{ width: 24, height: 24 }} />
+        ),
+      });
       console.error(error);
     }
   };
@@ -67,7 +68,6 @@ export function AuthProvider({ children }) {
     setUser(null);
     setIsLogged(false);
     localStorage.removeItem("userLogged");
-    clearCart();
     toast.success("Se cerró la sesión", {
       icon: (
         <img src="/img/iso.png" alt="iso" style={{ width: 24, height: 24 }} />

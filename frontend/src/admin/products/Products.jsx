@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 import { Hero } from "../../components/hero/Hero";
+import { Navigate } from "react-router-dom";
 import "./products.css";
 
 export function Products() {
+  const { isAdmin } = useAuth();
+  if (!isAdmin()) return <Navigate to="/" />;
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showForm, setShowForm] = useState(false);

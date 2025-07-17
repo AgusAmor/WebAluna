@@ -14,7 +14,7 @@ export function CartModal({ onClose }) {
       try {
         const responses = await Promise.all(
           cartItems.map((item) =>
-            fetch(`http://localhost:3000/products/${item.id}`).then((res) =>
+            fetch(`http://localhost:5000/products/${item.id}`).then((res) =>
               res.json()
             )
           )
@@ -24,14 +24,17 @@ export function CartModal({ onClose }) {
           ...product,
           quantity: cartItems[i].quantity,
         }));
-
         setFullCartItems(enrichedItems);
       } catch (err) {
         console.error("Error al cargar detalles del producto:", err);
       }
     };
 
-    fetchProductData();
+    if (cartItems.length > 0) {
+      fetchProductData();
+    } else {
+      setFullCartItems([]);
+    }
   }, [cartItems]);
 
   const decreaseQuantity = (id) => {

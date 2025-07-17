@@ -4,13 +4,13 @@ import "./LoginModal.css";
 
 export function LoginModal({ onClose, onLogin }) {
   const { login } = useAuth();
-  const [username, setUserName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    await login(username, password);
+    await login(email, password);
     onClose();
   };
 
@@ -20,10 +20,10 @@ export function LoginModal({ onClose, onLogin }) {
         <h2>Iniciar Sesión</h2>
         <form onSubmit={handleLogin}>
           <input
-            type="text"
-            placeholder="Usuario"
-            value={username}
-            onChange={(e) => setUserName(e.target.value)}
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
           <input

@@ -31,7 +31,7 @@ export function CatalogPage() {
 
   const handleAddToCart = (product) => {
     if (!isLogged) {
-      toast.success("Debe iniciar sesión para agregar productos al carrito.", {
+      toast.error("Debe iniciar sesión para agregar productos al carrito.", {
         icon: (
           <img
             src="../../public/img/iso.png"
