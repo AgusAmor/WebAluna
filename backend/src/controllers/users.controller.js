@@ -33,22 +33,44 @@ export const loginUser = async (req, res) => {
 // Registrar nuevo usuario
 export const registerUser = async (req, res) => {
   try {
-    const newUser = req.body;
+    const { email, password, userName, name, surname, phone, type } = req.body;
 
+    // verificacion de userName
     const existing = await db
       .collection("users")
-      .where("username", "==", newUser.username)
+      .where("userName", "==", userName)
       .get();
 
     if (!existing.empty) {
-      return res.status(400).json({ message: "El usuario ya existe" });
+      return res
+        .status(400)
+        .json({ message: "El nombre de usuario ya existe" });
     }
 
-    const docRef = await db.collection("users").add(newUser);
-    res.status(201).json({ id: docRef.id, ...newUser });
+    // crear en FireBase Auth
+    const userRecord = await admin.auth().createUser({
+      email,
+      password,
+      displayName: `${name} ${surname}`,
+    });
+
+    // crear Firestore con UID del Auth
+    const userData = {
+      id: userRecord.uid,
+      email,
+      userName,
+      name,
+      surname,
+      phone,
+      type,
+    };
+
+    await db.collection("users").doc(userRecord.uid).set(userData);
+
+    return res.status(201).json({ uid: userRecord.uid, ...userData });
   } catch (error) {
     console.error("Error al registrar usuario:", error);
-    res.status(500).json({ message: "Error en el servidor" });
+    return res.status(500).json({ message: "Error al registrar usuario" });
   }
 };
 
@@ -71,27 +93,50 @@ export const getAllUsers = async (req, res) => {
 
 // Actualizar usuario
 export const updateUser = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const data = req.body;
+  const { id } = req.params;
+  const { email, name, surname, phone, type, userName } = req.body;
 
-    await db.collection("users").doc(id).update(data);
-    res.status(200).json({ id, ...data });
+  try {
+    // Firebase Auth
+    await admin.auth().updateUser(id, {
+      email,
+      displayName: `${name} ${surname}`,
+    });
+
+    // Firestore
+    const updatedData = {
+      id,
+      email,
+      userName,
+      name,
+      surname,
+      phone,
+      type,
+    };
+
+    await db.collection("users").doc(id).update(updatedData);
+
+    return res.status(200).json({ id, ...updatedData });
   } catch (error) {
     console.error("Error al actualizar usuario:", error);
-    res.status(500).json({ message: "Error al actualizar usuario" });
+    return res.status(500).json({ message: "Error al actualizar usuario" });
   }
 };
 
 // Eliminar usuario
 export const deleteUser = async (req, res) => {
-  try {
-    const { id } = req.params;
+  const { id } = req.params;
 
+  try {
+    // Firebase Auth
+    await admin.auth().deleteUser(id);
+
+    // Firestore
     await db.collection("users").doc(id).delete();
-    res.status(200).json({ message: "Usuario eliminado correctamente" });
+
+    return res.status(200).json({ message: "Usuario eliminado correctamente" });
   } catch (error) {
     console.error("Error al eliminar usuario:", error);
-    res.status(500).json({ message: "Error al eliminar usuario" });
+    return res.status(500).json({ message: "Error al eliminar usuario" });
   }
 };

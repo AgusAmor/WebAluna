@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Hero } from "../../components/hero/Hero";
 import { useAuth } from "../../context/AuthContext";
 import "./users.css";
@@ -8,6 +8,7 @@ export function Users() {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const formRef = useRef(null);
 
   const initialForm = {
     userName: "",
@@ -38,6 +39,10 @@ export function Users() {
     setSelectedUser(user);
     setFormData(user);
     setShowForm(true);
+    setTimeout(
+      () => formRef.current?.scrollIntoView({ behavior: "smooth" }),
+      100
+    );
   };
 
   const handleDelete = (id) => {
@@ -82,6 +87,10 @@ export function Users() {
     setFormData(initialForm);
     setSelectedUser(null);
     setShowForm(true);
+    setTimeout(
+      () => formRef.current?.scrollIntoView({ behavior: "smooth" }),
+      100
+    );
   };
 
   return (
@@ -102,7 +111,7 @@ export function Users() {
           </thead>
           <tbody>
             {users
-              .filter((u) => u.id !== user.id)
+              .filter((u) => !user || u.id !== user.id)
               .map((u) => (
                 <tr key={u.id}>
                   <td>{u.userName}</td>
@@ -133,7 +142,7 @@ export function Users() {
         </button>
 
         {showForm && (
-          <form onSubmit={handleSubmit} className="user-form">
+          <form ref={formRef} onSubmit={handleSubmit} className="user-form">
             <h3>{selectedUser ? "Modificar Usuario" : "Agregar Usuario"}</h3>
             <input
               name="userName"
@@ -142,6 +151,15 @@ export function Users() {
               placeholder="Nombre de usuario"
               required
             />
+            <input
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Contraseña"
+              type="password"
+              required={!selectedUser}
+            />
+
             <input
               name="name"
               value={formData.name}
