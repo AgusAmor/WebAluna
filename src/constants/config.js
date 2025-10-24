@@ -1,0 +1,82 @@
+// API Configuration - Ready for future backend integration
+export const API_CONFIG = {
+  BASE_URL: import.meta.env.VITE_API_URL || "http://localhost:3001/api",
+  TIMEOUT: 10000,
+
+  // Endpoints structure - ready for any backend
+  ENDPOINTS: {
+    AUTH: {
+      LOGIN: "/auth/login",
+      REGISTER: "/auth/register",
+      LOGOUT: "/auth/logout",
+      ME: "/auth/me",
+    },
+    PRODUCTS: {
+      LIST: "/products",
+      DETAIL: "/products/:id",
+      CREATE: "/products",
+      UPDATE: "/products/:id",
+      DELETE: "/products/:id",
+      CATEGORIES: "/products/categories",
+      SEARCH: "/products/search",
+    },
+    ORDERS: {
+      CREATE: "/orders",
+      LIST: "/orders",
+      DETAIL: "/orders/:id",
+      UPDATE_STATUS: "/orders/:id/status",
+    },
+    USERS: {
+      PROFILE: "/users/profile",
+      UPDATE_PROFILE: "/users/profile",
+      LIST: "/users", // Admin only
+    },
+  },
+};
+
+// App Configuration
+export const APP_CONFIG = {
+  NAME: "Aluna",
+  VERSION: "1.0.0",
+  DESCRIPTION: "E-commerce de lámparas con impresión 3D",
+  DEFAULT_LANGUAGE: "es",
+  CURRENCY: "ARS",
+  CURRENCY_SYMBOL: "$",
+
+  // Pagination
+  PRODUCTS_PER_PAGE: 12,
+  MAX_PRODUCTS_PER_PAGE: 48,
+
+  // Image settings
+  MAX_IMAGE_SIZE: 5 * 1024 * 1024, // 5MB
+  ALLOWED_IMAGE_TYPES: ["image/jpeg", "image/png", "image/webp"],
+};
+
+// Database configuration placeholder
+export const DB_CONFIG = {
+  // Ready for Firebase
+  FIREBASE: {
+    COLLECTIONS: {
+      USERS: "users",
+      PRODUCTS: "products",
+      ORDERS: "orders",
+      CATEGORIES: "categories",
+    },
+  },
+
+  // Ready for Supabase
+  SUPABASE: {
+    TABLES: {
+      USERS: "users",
+      PRODUCTS: "products",
+      ORDERS: "orders",
+      CATEGORIES: "categories",
+    },
+  },
+};
+
+export default {
+  API_CONFIG,
+  APP_CONFIG,
+  DB_CONFIG,
+};

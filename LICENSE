@@ -1,0 +1,77 @@
+LICENCIA PROPIETARIA - TODOS LOS DERECHOS RESERVADOS
+
+Copyright (c) 2025 - Propietario del Código
+
+AVISO DE DERECHOS DE AUTOR:
+Este código fuente y todos los archivos asociados son propiedad exclusiva del
+desarrollador/propietario. Todos los derechos están reservados.
+
+RESTRICCIONES DE USO:
+
+❌ PROHIBIDO el uso, copia, modificación o distribución sin autorización expresa
+❌ PROHIBIDO el uso comercial no autorizado
+❌ PROHIBIDO crear trabajos derivados
+❌ PROHIBIDO la ingeniería inversa
+❌ PROHIBIDO la sublicencia o reventa
+❌ PROHIBIDO el uso en otros proyectos
+
+TÉRMINOS Y CONDICIONES:
+
+1. PROPIEDAD INTELECTUAL
+
+   - Todo el código fuente, diseño, arquitectura y documentación son propiedad
+     exclusiva del autor/propietario
+   - Ninguna parte de este software puede ser utilizada sin permiso explícito
+
+2. USO AUTORIZADO
+
+   - Solo el propietario tiene derecho a usar, modificar y distribuir este código
+   - Cualquier colaborador debe tener autorización previa por escrito
+   - El uso está limitado exclusivamente al proyecto Aluna
+
+3. VIOLACIONES
+
+   - Cualquier uso no autorizado constituye una violación de derechos de autor
+   - Se tomarán acciones legales contra infracciones
+   - Se aplicarán las penalidades máximas permitidas por la ley
+
+4. EXENCIÓN DE GARANTÍAS
+
+   - El software se proporciona "tal como está"
+   - No se ofrece garantía de ningún tipo
+   - El propietario no se responsabiliza por daños derivados del uso
+
+5. CONFIDENCIALIDAD
+   - Este código contiene información confidencial y propietaria
+   - Está prohibida la divulgación a terceros
+   - Debe mantenerse la confidencialidad en todo momento
+
+---
+
+## SOBRE ESTE PROYECTO PRIVADO
+
+Este es el código propietario del ecosistema digital de Aluna, desarrollado como
+solución exclusiva para la empresa de lámparas de impresión 3D.
+
+### TECNOLOGÍAS UTILIZADAS BAJO SUS RESPECTIVAS LICENCIAS:
+
+- React (MIT License) - Framework utilizado según su licencia
+- Vite (MIT License) - Herramienta de build utilizada según su licencia
+- Tailwind CSS (MIT License) - Framework CSS utilizado según su licencia
+- Flowbite React (MIT License) - Componentes utilizados según su licencia
+- ESLint (MIT License) - Linter utilizado según su licencia
+
+NOTA IMPORTANTE:
+Aunque las dependencias tienen licencias open source, el CÓDIGO DE APLICACIÓN
+DESARROLLADO (componentes custom, lógica de negocio, arquitectura específica)
+permanece bajo licencia propietaria y todos los derechos reservados.
+
+### CONTACTO PARA LICENCIAMIENTO:
+
+Para solicitar permisos de uso, licenciamiento comercial o colaboración:
+
+- Crear un issue en el repositorio de GitHub
+- Contactar directamente al propietario del código
+- Todas las solicitudes serán evaluadas caso por caso
+
+⚖️ ESTE SOFTWARE ESTÁ PROTEGIDO POR LEYES DE DERECHOS DE AUTOR INTERNACIONALES
