@@ -98,37 +98,43 @@ const Home = () => {
 
       {/* SEO Content Section */}
       <section className="py-16 bg-blanco">
-        <div className="container mx-auto px-4 max-w-4xl">
+        <div className="container mx-auto px-4 max-w-6xl">
           <article className="text-center">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6 font-family-comfortaa text-azul-1">
-              ¿Por qué elegir lámparas 3D de Aluna?
+              ¿Por qué elegir nuestras lámparas 3D para tu hogar?
             </h2>
             <div className="grid md:grid-cols-3 gap-8 text-left">
               <div>
                 <h3 className="text-lg md:text-xl font-semibold mb-3 font-family-comfortaa text-azul-2">
-                  🎨 Diseños Únicos
+                  Diseño Único y Personalizado
                 </h3>
                 <p className="text-sm md:text-base text-gris-1 font-family-sora">
-                  Cada lámpara 3D es única. Nuestros diseños personalizados
-                  combinan tecnología de impresión 3D con creatividad artesanal.
+                  Cada lámpara decorativa que creamos para vos está hecha con
+                  filamento ecológico y atención artesanal al detalle. Tu
+                  lámpara 3D será una pieza única que refleja calidad y
+                  dedicación en cada acabado.
                 </p>
               </div>
               <div>
                 <h3 className="text-lg md:text-xl font-semibold mb-3 font-family-comfortaa text-azul-2">
-                  🏭 Impresión 3D de Calidad
+                  Transformá tu Espacio
                 </h3>
                 <p className="text-sm md:text-base text-gris-1 font-family-sora">
-                  Utilizamos tecnología de impresión 3D de última generación
-                  para crear lámparas duraderas y con acabados perfectos.
+                  Nuestras lámparas de diseño no solo iluminan, transforman tu
+                  ambiente en un lugar acogedor. Creá la atmósfera perfecta en
+                  tu hogar con iluminación decorativa que invita a quedarte y
+                  disfrutar cada momento.
                 </p>
               </div>
               <div>
                 <h3 className="text-lg md:text-xl font-semibold mb-3 font-family-comfortaa text-azul-2">
-                  📦 Envíos a toda Argentina
+                  Tecnología y Arte para Vos
                 </h3>
                 <p className="text-sm md:text-base text-gris-1 font-family-sora">
-                  Comprá online y recibí tu lámpara 3D personalizada en la
-                  comodidad de tu hogar. Envíos seguros a todo el país.
+                  Combinamos impresión 3D de última generación con diseño
+                  artesanal. Obtenés piezas decorativas modernas y elegantes con
+                  el toque humano que solo el trabajo artesanal puede darle a tu
+                  decoración.
                 </p>
               </div>
             </div>
