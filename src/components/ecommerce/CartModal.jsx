@@ -21,8 +21,13 @@ const CartModal = ({ isOpen, onClose }) => {
         <div className="relative bg-blanco rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gris-2">
-            <h2 className="text-lg font-semibold">Carrito de Compras</h2>
-            <button onClick={onClose} className="text-gris-1 hover:text-azul-1">
+            <h2 className="text-base md:text-lg font-semibold font-family-comfortaa">
+              Carrito de Compras
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gris-1 hover:text-azul-1 text-xl"
+            >
               ✕
             </button>
           </div>
@@ -30,7 +35,7 @@ const CartModal = ({ isOpen, onClose }) => {
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-4">
             {items.length === 0 ? (
-              <p className="text-center text-gris-1 py-8">
+              <p className="text-center text-gris-1 py-8 text-sm md:text-base font-family-sora">
                 Tu carrito está vacío
               </p>
             ) : (
@@ -42,8 +47,10 @@ const CartModal = ({ isOpen, onClose }) => {
                   >
                     <div className="bg-gris-3 w-12 h-12 rounded"></div>
                     <div className="flex-1">
-                      <h3 className="font-medium text-sm">{item.name}</h3>
-                      <p className="text-xs text-gris-1">
+                      <h3 className="font-medium text-sm md:text-base font-family-comfortaa">
+                        {item.name}
+                      </h3>
+                      <p className="text-xs md:text-sm text-gris-1 font-family-sora">
                         {formatCurrency(item.price)}
                       </p>
                     </div>
@@ -82,12 +89,14 @@ const CartModal = ({ isOpen, onClose }) => {
           {items.length > 0 && (
             <div className="border-t border-gris-2 p-4">
               <div className="flex justify-between items-center mb-4">
-                <span className="font-semibold">Total:</span>
-                <span className="text-lg font-bold">
+                <span className="font-semibold text-sm md:text-base font-family-comfortaa">
+                  Total:
+                </span>
+                <span className="text-base md:text-lg font-bold font-family-sora">
                   {formatCurrency(total)}
                 </span>
               </div>
-              <button className="w-full bg-azul-2 text-blanco py-3 rounded-lg hover:bg-azul-1 transition-colors">
+              <button className="w-full bg-azul-2 text-blanco py-2.5 md:py-3 text-sm md:text-base rounded-lg hover:bg-azul-1 transition-colors font-family-sora">
                 Proceder al Pago
               </button>
             </div>
