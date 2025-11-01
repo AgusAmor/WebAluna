@@ -1,2 +1,3 @@
-// Common Components will be exported here
+// Common components exports
 export { default as FloatingCartButton } from "./FloatingCartButton.jsx";
+export { default as Hero } from "./Hero.jsx";

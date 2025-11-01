@@ -1,1 +1,2 @@
-// UI Components will be exported here
+// UI components exports
+export { default as ProductCard } from "./ProductCard.jsx";

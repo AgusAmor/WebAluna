@@ -4,14 +4,14 @@ import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import { FloatingCartButton } from "../components/common";
 
-// Lazy loading de páginas para mejorar el tiempo de carga inicial
+// Lazy loading pages to improve initial load time
 const Home = lazy(() => import("../pages/Home"));
 const Products = lazy(() => import("../pages/Products"));
 const Auth = lazy(() => import("../pages/Auth"));
 const Profile = lazy(() => import("../pages/Profile"));
 const Admin = lazy(() => import("../pages/Admin"));
 
-// Componente de carga mientras se cargan las páginas
+// Loading component while pages are being loaded
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">
     <div className="text-center">

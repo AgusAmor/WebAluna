@@ -1,15 +1,21 @@
 import PropTypes from "prop-types";
+import { FaMinus, FaPlus, FaTrash } from "react-icons/fa";
 import { useCart } from "../../context/CartContext";
-import { formatCurrency } from "../../utils/helpers";
 
 const CartModal = ({ isOpen, onClose }) => {
-  const { items, total, updateQuantity, removeItem } = useCart();
+  const { items, total, updateQuantity, removeItem, clearCart } = useCart();
 
   if (!isOpen) return null;
 
+  const handleCheckout = () => {
+    clearCart();
+    alert("Compra finalizada!");
+    onClose();
+  };
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-50 overflow-y-auto font-family-sora">
+      {/* Backdrop - manteniendo tu fondo actual */}
       <div
         className="fixed inset-0 backdrop-blur-sm"
         style={{ backgroundColor: "rgba(38,78,96,0.45)" }}
@@ -18,87 +24,108 @@ const CartModal = ({ isOpen, onClose }) => {
 
       {/* Modal */}
       <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="relative bg-blanco rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden">
+        <div
+          className="relative bg-blanco rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gris-2">
-            <h2 className="text-base md:text-lg font-semibold font-family-comfortaa">
-              Carrito de Compras
+          <div className="p-5">
+            <h2 className="text-center text-xl font-bold font-family-comfortaa text-azul-1">
+              Tu Carrito
             </h2>
-            <button
-              onClick={onClose}
-              className="text-gris-1 hover:text-azul-1 text-xl"
-            >
-              ✕
-            </button>
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto px-5 pb-5 max-h-[50vh]">
             {items.length === 0 ? (
-              <p className="text-center text-gris-1 py-8 text-sm md:text-base font-family-sora">
-                Tu carrito está vacío
+              <p className="text-center text-gris-1 py-8 font-family-sora">
+                No hay productos en el carrito.
               </p>
             ) : (
-              <div className="space-y-4">
+              <ul className="space-y-4">
                 {items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-3 p-3 border rounded-lg"
-                  >
-                    <div className="bg-gris-3 w-12 h-12 rounded"></div>
+                  <li key={item.id} className="flex gap-4 items-center">
+                    {/* Product Image */}
+                    <div className="w-15 h-15 bg-gris-2 rounded-md shrink-0">
+                      {item.imageBase64 ? (
+                        <img
+                          src={`data:image/jpeg;base64,${item.imageBase64}`}
+                          alt={item.name}
+                          className="w-full h-full object-cover rounded-md"
+                        />
+                      ) : (
+                        <div className="w-15 h-15 bg-gris-2 rounded-md"></div>
+                      )}
+                    </div>
+
+                    {/* Product Info */}
                     <div className="flex-1">
-                      <h3 className="font-medium text-sm md:text-base font-family-comfortaa">
+                      <h4 className="font-family-comfortaa font-semibold text-azul-2 mb-1">
                         {item.name}
-                      </h3>
-                      <p className="text-xs md:text-sm text-gris-1 font-family-sora">
-                        {formatCurrency(item.price)}
+                      </h4>
+                      <p className="font-family-comfortaa font-black text-dorado mb-2">
+                        ${item.price}
                       </p>
+
+                      {/* Controls */}
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => removeItem(item.id)}
+                          className="text-azul-1 hover:text-dorado hover:scale-150 transition-all duration-300"
+                          aria-label="Eliminar producto"
+                        >
+                          <FaTrash />
+                        </button>
+                        <button
+                          onClick={() =>
+                            updateQuantity(item.id, item.quantity - 1)
+                          }
+                          className="text-azul-1 hover:text-dorado hover:scale-150 transition-all duration-300"
+                          aria-label="Disminuir cantidad"
+                        >
+                          <FaMinus />
+                        </button>
+                        <span className="text-2xl font-family-comfortaa font-black text-azul-2 min-w-8 text-center">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() =>
+                            updateQuantity(item.id, item.quantity + 1)
+                          }
+                          className="text-azul-1 hover:text-dorado hover:scale-150 transition-all duration-300"
+                          aria-label="Aumentar cantidad"
+                        >
+                          <FaPlus />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.id, item.quantity - 1)
-                        }
-                        className="px-2 py-1 border rounded text-sm"
-                      >
-                        -
-                      </button>
-                      <span className="text-sm">{item.quantity}</span>
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.id, item.quantity + 1)
-                        }
-                        className="px-2 py-1 border rounded text-sm"
-                      >
-                        +
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => removeItem(item.id)}
-                      className="text-dorado hover:text-azul-1 text-sm"
-                    >
-                      🗑️
-                    </button>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
           </div>
 
           {/* Footer */}
           {items.length > 0 && (
-            <div className="border-t border-gris-2 p-4">
-              <div className="flex justify-between items-center mb-4">
-                <span className="font-semibold text-sm md:text-base font-family-comfortaa">
-                  Total:
-                </span>
-                <span className="text-base md:text-lg font-bold font-family-sora">
-                  {formatCurrency(total)}
-                </span>
+            <div className="border-t border-gris-2 p-5">
+              <p className="text-xl font-bold text-dorado text-center mb-4 font-family-comfortaa">
+                Total: ${Math.round(total).toLocaleString("es-AR")}
+              </p>
+
+              <div className="flex justify-center gap-8">
+                <button
+                  onClick={clearCart}
+                  className="bg-azul-2 text-blanco px-6 py-2 rounded-lg font-family-sora hover:bg-dorado hover:scale-110 transition-all duration-300"
+                >
+                  Vaciar Carrito
+                </button>
+                <button
+                  onClick={handleCheckout}
+                  className="bg-azul-2 text-blanco px-6 py-2 rounded-lg font-family-sora hover:bg-dorado hover:scale-110 transition-all duration-300"
+                >
+                  Finalizar Compra
+                </button>
               </div>
-              <button className="w-full bg-azul-2 text-blanco py-2.5 md:py-3 text-sm md:text-base rounded-lg hover:bg-azul-1 transition-colors font-family-sora">
-                Proceder al Pago
-              </button>
             </div>
           )}
         </div>

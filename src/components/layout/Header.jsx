@@ -15,7 +15,7 @@ const Header = () => {
         window.requestAnimationFrame(() => {
           const scrollPosition = window.scrollY;
 
-          // Histéresis más amplia: cambia a scrolled en 120px, vuelve a normal en 60px
+          // Wider hysteresis: changes to scrolled at 120px, returns to normal at 60px
           if (scrollPosition > 120) {
             setIsScrolled(true);
           } else if (scrollPosition < 60) {
@@ -32,7 +32,7 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Tamaños del logo
+  // Logo sizes
   const logoSizeMobile = 64;
   const logoSizeDesktop = isScrolled ? 48 : 80;
 
@@ -40,7 +40,7 @@ const Header = () => {
     <>
       <header className="bg-azul-1 border-azul-2 dark:bg-azul-1 sticky top-0 z-50 shadow-md">
         <div className="max-w-7xl mx-auto px-4 lg:px-6">
-          {/* Layout Mobile: Siempre igual (sin animación de scroll) */}
+          {/* Mobile Layout: Always the same (no scroll animation) */}
           <div className="flex lg:hidden items-center justify-between py-4">
             <Link to="/" className="shrink-0">
               <img
@@ -56,7 +56,7 @@ const Header = () => {
               aria-controls="mobile-menu"
               aria-expanded={isMenuOpen}
             >
-              <span className="sr-only">Abrir menú</span>
+              <span className="sr-only">Open menu</span>
               <svg
                 className="w-5 h-5"
                 aria-hidden="true"
@@ -75,9 +75,9 @@ const Header = () => {
             </button>
           </div>
 
-          {/* Layout Desktop: Con animación basada en scroll */}
+          {/* Desktop Layout: With scroll-based animation */}
           {isScrolled ? (
-            // Desktop scrolleado: Logo izquierda, Navbar derecha (en línea)
+            // Desktop scrolled: Logo left, Navbar right (inline)
             <div className="hidden lg:flex items-center justify-between py-4 transition-all duration-500">
               <Link to="/" className="shrink-0">
                 <img
@@ -130,7 +130,7 @@ const Header = () => {
               </nav>
             </div>
           ) : (
-            // Desktop sin scroll: Logo arriba centrado, Navbar abajo centrado
+            // Desktop not scrolled: Logo centered top, Navbar centered bottom
             <div className="hidden lg:flex flex-col items-center py-6 gap-4 transition-all duration-500">
               <Link to="/">
                 <img
@@ -186,7 +186,7 @@ const Header = () => {
         </div>
       </header>
 
-      {/* Menú Mobile desplegable fuera del header con animación */}
+      {/* Mobile dropdown menu outside header with animation */}
       <div
         className={`lg:hidden fixed top-[88px] left-0 right-0 bg-azul-1 shadow-lg z-40 overflow-hidden transition-all duration-300 ease-in-out ${
           isMenuOpen ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
