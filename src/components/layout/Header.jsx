@@ -1,16 +1,11 @@
-import {
-  Navbar,
-  NavbarCollapse,
-  NavbarLink,
-  NavbarToggle,
-} from "flowbite-react";
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import logo from "../../assets/logos/logotipo.png";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     let ticking = false;
@@ -38,14 +33,12 @@ const Header = () => {
   }, []);
 
   // Tamaños del logo
-  // Mobile: siempre 64px
-  // Desktop: 48px scrolled, 80px sin scroll
   const logoSizeMobile = 64;
   const logoSizeDesktop = isScrolled ? 48 : 80;
 
   return (
     <>
-      <header className="bg-white border-gray-200 dark:bg-gray-800 sticky top-0 z-50 shadow-md">
+      <header className="bg-azul-1 border-azul-2 dark:bg-azul-1 sticky top-0 z-50 shadow-md">
         <div className="max-w-7xl mx-auto px-4 lg:px-6">
           {/* Layout Mobile: Siempre igual (sin animación de scroll) */}
           <div className="flex lg:hidden items-center justify-between py-4">
@@ -59,7 +52,7 @@ const Header = () => {
 
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+              className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-blanco rounded-lg hover:bg-azul-2 focus:outline-none focus:ring-2 focus:ring-dorado"
               aria-controls="mobile-menu"
               aria-expanded={isMenuOpen}
             >
@@ -95,24 +88,46 @@ const Header = () => {
                 />
               </Link>
 
-              <Navbar fluid rounded className="bg-transparent border-none p-0">
-                <NavbarCollapse>
-                  <div className="flex flex-row space-x-8">
-                    <NavbarLink as={Link} to="/" active>
-                      Inicio
-                    </NavbarLink>
-                    <NavbarLink as={Link} to="/productos">
-                      Productos
-                    </NavbarLink>
-                    <NavbarLink as={Link} to="/sobre-nosotros">
-                      Nosotros
-                    </NavbarLink>
-                    <NavbarLink as={Link} to="/contacto">
-                      Contacto
-                    </NavbarLink>
-                  </div>
-                </NavbarCollapse>
-              </Navbar>
+              <nav className="flex flex-row space-x-8">
+                <Link
+                  to="/"
+                  className={`font-family-comfortaa text-blanco hover:text-dorado hover:underline transition-colors duration-300 ${
+                    location.pathname === "/" ? "text-dorado font-bold" : ""
+                  }`}
+                >
+                  Inicio
+                </Link>
+                <Link
+                  to="/productos"
+                  className={`font-family-comfortaa text-blanco hover:text-dorado hover:underline transition-colors duration-300 ${
+                    location.pathname === "/productos"
+                      ? "text-dorado font-bold"
+                      : ""
+                  }`}
+                >
+                  Productos
+                </Link>
+                <Link
+                  to="/sobre-nosotros"
+                  className={`font-family-comfortaa text-blanco hover:text-dorado hover:underline transition-colors duration-300 ${
+                    location.pathname === "/sobre-nosotros"
+                      ? "text-dorado font-bold"
+                      : ""
+                  }`}
+                >
+                  Nosotros
+                </Link>
+                <Link
+                  to="/contacto"
+                  className={`font-family-comfortaa text-blanco hover:text-dorado hover:underline transition-colors duration-300 ${
+                    location.pathname === "/contacto"
+                      ? "text-dorado font-bold"
+                      : ""
+                  }`}
+                >
+                  Contacto
+                </Link>
+              </nav>
             </div>
           ) : (
             // Desktop sin scroll: Logo arriba centrado, Navbar abajo centrado
@@ -126,24 +141,46 @@ const Header = () => {
                 />
               </Link>
 
-              <Navbar fluid rounded className="bg-transparent border-none p-0">
-                <NavbarCollapse>
-                  <div className="flex flex-row space-x-8">
-                    <NavbarLink as={Link} to="/" active>
-                      Inicio
-                    </NavbarLink>
-                    <NavbarLink as={Link} to="/productos">
-                      Productos
-                    </NavbarLink>
-                    <NavbarLink as={Link} to="/sobre-nosotros">
-                      Nosotros
-                    </NavbarLink>
-                    <NavbarLink as={Link} to="/contacto">
-                      Contacto
-                    </NavbarLink>
-                  </div>
-                </NavbarCollapse>
-              </Navbar>
+              <nav className="flex flex-row space-x-8">
+                <Link
+                  to="/"
+                  className={`font-family-comfortaa text-blanco hover:text-dorado hover:underline transition-colors duration-300 ${
+                    location.pathname === "/" ? "text-dorado font-bold" : ""
+                  }`}
+                >
+                  Inicio
+                </Link>
+                <Link
+                  to="/productos"
+                  className={`font-family-comfortaa text-blanco hover:text-dorado hover:underline transition-colors duration-300 ${
+                    location.pathname === "/productos"
+                      ? "text-dorado font-bold"
+                      : ""
+                  }`}
+                >
+                  Productos
+                </Link>
+                <Link
+                  to="/sobre-nosotros"
+                  className={`font-family-comfortaa text-blanco hover:text-dorado hover:underline transition-colors duration-300 ${
+                    location.pathname === "/sobre-nosotros"
+                      ? "text-dorado font-bold"
+                      : ""
+                  }`}
+                >
+                  Nosotros
+                </Link>
+                <Link
+                  to="/contacto"
+                  className={`font-family-comfortaa text-blanco hover:text-dorado hover:underline transition-colors duration-300 ${
+                    location.pathname === "/contacto"
+                      ? "text-dorado font-bold"
+                      : ""
+                  }`}
+                >
+                  Contacto
+                </Link>
+              </nav>
             </div>
           )}
         </div>
@@ -151,7 +188,7 @@ const Header = () => {
 
       {/* Menú Mobile desplegable fuera del header con animación */}
       <div
-        className={`lg:hidden fixed top-[88px] left-0 right-0 bg-white dark:bg-gray-800 shadow-lg z-40 overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`lg:hidden fixed top-[88px] left-0 right-0 bg-azul-1 shadow-lg z-40 overflow-hidden transition-all duration-300 ease-in-out ${
           isMenuOpen ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
         }`}
       >
@@ -159,28 +196,38 @@ const Header = () => {
           <Link
             to="/"
             onClick={() => setIsMenuOpen(false)}
-            className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+            className={`font-family-comfortaa block py-2 px-3 text-blanco rounded hover:bg-azul-2 hover:text-dorado hover:underline transition-colors duration-300 ${
+              location.pathname === "/" ? "text-dorado font-bold" : ""
+            }`}
           >
             Inicio
           </Link>
           <Link
             to="/productos"
             onClick={() => setIsMenuOpen(false)}
-            className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+            className={`font-family-comfortaa block py-2 px-3 text-blanco rounded hover:bg-azul-2 hover:text-dorado hover:underline transition-colors duration-300 ${
+              location.pathname === "/productos" ? "text-dorado font-bold" : ""
+            }`}
           >
             Productos
           </Link>
           <Link
             to="/sobre-nosotros"
             onClick={() => setIsMenuOpen(false)}
-            className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+            className={`font-family-comfortaa block py-2 px-3 text-blanco rounded hover:bg-azul-2 hover:text-dorado hover:underline transition-colors duration-300 ${
+              location.pathname === "/sobre-nosotros"
+                ? "text-dorado font-bold"
+                : ""
+            }`}
           >
             Nosotros
           </Link>
           <Link
             to="/contacto"
             onClick={() => setIsMenuOpen(false)}
-            className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+            className={`font-family-comfortaa block py-2 px-3 text-blanco rounded hover:bg-azul-2 hover:text-dorado hover:underline transition-colors duration-300 ${
+              location.pathname === "/contacto" ? "text-dorado font-bold" : ""
+            }`}
           >
             Contacto
           </Link>

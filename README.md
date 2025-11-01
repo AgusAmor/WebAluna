@@ -1,360 +1,189 @@
-# 🌙 Aluna - Ecosistema Digital
+# 🌙 Aluna - E-commerce de Lámparas 3D
 
-> Plataforma de comercio electrónico para lámparas de impresión 3D
+> Single Page Application para venta de lámparas personalizadas con impresión 3D
 
-## 📋 Descripción
-
-Aluna es una empresa emergente dedicada al diseño, manufactura y distribución de lámparas con impresión 3D, donde se combina la tecnología con la creatividad artesanal. Este proyecto representa el ecosistema digital de la marca, implementando una plataforma de comercio electrónico moderna y eficiente.
-
----
-
-![Estado](https://img.shields.io/badge/Estado-En%20desarrollo%20activo-blue?style=for-the-badge&logo=github)
-![Rama](https://img.shields.io/badge/Rama-v2--rewrite-green?style=for-the-badge&logo=git)
-![Cart System](https://img.shields.io/badge/Cart%20System-Completamente%20funcional-success?style=for-the-badge&logo=shopping-cart)
-
-![Licencia](https://img.shields.io/badge/Licencia-Propietaria-red?style=for-the-badge&logo=lock)
-![Última actualización](https://img.shields.io/badge/Última%20actualización-Octubre%202025-lightgrey?style=for-the-badge&logo=calendar)
+![Estado](https://img.shields.io/badge/Estado-En%20desarrollo-blue?style=for-the-badge)
+![Rama](https://img.shields.io/badge/Rama-v2--rewrite-green?style=for-the-badge)
+![Última actualización](https://img.shields.io/badge/Última%20actualización-Noviembre%202025-lightgrey?style=for-the-badge)
 
 ---
 
-## 🎯 Objetivo del Proyecto
+## 📋 Sobre el Proyecto
 
-Desarrollar una **Single Page Application (SPA)** que permita:
+Plataforma de comercio electrónico que combina tecnología de impresión 3D con creatividad artesanal. Desarrollada como SPA moderna con React 19, ofrece una experiencia de compra fluida y optimizada.
 
-- ✨ Aumentar la presencia digital del emprendimiento
-- 🛒 Facilitar el proceso de compra a los clientes
-- 📊 Mejorar la gestión interna de productos y usuarios
-- 🚀 Optimizar los procesos de ventas online
+**🎯 Objetivos:**
 
-## 🔧 Características Principales Implementadas
+- Aumentar presencia digital del emprendimiento
+- Facilitar el proceso de compra online
+- Gestionar productos y usuarios eficientemente
 
-### 🌐 Sistema de Carrito de Compras
+## ✨ Características Actuales
 
-- **Carrito flotante** con botón posicionado en la esquina inferior izquierda
-- **Contador de items** dinámico en tiempo real
-- **Modal interactivo** para gestión completa del carrito
-- **Operaciones CRUD** completas (agregar, ver, actualizar, eliminar)
-- **Persistencia** automática en localStorage
-- **Cálculo automático** de totales y subtotales
-- **Diseño responsivo** adaptado a todos los dispositivos
+### Sistema de Carrito
 
-### 🧭 Navegación y Layout
+- Botón flotante con contador dinámico e icono
+- Modal interactivo con backdrop blur semi-transparente
+- CRUD completo (agregar, actualizar, eliminar productos)
+- Persistencia en localStorage
+- Cálculo de totales en tiempo real
 
-- **Header responsivo** con menú hamburguesa para móviles
-- **Navegación fluida** entre secciones usando React Router
-- **Footer informativo** con enlaces y datos de contacto
-- **Diseño mobile-first** optimizado para experiencia móvil
+### Navegación y UX
 
-### 🎨 Componentes UI
+- Header responsivo con animaciones de scroll
+- Indicadores visuales de ruta activa
+- Menú hamburguesa animado para móviles
+- Lazy loading de páginas con React.lazy() y Suspense
+- Footer con información de contacto
 
-- **Flowbite React** integrado para componentes base
-- **Tailwind CSS 4** para estilos personalizados modernos
-- **Iconografía SVG** optimizada para performance
-- **Animaciones suaves** y transiciones CSS
+### Diseño
 
-### ⚙️ Arquitectura Técnica
-
-- **Context API** para gestión de estado global del carrito
-- **Hooks personalizados** para lógica reutilizable
-- **Componentes modulares** organizados por funcionalidad
-- **Estructura escalable** preparada para crecimiento futuro
-
-## 🔮 Características Planificadas
-
-### 🌐 Plataforma E-commerce Completa
-
-- **Catálogo de productos** dinámico con filtros y búsqueda
-- **Pasarela de pago** integrada y segura
-- **Sistema de registro y login** para usuarios
-- **Seguimiento de pedidos** en tiempo real
-- **Notificaciones** automáticas de estado
-
-### 👥 Panel de Administración
-
-- **Dashboard centralizado** para gestión completa
-- **CRUD de productos** (crear, leer, actualizar, eliminar)
-- **Gestión de usuarios** clientes y administradores
-- **Reportes de ventas** y estadísticas
-
-## 🛠️ Stack Tecnológico
-
-### Frontend
-
-- **React 19.1.1** - Biblioteca de JavaScript para interfaces de usuario
-- **Vite 7.1.12** - Herramienta de construcción y desarrollo rápido
-- **Tailwind CSS 4.1.16** - Framework CSS utility-first
-- **Flowbite React 0.12.9** - Componentes UI pre-diseñados
-- **React Router Dom 7.9.4** - Enrutamiento de lado cliente
-
-### Herramientas de Desarrollo
-
-- **ESLint 9.36.0** - Linter para código JavaScript/React
-- **PNPM 10.19.0** - Gestor de paquetes rápido y eficiente
-- **Git** - Control de versiones
+- **Paleta personalizada**: azul-1/2/3, gris-1/2/3, negro, blanco, dorado
+- **Tipografías**: Comfortaa (títulos) y Sora (cuerpo)
+- **Tailwind CSS 4** con @theme inline
+- **Estilos modulares por componente**
 
 ### Arquitectura
 
-- **SPA (Single Page Application)** - Aplicación de una sola página
-- **Context API** - Gestión de estado global para carrito de compras
-- **Responsive Design** - Adaptable a todos los dispositivos
-- **Component-Based Architecture** - Arquitectura modular y reutilizable
+- Context API para gestión de estado del carrito
+- Hooks personalizados (useCart)
+- PropTypes para validación de componentes
+- SEO optimizado
+- Mejores prácticas de React 19 aplicadas
 
-## 📦 Instalación y Configuración
+## 🔮 Próximas Funcionalidades
+
+- Sistema de autenticación completo
+- Catálogo dinámico con filtros y búsqueda
+- Pasarela de pago integrada
+- Panel administrativo para gestión de productos
+- Sistema de seguimiento de pedidos
+
+## 🛠️ Stack Tecnológico
+
+**Frontend:**
+
+- React 19.1.1 + Vite 7.1.7
+- Tailwind CSS 4.1.16 (con @theme inline)
+- React Router Dom 7.9.4 (con lazy loading)
+- React Icons 4.10.1
+- PropTypes 15.8.1
+
+**Desarrollo:**
+
+- ESLint 9.36.0
+- PNPM 10.19.0
+- gh-pages 6.3.0 (deployment)
+
+**Arquitectura:**
+
+- SPA con Context API
+- Code splitting (React.lazy + Suspense)
+- CSS Modules y responsive design
+- SEO optimizado
+
+## Inicio Rápido
 
 ### Prerrequisitos
 
-- Node.js (versión 18 o superior)
-- PNPM (gestor de paquetes)
-- Git
+- Node.js 18+
+- PNPM
 
-### Pasos de Instalación
-
-1. **Clonar el repositorio**
+### Instalación
 
 ```bash
-   git clone https://github.com/AgusAmor/WebAluna.git
-   cd WebAluna
+# Clonar repositorio
+git clone https://github.com/AgusAmor/WebAluna.git
+cd WebAluna
+
+# Instalar dependencias
+pnpm install
+
+# Iniciar desarrollo
+pnpm dev
+# Abrir http://localhost:5173
 ```
 
-2. **Instalar dependencias**
+### Comandos Disponibles
 
 ```bash
-   pnpm install
-```
-
-3. **Iniciar servidor de desarrollo**
-
-```bash
-   pnpm run dev
-```
-
-4. **Acceder a la aplicación**
-   - Abrir navegador en: `http://localhost:5173`
-
-### Scripts Disponibles
-
-```bash
-# Desarrollo
-pnpm dev          # Inicia servidor de desarrollo
-
-# Construcción
-pnpm build        # Construye para producción
-pnpm preview      # Vista previa de build de producción
-
-# Calidad de código
-pnpm lint         # Ejecuta ESLint para verificar código
+pnpm dev          # Servidor de desarrollo
+pnpm build        # Build de producción
+pnpm preview      # Preview del build
+pnpm deploy       # Desplegar a GitHub Pages
+pnpm lint         # Linter ESLint
 ```
 
 ## 📁 Estructura del Proyecto
 
 ```
 WebAluna/
-├── public/                    # Archivos públicos estáticos
-├── src/                       # Código fuente
-│   ├── assets/               # Recursos (imágenes, iconos, etc.)
-│   ├── components/           # Componentes React reutilizables
-│   │   ├── common/          # Componentes comunes (FloatingCartButton)
-│   │   ├── ecommerce/       # Componentes de e-commerce (CartModal)
-│   │   ├── forms/           # Componentes de formularios
-│   │   ├── layout/          # Componentes de layout (Header, Footer)
-│   │   └── ui/              # Componentes de interfaz de usuario
-│   ├── context/             # Contextos React (CartContext)
-│   ├── pages/               # Páginas de la aplicación
-│   │   ├── Admin/           # Panel administrativo
-│   │   ├── Auth/            # Autenticación (Login, Register)
-│   │   ├── Home/            # Página principal
-│   │   ├── Products/        # Catálogo de productos
-│   │   └── Profile/         # Perfil de usuario
-│   ├── services/            # Servicios y API calls
-│   ├── constants/           # Constantes de la aplicación
-│   ├── App.jsx              # Componente principal
-│   ├── main.jsx             # Punto de entrada
-│   └── index.css            # Estilos globales
-├── eslint.config.js         # Configuración ESLint
-├── vite.config.js           # Configuración Vite
-├── tailwind.config.js       # Configuración Tailwind CSS
-└── package.json             # Dependencias y scripts
+├── src/
+│   ├── assets/              # Fuentes (Comfortaa, Sora) y logos
+│   ├── components/          # Componentes React
+│   │   ├── common/         # FloatingCartButton
+│   │   ├── ecommerce/      # CartModal
+│   │   └── layout/         # Header, Footer
+│   ├── context/            # CartContext (Context API)
+│   ├── pages/              # Home, Products, Auth, Admin, Profile
+│   ├── router/             # AppRouter con lazy loading
+│   ├── services/           # API calls
+│   ├── utils/              # Helpers y formatters
+│   ├── constants/          # CART_ACTIONS, STORAGE_KEYS
+│   └── index.css           # Estilos globales + @theme inline
+├── public/                 # Archivos estáticos
+└── index.html              # HTML con meta tags SEO
 ```
 
-## 🎨 Diseño y UX
+## 🎨 Sistema de Diseño
 
 ### Paleta de Colores
 
-- Según identidad de marca Aluna
-- Implementada con variables CSS personalizadas
-- Optimizada para accesibilidad y contraste
+```css
+azul-1: #264e60  azul-2: #427385  azul-3: #81a5ae
+gris-1: #a9b2b9  gris-2: #c3c9ce  gris-3: #d9dce0
+negro:  #2b2b2b  blanco: #f4f4f4  dorado: #b6a269
+```
 
-### Componentes UI
+### Tipografía
 
-- **Flowbite React** para componentes base
-- **Tailwind CSS** para estilos personalizados
-- **Diseño responsivo** mobile-first
-- **Interfaz intuitiva** centrada en el usuario
+- **Comfortaa** (300-700): Títulos y navegación
+- **Sora** (100-800): Cuerpo de texto y UI
 
-## 🔐 Funcionalidades de Seguridad
+## 📊 Estado del Proyecto
 
-- **Autenticación de usuarios** segura
-- **Roles y permisos** diferenciados
-- **Validación de formularios** del lado cliente
-- **Protección de rutas** administrativas
-- **Sanitización de datos** de entrada
+**✅ Fase 1 - MVP (Completado)**
 
-## 📈 Estado Actual del Desarrollo
+- Sistema de carrito funcional
+- Navegación responsiva
+- Diseño de marca implementado
+- Lazy loading y optimizaciones
+- SEO y PropTypes
 
-### ✅ Funcionalidades Completadas
+**🔄 Fase 2 - E-commerce (En desarrollo)**
 
-- **Arquitectura base** del proyecto con Vite + React
-- **Sistema de carrito** completamente funcional
-- **Navegación responsiva** con header mobile-friendly
-- **Gestión de estado** con Context API
-- **Persistencia de datos** en localStorage
-- **Componentes modulares** organizados y reutilizables
-- **Integración** exitosa de Tailwind CSS + Flowbite React
+- Autenticación de usuarios
+- Catálogo dinámico
+- Panel administrativo
+- Pasarela de pago
 
-### 🔄 En Desarrollo
+**📋 Fase 3 - Optimizaciones (Planificado)**
 
-- **Páginas adicionales** (Products, Auth, Admin, Profile)
-- **Servicios API** para productos y autenticación
-- **Formularios** de login y registro
-- **Panel administrativo** básico
+- PWA
+- Testing automatizado
+- Analytics
 
-### 📋 Próximas Implementaciones
+## � Enlaces
 
-- **Backend integration** para datos dinámicos
-- **Sistema de autenticación** completo
-- **Pasarela de pago** integrada
-- **Gestión de productos** desde admin panel
-
-### �️ Información Técnica
-
-- **Servidor de desarrollo**: `http://localhost:5173`
-- **Hot Module Replacement**: Habilitado y funcional
-- **Build tool**: Vite 7.1.12 con optimizaciones
-- **Linting**: ESLint configurado para React
-- **Package manager**: PNPM 10.19.0 para gestión eficiente
-
-## 📈 Funcionalidades del E-commerce
-
-### Para Clientes (Implementadas ✅)
-
-- 📱 Navegación intuitiva y responsiva
-- 🛒 Carrito de compras con botón flotante
-- 💾 Persistencia automática de datos del carrito
-- 🔢 Contador dinámico de items en tiempo real
-- ➕➖ Gestión de cantidades desde el modal
-- 🗑️ Eliminación individual de productos del carrito
-
-### Para Clientes (Planificadas 📋)
-
-- 🔍 Búsqueda y filtrado avanzado de productos
-- 💳 Checkout seguro y rápido
-- 📧 Confirmaciones por email
-- 📋 Historial de pedidos
-- 👤 Gestión de perfil de usuario
-
-### Para Administradores (Planificadas 📋)
-
-- 📊 Dashboard con métricas clave
-- 📦 Gestión completa de inventario
-- 👤 Administración de usuarios
-- 📈 Reportes de ventas
-- ⚙️ Configuración de sistema
-- 🔔 Sistema de notificaciones
-
-## 🚀 Roadmap
-
-### Fase 1: MVP (Actual)
-
-- [x] Configuración base del proyecto
-- [x] Implementación de UI components
-- [x] Sistema de carrito de compras funcional
-- [x] Botón flotante de carrito con contador
-- [x] Navegación responsiva con Header
-- [x] Context API para gestión de estado
-- [x] Persistencia en localStorage
-- [ ] Modal de carrito con CRUD completo
-
-### Fase 2: E-commerce Completo (En Desarrollo 🔄)
-
-- [ ] Sistema de autenticación completo
-- [ ] Catálogo de productos dinámico
-- [ ] Panel administrativo funcional
-- [ ] Gestión de pedidos
-- [ ] Pasarela de pago integrada
-- [ ] Sistema de notificaciones
-
-### Fase 3: Optimizaciones (Planificado 📋)
-
-- [ ] PWA implementation
-- [ ] Optimización SEO
-- [ ] Analytics e insights
-- [ ] Testing automatizado
-- [ ] Mejoras de performance
-
-## 🔒 Licencia y Contribución
-
-**⚠️ PROYECTO PRIVADO - LICENCIA PROPIETARIA**
-
-Este proyecto tiene **todos los derechos reservados**. El código fuente es propiedad exclusiva del desarrollador y está protegido por leyes de derechos de autor.
-
-### 🚫 Restricciones de Uso:
-
-- ❌ **Prohibido** el uso, copia, modificación o distribución no autorizada
-- ❌ **Prohibido** el fork o clonación para otros proyectos
-- ❌ **Prohibido** el uso comercial sin autorización expresa
-- ❌ **Prohibido** crear trabajos derivados
-
-### 👥 Colaboración Autorizada:
-
-Para colaborar en este proyecto:
-
-1. **Solicitar autorización** previa por escrito al propietario
-2. **Firmar acuerdo de confidencialidad** si es requerido
-3. **Trabajar solo en ramas autorizadas** del repositorio oficial
-4. **Respetar términos** de la licencia propietaria en todo momento
-
-### 📧 Solicitudes de Licenciamiento:
-
-Para permisos especiales, uso comercial o colaboración:
-
-- Crear un issue en GitHub con la solicitud detallada
-- Contactar directamente al propietario del código
-- Todas las solicitudes serán evaluadas caso por caso
-
-## 📄 Criterios de Aceptación
-
-- ✅ La página web permite navegación fluida entre secciones
-- ✅ Sistema de carrito de compras completamente funcional
-- ✅ Botón flotante de carrito con contador de items
-- ✅ Modal de carrito con operaciones CRUD (agregar, ver, actualizar, eliminar)
-- ✅ Persistencia de datos del carrito en localStorage
-- ✅ Header responsivo con navegación móvil
-- ✅ Integración exitosa de componentes Flowbite React
-- ✅ Arquitectura modular y escalable implementada
-- [ ] Sistema de registro y autenticación de usuarios
-- [ ] Integración de pasarela de pago
-- [ ] Panel administrativo operativo para gestión de productos
-
-## 🔗 Enlaces
-
+- **Demo**: [https://agusamor.github.io/WebAluna/](https://agusamor.github.io/WebAluna/)
 - **Repositorio**: [GitHub - WebAluna](https://github.com/AgusAmor/WebAluna)
-- **Demo**: En desarrollo
-- **Documentación**: Incluida en este README
-
-## 👥 Equipo de Desarrollo
-
-- **Desarrollo Frontend**: Equipo Aluna
-- **Diseño UX/UI**: Cliente/Aluna
-- **Gestión de Proyecto**: Metodología Ágil
 
 ## 📄 Licencia
 
-Este proyecto está licenciado bajo **Licencia Propietaria** - consulta el archivo [LICENSE](./LICENSE) para más detalles.
+**Licencia Propietaria** - Todos los derechos reservados © 2025
 
-**Copyright (c) 2025 - Todos los derechos reservados**
-
-⚖️ Este software está protegido por leyes internacionales de derechos de autor. Cualquier uso no autorizado constituye una violación y será procesado con todo el rigor de la ley.
+Este proyecto es privado. No está permitido el uso, copia, modificación o distribución sin autorización expresa del propietario.
 
 ---
 
-**📧 Contacto**: Para consultas sobre el proyecto, crear un issue en GitHub.
+**📧 Contacto**: Crear issue en GitHub para consultas
