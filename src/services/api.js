@@ -118,7 +118,6 @@ class ApiClient {
     const config = {
       method: "POST",
       headers: {
-        // Don't set Content-Type for FormData, browser will set it with boundary
         Authorization: `Bearer ${this.getAuthToken()}`,
       },
       body: formData,
@@ -135,6 +134,5 @@ class ApiClient {
   }
 }
 
-// Create and export singleton instance
 const apiClient = new ApiClient();
 export default apiClient;

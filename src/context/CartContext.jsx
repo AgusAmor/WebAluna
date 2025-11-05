@@ -1,7 +1,6 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
 import { CART_ACTIONS, STORAGE_KEYS } from "../constants";
 
-// Initial cart state
 const initialState = {
   items: [],
   total: 0,
@@ -10,7 +9,6 @@ const initialState = {
   error: null,
 };
 
-// Cart reducer
 const cartReducer = (state, action) => {
   switch (action.type) {
     case CART_ACTIONS.LOAD_CART:
@@ -28,7 +26,6 @@ const cartReducer = (state, action) => {
       let updatedItems;
 
       if (existingItem) {
-        // Update quantity if item exists
         updatedItems = state.items.map((item) =>
           item.id === action.payload.id
             ? {
@@ -38,7 +35,6 @@ const cartReducer = (state, action) => {
             : item
         );
       } else {
-        // Add new item
         updatedItems = [
           ...state.items,
           { ...action.payload, quantity: action.payload.quantity || 1 },
@@ -69,7 +65,7 @@ const cartReducer = (state, action) => {
             ? { ...item, quantity: Math.max(0, action.payload.quantity) }
             : item
         )
-        .filter((item) => item.quantity > 0); // Remove items with 0 quantity
+        .filter((item) => item.quantity > 0);
 
       const newTotal = updatedItems.reduce(
         (sum, item) => sum + item.price * item.quantity,
@@ -122,14 +118,11 @@ const cartReducer = (state, action) => {
   }
 };
 
-// Create cart context
-const CartContext = createContext();
+const CartContext = createContext(null);
 
-// Cart provider component
 export const CartProvider = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
-  // Load cart from localStorage on mount
   useEffect(() => {
     const savedCart = localStorage.getItem(STORAGE_KEYS.CART_DATA);
     if (savedCart) {
@@ -142,7 +135,6 @@ export const CartProvider = ({ children }) => {
     }
   }, []);
 
-  // Save cart to localStorage whenever state changes
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEYS.CART_DATA,
@@ -154,7 +146,6 @@ export const CartProvider = ({ children }) => {
     );
   }, [state.items, state.total, state.itemCount]);
 
-  // Cart actions
   const addItem = (product, quantity = 1) => {
     dispatch({
       type: CART_ACTIONS.ADD_ITEM,
@@ -204,7 +195,6 @@ export const CartProvider = ({ children }) => {
   );
 };
 
-// Hook to use cart context
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {

@@ -18,7 +18,7 @@ const FloatingCartButton = () => {
           {/* Floating Cart Button */}
           <button
             onClick={() => setIsCartModalOpen(true)}
-            className="fixed bottom-5 left-5 z-50 bg-azul-2 text-blanco rounded-full p-4 shadow-lg cursor-pointer hover:bg-dorado hover:scale-110 transition-all duration-300"
+            className="fixed bottom-5 left-5 z-50 bg-blue-2 text-white rounded-full p-4 shadow-lg cursor-pointer hover:bg-gold hover:scale-110 transition-all duration-300"
             title="Ver carrito"
             aria-label="Abrir carrito de compras"
           >
@@ -27,7 +27,7 @@ const FloatingCartButton = () => {
 
               {/* Item Count Badge */}
               {itemCount > 0 && (
-                <span className="absolute -top-3 -right-3 bg-dorado text-negro text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-blanco">
+                <span className="absolute -top-3 -right-3 bg-gold text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white">
                   {itemCount}
                 </span>
               )}

@@ -1,9 +1,7 @@
-// API Configuration - Ready for future backend integration
 export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_URL || "http://localhost:3001/api",
   TIMEOUT: 10000,
 
-  // Endpoints structure - ready for any backend
   ENDPOINTS: {
     AUTH: {
       LOGIN: "/auth/login",
@@ -29,12 +27,11 @@ export const API_CONFIG = {
     USERS: {
       PROFILE: "/users/profile",
       UPDATE_PROFILE: "/users/profile",
-      LIST: "/users", // Admin only
+      LIST: "/users",
     },
   },
 };
 
-// App Configuration
 export const APP_CONFIG = {
   NAME: "Aluna",
   VERSION: "1.0.0",
@@ -43,18 +40,14 @@ export const APP_CONFIG = {
   CURRENCY: "ARS",
   CURRENCY_SYMBOL: "$",
 
-  // Pagination
   PRODUCTS_PER_PAGE: 12,
   MAX_PRODUCTS_PER_PAGE: 48,
 
-  // Image settings
-  MAX_IMAGE_SIZE: 5 * 1024 * 1024, // 5MB
+  MAX_IMAGE_SIZE: 5 * 1024 * 1024,
   ALLOWED_IMAGE_TYPES: ["image/jpeg", "image/png", "image/webp"],
 };
 
-// Database configuration placeholder
 export const DB_CONFIG = {
-  // Ready for Firebase
   FIREBASE: {
     COLLECTIONS: {
       USERS: "users",
@@ -64,7 +57,6 @@ export const DB_CONFIG = {
     },
   },
 
-  // Ready for Supabase
   SUPABASE: {
     TABLES: {
       USERS: "users",

@@ -10,7 +10,6 @@ const Products = () => {
   const [selectedFamily, setSelectedFamily] = useState("all");
   const [priceSort, setPriceSort] = useState("none");
 
-  // Sample products with different families
   const allProducts = [
     {
       id: 1,
@@ -78,10 +77,8 @@ const Products = () => {
     },
   ];
 
-  // Get unique families
   const families = ["all", ...new Set(allProducts.map((p) => p.family))];
 
-  // Filter and sort products
   const filteredProducts = allProducts
     .filter(
       (product) => selectedFamily === "all" || product.family === selectedFamily
@@ -106,7 +103,7 @@ const Products = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gris-3">
+    <div className="min-h-screen bg-gray-3">
       <div className="max-w-[95%] mx-auto px-4 py-8">
         {/* Hero */}
         <Hero
@@ -115,15 +112,15 @@ const Products = () => {
         />
 
         {/* Filters */}
-        <div className="flex flex-wrap gap-4 mb-8 p-6 bg-blanco rounded-xl shadow-md">
+        <div className="flex flex-wrap gap-4 mb-8 p-6 bg-white rounded-xl shadow-md">
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-semibold mb-2 text-azul-1 font-family-comfortaa">
+            <label className="block text-sm font-semibold mb-2 text-blue-1 font-family-comfortaa">
               Familia de Producto
             </label>
             <select
               value={selectedFamily}
               onChange={(e) => setSelectedFamily(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gris-2 rounded-lg text-sm md:text-base font-family-sora focus:outline-none focus:ring-2 focus:ring-azul-2 focus:border-azul-2 bg-blanco text-azul-1 cursor-pointer transition-all"
+              className="w-full px-4 py-2.5 border border-gray-2 rounded-lg text-sm md:text-base font-family-sora focus:outline-none focus:ring-2 focus:ring-blue-2 focus:border-blue-2 bg-white text-blue-1 cursor-pointer transition-all"
             >
               <option value="all">Todas las colecciones</option>
               {families.slice(1).map((family) => (
@@ -135,13 +132,13 @@ const Products = () => {
           </div>
 
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-semibold mb-2 text-azul-1 font-family-comfortaa">
+            <label className="block text-sm font-semibold mb-2 text-blue-1 font-family-comfortaa">
               Ordenar por Precio
             </label>
             <select
               value={priceSort}
               onChange={(e) => setPriceSort(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gris-2 rounded-lg text-sm md:text-base font-family-sora focus:outline-none focus:ring-2 focus:ring-azul-2 focus:border-azul-2 bg-blanco text-azul-1 cursor-pointer transition-all"
+              className="w-full px-4 py-2.5 border border-gray-2 rounded-lg text-sm md:text-base font-family-sora focus:outline-none focus:ring-2 focus:ring-blue-2 focus:border-blue-2 bg-white text-blue-1 cursor-pointer transition-all"
             >
               <option value="none">Sin ordenar</option>
               <option value="asc">Menor a Mayor</option>
@@ -151,9 +148,9 @@ const Products = () => {
 
           {/* Results counter */}
           <div className="w-full mt-2">
-            <p className="text-sm text-gris-1 font-family-sora">
+            <p className="text-sm text-gray-1 font-family-sora">
               Mostrando{" "}
-              <span className="font-bold text-azul-2">
+              <span className="font-bold text-blue-2">
                 {filteredProducts.length}
               </span>{" "}
               productos
@@ -176,7 +173,7 @@ const Products = () => {
         {/* No results message */}
         {filteredProducts.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-xl text-gris-1 font-family-sora">
+            <p className="text-xl text-gray-1 font-family-sora">
               No se encontraron productos con los filtros seleccionados
             </p>
           </div>
@@ -191,7 +188,7 @@ const Products = () => {
           onClick={closeModal}
         >
           <div
-            className="max-w-[420px] w-[90%] p-8 rounded-2xl overflow-hidden bg-blanco animate-fadeInScale"
+            className="max-w-[420px] w-[90%] p-8 rounded-2xl overflow-hidden bg-white animate-fadeInScale"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Image - Square */}
@@ -204,22 +201,22 @@ const Products = () => {
                 style={{ opacity: imgLoaded ? 1 : 0 }}
               />
             ) : (
-              <div className="w-full aspect-square bg-linear-to-br from-azul-3 to-azul-2 rounded-xl mb-4 flex items-center justify-center">
-                <span className="text-blanco">Sin imagen</span>
+              <div className="w-full aspect-square bg-linear-to-br from-blue-3 to-blue-2 rounded-xl mb-4 flex items-center justify-center">
+                <span className="text-white">Sin imagen</span>
               </div>
             )}
 
             {/* Modal Info */}
-            <h2 className="text-2xl font-black font-family-comfortaa text-azul-1 mb-2">
+            <h2 className="text-2xl font-black font-family-comfortaa text-blue-1 mb-2">
               {selectedProduct.name}
             </h2>
-            <p className="text-azul-2 font-semibold mb-1 font-family-sora">
+            <p className="text-blue-2 font-semibold mb-1 font-family-sora">
               {selectedProduct.family}
             </p>
-            <p className="text-xl font-bold text-dorado mb-2 font-family-comfortaa">
+            <p className="text-xl font-bold text-gold mb-2 font-family-comfortaa">
               ${selectedProduct.price}
             </p>
-            <p className="text-gris-1 font-family-sora mb-4">
+            <p className="text-gray-1 font-family-sora mb-4">
               Tamaño: {selectedProduct.size}
             </p>
           </div>

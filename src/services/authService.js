@@ -1,8 +1,7 @@
-import { API_CONFIG } from "../constants/config";
+﻿import firebaseAuthService from "./firebaseAuthService";
 
 /**
- * Authentication Service - Generic Implementation
- * Ready for future integration with Firebase, Supabase, or custom API
+ * Authentication Service - Firebase Implementation
  */
 export const authService = {
   /**
@@ -13,29 +12,39 @@ export const authService = {
    */
   async login(email, password) {
     try {
-      // TODO: Implement authentication logic
-      // This could be Firebase, Supabase, or custom API
+      const result = await firebaseAuthService.login(email, password);
 
-      // Placeholder implementation
-      console.log("Login attempt:", { email });
+      if (result.token) {
+        localStorage.setItem("aluna_auth_token", result.token);
+      }
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      localStorage.setItem("aluna_user_data", JSON.stringify(result.user));
 
-      // Mock user data
-      const userData = {
-        id: "1",
-        email,
-        name: "Usuario Demo",
-        role: "client",
-      };
-
-      // Store user data locally
-      localStorage.setItem("aluna_user_data", JSON.stringify(userData));
-
-      return userData;
+      return result.user;
     } catch (error) {
-      throw new Error("Error en el inicio de sesión");
+      console.error("Login error:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Login with Google
+   * @returns {Promise} User data
+   */
+  async loginWithGoogle() {
+    try {
+      const result = await firebaseAuthService.loginWithGoogle();
+
+      if (result.token) {
+        localStorage.setItem("aluna_auth_token", result.token);
+      }
+
+      localStorage.setItem("aluna_user_data", JSON.stringify(result.user));
+
+      return result.user;
+    } catch (error) {
+      console.error("Google login error:", error);
+      throw error;
     }
   },
 
@@ -46,25 +55,15 @@ export const authService = {
    */
   async register(userData) {
     try {
-      // TODO: Implement registration logic
-      console.log("Register attempt:", userData);
+      const { email, password, name } = userData;
+      const result = await firebaseAuthService.register(email, password, name);
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      localStorage.setItem("aluna_user_data", JSON.stringify(result.user));
 
-      // Mock user data
-      const newUser = {
-        id: Date.now().toString(),
-        ...userData,
-        role: "client",
-      };
-
-      // Store user data locally
-      localStorage.setItem("aluna_user_data", JSON.stringify(newUser));
-
-      return newUser;
+      return result.user;
     } catch (error) {
-      throw new Error("Error en el registro");
+      console.error("Register error:", error);
+      throw error;
     }
   },
 
@@ -73,18 +72,32 @@ export const authService = {
    */
   async logout() {
     try {
-      // TODO: Implement logout logic (clear server session, etc.)
+      await firebaseAuthService.logout();
 
-      // Clear local storage
       localStorage.removeItem("aluna_user_data");
+      localStorage.removeItem("aluna_auth_token");
       localStorage.removeItem("aluna_cart_data");
 
       console.log("User logged out");
     } catch (error) {
       console.error("Logout error:", error);
-      // Clear local storage even if logout fails
       localStorage.removeItem("aluna_user_data");
+      localStorage.removeItem("aluna_auth_token");
       localStorage.removeItem("aluna_cart_data");
+    }
+  },
+
+  /**
+   * Reset password
+   * @param {string} email - User email
+   * @returns {Promise} Result
+   */
+  async resetPassword(email) {
+    try {
+      return await firebaseAuthService.resetPassword(email);
+    } catch (error) {
+      console.error("Reset password error:", error);
+      throw error;
     }
   },
 
@@ -94,17 +107,34 @@ export const authService = {
    */
   async getCurrentUser() {
     try {
-      // TODO: Implement get current user logic
-      // This should verify token with server/Firebase
+      const userData = await firebaseAuthService.getCurrentUserData();
 
-      const userData = this.getStoredUserData();
       if (userData) {
+        localStorage.setItem("aluna_user_data", JSON.stringify(userData));
         return userData;
       }
 
       throw new Error("No authenticated user");
     } catch (error) {
-      this.logout(); // Clear invalid data
+      this.logout();
+      throw error;
+    }
+  },
+
+  /**
+   * Update user profile
+   * @param {Object} updates - Profile updates
+   * @returns {Promise} Updated user data
+   */
+  async updateProfile(updates) {
+    try {
+      const userData = await firebaseAuthService.updateUserProfile(updates);
+
+      localStorage.setItem("aluna_user_data", JSON.stringify(userData));
+
+      return userData;
+    } catch (error) {
+      console.error("Update profile error:", error);
       throw error;
     }
   },
@@ -114,8 +144,8 @@ export const authService = {
    * @returns {boolean} Authentication status
    */
   isAuthenticated() {
-    const userData = this.getStoredUserData();
-    return !!userData;
+    const currentUser = firebaseAuthService.getCurrentUser();
+    return !!currentUser;
   },
 
   /**
@@ -140,5 +170,14 @@ export const authService = {
   hasRole(role) {
     const userData = this.getStoredUserData();
     return userData && userData.role === role;
+  },
+
+  /**
+   * Listen to auth state changes
+   * @param {Function} callback - Callback function
+   * @returns {Function} Unsubscribe function
+   */
+  onAuthStateChange(callback) {
+    return firebaseAuthService.onAuthStateChange(callback);
   },
 };

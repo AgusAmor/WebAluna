@@ -14,6 +14,16 @@ build/
 .env.test.local
 .env.production.local
 
+# Firebase Admin SDK credentials (NEVER commit this!)
+serviceAccountKey.json
+*-firebase-adminsdk-*.json
+firebase-debug.log
+.firebase/
+
+# Firebase config (uncomment if needed)
+# firebase.config.js
+# firebaseConfig.js
+
 # IDE and editor files
 .vscode/
 .idea/
@@ -133,3 +143,26 @@ cypress/screenshots/
 test-results/
 playwright-report/
 playwright/.cache/
+
+# Backup files
+*.backup
+*.bak
+*_backup/
+*_old/
+WebAluna_Config_Backup/
+
+# Package lock files (if using PNPM only)
+package-lock.json
+yarn.lock
+
+# Source maps in production
+*.map
+
+# Sensitive data
+secrets/
+credentials/
+private/
+
+# Local configuration
+config.local.js
+.env.*.local
