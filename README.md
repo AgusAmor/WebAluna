@@ -2,9 +2,7 @@
 
 > Single Page Application para venta de lámparas personalizadas con impresión 3D
 
-![Estado](https://img.shields.io/badge/Estado-En%20desarrollo-blue?style=for-the-badge)
-![Rama](https://img.shields.io/badge/Rama-v2--rewrite-green?style=for-the-badge)
-![Última actualización](https://img.shields.io/badge/Última%20actualización-Noviembre%202025-lightgrey?style=for-the-badge)
+![Estado](https://img.shields.io/badge/Estado-En%20desarrollo-blue?style=for-the-badge) ![Rama](https://img.shields.io/badge/Rama-v2--rewrite-green?style=for-the-badge) ![Última actualización](https://img.shields.io/badge/Última%20actualización-Noviembre%202025-lightgrey?style=for-the-badge)
 
 ---
 
@@ -55,7 +53,6 @@ Plataforma de comercio electrónico que combina tecnología de impresión 3D con
 - **Tipografías**: Comfortaa (títulos) y Sora (cuerpo)
 - **Tailwind CSS 4** con @theme inline
 - Context API para estado global (carrito y autenticación)
-- Hooks personalizados (useCart, useAuth)
 - PropTypes para validación
 - SEO optimizado
 
@@ -138,14 +135,12 @@ WebAluna/
 │   ├── components/          # Componentes React
 │   │   ├── common/         # FloatingCartButton, Hero, LoginModal, ProtectedRoute
 │   │   ├── ecommerce/      # CartModal
-│   │   ├── ui/             # ProductCard
+│   │   ├── ui/             # ProductCard, GoogleLoginButton
 │   │   └── layout/         # Header, Footer
 │   ├── context/            # CartContext, AuthContext (Context API)
 │   ├── pages/              # Home, Products, Admin, Profile
 │   ├── router/             # AppRouter con lazy loading
-│   ├── services/           # api.js, authService, productsService
-│   ├── hooks/              # useAuth, useCart
-│   ├── utils/              # Helpers y formatters
+│   ├── services/           # firebaseAuthService, firebaseProductsService, cartStorageService
 │   ├── constants/          # config.js
 │   └── index.css           # Estilos globales + @theme inline
 ├── public/                 # Archivos estáticos (robots.txt, sitemap.xml)

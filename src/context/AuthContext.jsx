@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { authService } from "../services/authService";
+import authService from "../services/firebaseAuthService";
 
 const AuthContext = createContext(null);
 
@@ -10,12 +10,10 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const storedUser = authService.getStoredUserData();
-    if (storedUser) {
-      setUser(storedUser);
-      setLoading(false);
-    } else {
-      setLoading(false);
+    // Check for cached user data to improve initial loading UX
+    const cachedUser = authService.getCachedUserData();
+    if (cachedUser) {
+      setUser(cachedUser);
     }
 
     const unsubscribe = authService.onAuthStateChange((userData) => {
@@ -33,7 +31,8 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       setLoading(true);
-      const userData = await authService.login(email, password);
+      const result = await authService.login(email, password);
+      const userData = result.user;
       setUser(userData);
       return userData;
     } catch (err) {
@@ -51,7 +50,8 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       setLoading(true);
-      const userData = await authService.loginWithGoogle();
+      const result = await authService.loginWithGoogle();
+      const userData = result.user;
       setUser(userData);
       return userData;
     } catch (err) {
@@ -69,7 +69,8 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       setLoading(true);
-      const userData = await authService.register({ email, password, name });
+      const result = await authService.register({ email, password, name });
+      const userData = result.user;
       setUser(userData);
       return userData;
     } catch (err) {
@@ -113,7 +114,7 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (updates) => {
     try {
       setError(null);
-      const userData = await authService.updateProfile(updates);
+      const userData = await authService.updateUserProfile(updates);
       setUser(userData);
       return userData;
     } catch (err) {

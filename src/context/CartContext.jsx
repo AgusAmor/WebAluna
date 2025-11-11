@@ -1,5 +1,6 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
-import { CART_ACTIONS, STORAGE_KEYS } from "../constants";
+import { CART_ACTIONS } from "../constants";
+import { cartStorageService } from "../services/cartStorageService";
 
 const initialState = {
   items: [],
@@ -124,26 +125,14 @@ export const CartProvider = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
 
   useEffect(() => {
-    const savedCart = localStorage.getItem(STORAGE_KEYS.CART_DATA);
+    const savedCart = cartStorageService.loadCart();
     if (savedCart) {
-      try {
-        const cartData = JSON.parse(savedCart);
-        dispatch({ type: CART_ACTIONS.LOAD_CART, payload: cartData });
-      } catch (error) {
-        console.error("Error loading cart from localStorage:", error);
-      }
+      dispatch({ type: CART_ACTIONS.LOAD_CART, payload: savedCart });
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEYS.CART_DATA,
-      JSON.stringify({
-        items: state.items,
-        total: state.total,
-        itemCount: state.itemCount,
-      })
-    );
+    cartStorageService.saveCart(state);
   }, [state.items, state.total, state.itemCount]);
 
   const addItem = (product, quantity = 1) => {
@@ -169,6 +158,7 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = () => {
     dispatch({ type: CART_ACTIONS.CLEAR_CART });
+    cartStorageService.clearCart();
   };
 
   const getItemQuantity = (id) => {

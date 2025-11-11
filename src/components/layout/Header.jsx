@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FiUser, FiLogOut } from "react-icons/fi";
 import logo from "../../assets/logos/logotipo.png";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../context/AuthContext";
 import { LoginModal } from "../common";
 
 const Header = () => {

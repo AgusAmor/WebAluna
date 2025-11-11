@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
 import { BsFillShieldLockFill } from "react-icons/bs";
-import { useAuth } from "../../hooks/useAuth.js";
+import { useAuth } from "../../context/AuthContext";
 
 /**
  * Protected Route Component

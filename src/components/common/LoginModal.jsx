@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../context/AuthContext";
 import { GoogleLoginButton } from "../ui";
 import { FiMail, FiLock, FiUser } from "react-icons/fi";
 
@@ -14,8 +14,38 @@ const LoginModal = ({ isOpen, onClose }) => {
     confirmPassword: "",
   });
   const [errors, setErrors] = useState({});
-  const { login, loginWithGoogle, register, loading, error } = useAuth();
+  const {
+    login,
+    loginWithGoogle,
+    register,
+    loading,
+    error,
+    user,
+    isAuthenticated,
+  } = useAuth();
   const navigate = useNavigate();
+
+  // Close modal automatically when user logs in successfully
+  useEffect(() => {
+    if (isAuthenticated && user && isOpen) {
+      console.log("User authenticated, closing modal and navigating...");
+
+      // Navigate to admin if admin user
+      if (user.role === "admin") {
+        navigate("/admin");
+      }
+
+      // Close modal and reset form
+      onClose();
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+      setErrors({});
+    }
+  }, [isAuthenticated, user, isOpen, onClose, navigate]);
 
   if (!isOpen) return null;
 
@@ -25,7 +55,7 @@ const LoginModal = ({ isOpen, onClose }) => {
       ...prev,
       [name]: value,
     }));
-    
+
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -67,46 +97,25 @@ const LoginModal = ({ isOpen, onClose }) => {
     if (!validateForm()) return;
 
     try {
-      let userData;
       if (isLogin) {
-        userData = await login(formData.email, formData.password);
+        await login(formData.email, formData.password);
       } else {
-        userData = await register(
-          formData.email,
-          formData.password,
-          formData.name
-        );
+        await register(formData.email, formData.password, formData.name);
       }
-
-      
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
-      
-      if (userData?.role === "admin") {
-        navigate("/admin");
-      }
-
-      onClose();
+      // Modal will close automatically via useEffect when user state changes
     } catch (err) {
       console.error("Auth error:", err);
+      // Modal stays open on error for user to retry
     }
   };
 
   const handleGoogleLogin = async () => {
     try {
-      const userData = await loginWithGoogle();
-
-      
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
-      
-      if (userData?.role === "admin") {
-        navigate("/admin");
-      }
-
-      onClose();
+      await loginWithGoogle();
+      // Modal will close automatically via useEffect when user state changes
     } catch (err) {
       console.error("Google login error:", err);
+      // Modal stays open on error for user to retry
     }
   };
 

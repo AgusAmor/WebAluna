@@ -22,7 +22,7 @@ import {
 import { db, storage } from "./firebase";
 import { DB_CONFIG } from "../constants/config";
 
-class FirebaseProductsService {
+class ProductsService {
   constructor() {
     this.db = db;
     this.storage = storage;
@@ -218,7 +218,128 @@ class FirebaseProductsService {
       throw error;
     }
   }
+
+  /**
+   * Search products by name or description
+   * @param {string} searchTerm - Term to search for
+   * @param {string} category - Optional category filter
+   * @returns {Promise<Array>} Matching products
+   */
+  async searchProducts(searchTerm, category = null) {
+    try {
+      let q = query(collection(this.db, this.collectionName));
+
+      if (category) {
+        q = query(q, where("category", "==", category));
+      }
+
+      const querySnapshot = await getDocs(q);
+      const products = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      // Filter by search term (client-side)
+      const searchLower = searchTerm.toLowerCase();
+      return products.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchLower) ||
+          product.description.toLowerCase().includes(searchLower)
+      );
+    } catch (error) {
+      console.error("Search Products Error:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get products by category
+   * @param {string} category - Category name
+   * @returns {Promise<Array>} Products in category
+   */
+  async getProductsByCategory(category) {
+    try {
+      const q = query(
+        collection(this.db, this.collectionName),
+        where("category", "==", category),
+        orderBy("createdAt", "desc")
+      );
+
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+    } catch (error) {
+      console.error("Get Products by Category Error:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Format price for display
+   * @param {number} price - Price value
+   * @returns {string} Formatted price
+   */
+  formatPrice(price) {
+    return new Intl.NumberFormat("es-AR", {
+      style: "currency",
+      currency: "ARS",
+    }).format(price);
+  }
+
+  /**
+   * Calculate display price (considers discounts)
+   * @param {Object} product - Product data
+   * @returns {number} Display price
+   */
+  getDisplayPrice(product) {
+    if (product.discountPrice && product.discountPrice < product.price) {
+      return product.discountPrice;
+    }
+    return product.price;
+  }
+
+  /**
+   * Check if product is in stock
+   * @param {Object} product - Product data
+   * @returns {boolean} True if in stock
+   */
+  isInStock(product) {
+    return product.available && product.stock > 0;
+  }
+
+  /**
+   * Check if product is on sale
+   * @param {Object} product - Product data
+   * @returns {boolean} True if on sale
+   */
+  isOnSale(product) {
+    return product.discountPrice && product.discountPrice < product.price;
+  }
+
+  /**
+   * Format product for display with additional computed fields
+   * @param {Object} product - Product data
+   * @returns {Object} Enhanced product data
+   */
+  formatProductForDisplay(product) {
+    return {
+      ...product,
+      displayPrice: this.getDisplayPrice(product),
+      formattedPrice: this.formatPrice(this.getDisplayPrice(product)),
+      formattedOriginalPrice: this.isOnSale(product)
+        ? this.formatPrice(product.price)
+        : null,
+      inStock: this.isInStock(product),
+      onSale: this.isOnSale(product),
+      discountPercentage: this.isOnSale(product)
+        ? Math.round((1 - product.discountPrice / product.price) * 100)
+        : null,
+    };
+  }
 }
 
-const firebaseProductsService = new FirebaseProductsService();
-export default firebaseProductsService;
+// Create and export singleton instance
+const productsService = new ProductsService();
+export default productsService;
