@@ -27,6 +27,37 @@ class AuthService {
     this.auth = auth;
     this.db = db;
     this.googleProvider = new GoogleAuthProvider();
+    // Centralized timeouts (ms) used for Firestore operations
+    this.timeouts = {
+      short: 2000,
+      long: 3000,
+    };
+
+    // Auto-logout after inactivity
+    this.inactivityTimeoutMs = 3 * 60 * 1000; // 5 mins
+    this.inactivityTimer = null;
+    this._setupInactivityListener();
+  }
+
+  _setupInactivityListener() {
+    // Only run in browser
+    if (typeof window === "undefined") return;
+    const resetTimer = () => {
+      if (this.inactivityTimer) clearTimeout(this.inactivityTimer);
+      this.inactivityTimer = setTimeout(() => {
+        if (this.getCurrentUser()) {
+          this.logout();
+        }
+      }, this.inactivityTimeoutMs);
+    };
+    //  Events that reset the inactivity timer to detect user activity
+    ["mousemove", "keydown", "mousedown", "touchstart", "scroll"].forEach(
+      (evt) => {
+        window.addEventListener(evt, resetTimer, true);
+      }
+    );
+    // Start the inactivity timer when the page loads
+    resetTimer();
   }
 
   /**
@@ -96,46 +127,31 @@ class AuthService {
       const user = userCredential.user;
 
       // Execute operations in parallel for faster login
-      const [userData, token, idTokenResult] = await Promise.allSettled([
-        this.getUserData(user.uid),
-        user.getIdToken(),
-        user.getIdTokenResult().catch(() => null),
-      ]);
+      const [userDataSettled, tokenSettled, idTokenResultSettled] =
+        await Promise.allSettled([
+          this.getUserData(user.uid),
+          user.getIdToken(),
+          user.getIdTokenResult().catch(() => null),
+        ]);
 
-      // Extract results
       const firestoreData =
-        userData.status === "fulfilled" ? userData.value : null;
-      const authToken = token.status === "fulfilled" ? token.value : null;
+        userDataSettled.status === "fulfilled" ? userDataSettled.value : null;
+      const authToken =
+        tokenSettled.status === "fulfilled" ? tokenSettled.value : null;
       const tokenResult =
-        idTokenResult.status === "fulfilled" ? idTokenResult.value : null;
+        idTokenResultSettled.status === "fulfilled"
+          ? idTokenResultSettled.value
+          : null;
 
-      // Quick admin check
-      const isAdmin =
-        tokenResult?.claims?.admin === true || firestoreData?.role === "admin";
+      // Delegate to common post-login processing
+      const processed = await this.processPostLogin(
+        user,
+        firestoreData,
+        authToken,
+        tokenResult
+      );
 
-      const userDataForStorage = {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        role: isAdmin ? "admin" : "user",
-        isAdmin: isAdmin,
-        lastLoginAt: new Date().toISOString(),
-        ...firestoreData,
-      };
-
-      // Cache user data for better UX
-      this.cacheUserData(userDataForStorage);
-
-      // Update last login in Firestore (background - no await)
-      this.updateUserData(user.uid, {
-        lastLoginAt: serverTimestamp(),
-      }).catch((error) => console.warn("Could not update last login:", error));
-
-      return {
-        user: userDataForStorage,
-        token: authToken,
-      };
+      return processed;
     } catch (error) {
       console.error("Login Error:", error);
       throw this.handleAuthError(error);
@@ -143,21 +159,22 @@ class AuthService {
   }
 
   /**
-   * Get user data from Firestore in background (non-blocking)
+   * Get user data from Firestore in background
    */
   async getUserDataInBackground(uid) {
     try {
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Timeout")), 3000)
+      const userDocRef = doc(
+        this.db,
+        DB_CONFIG.FIREBASE.COLLECTIONS.USERS,
+        uid
       );
 
-      const firestorePromise = getDoc(
-        doc(this.db, DB_CONFIG.FIREBASE.COLLECTIONS.USERS, uid)
+      const userDoc = await this.getDocWithTimeout(
+        userDocRef,
+        this.timeouts.long
       );
 
-      const userDoc = await Promise.race([firestorePromise, timeoutPromise]);
-
-      if (userDoc.exists()) {
+      if (userDoc && userDoc.exists()) {
         return userDoc.data();
       }
     } catch (error) {
@@ -174,33 +191,26 @@ class AuthService {
     try {
       const result = await signInWithPopup(this.auth, this.googleProvider);
       const user = result.user;
-
       // Execute operations in parallel for faster login
-      const [userData, token, idTokenResult] = await Promise.allSettled([
-        this.getUserData(user.uid),
-        user.getIdToken(),
-        user.getIdTokenResult().catch(() => null),
-      ]);
+      const [userDataSettled, tokenSettled, idTokenResultSettled] =
+        await Promise.allSettled([
+          this.getUserData(user.uid),
+          user.getIdToken(),
+          user.getIdTokenResult().catch(() => null),
+        ]);
 
-      // Extract results
-      let firestoreData =
-        userData.status === "fulfilled" ? userData.value : null;
-      const authToken = token.status === "fulfilled" ? token.value : null;
+      const firestoreData =
+        userDataSettled.status === "fulfilled" ? userDataSettled.value : null;
+      const authToken =
+        tokenSettled.status === "fulfilled" ? tokenSettled.value : null;
       const tokenResult =
-        idTokenResult.status === "fulfilled" ? idTokenResult.value : null;
+        idTokenResultSettled.status === "fulfilled"
+          ? idTokenResultSettled.value
+          : null;
 
-      // Create user document if doesn't exist (background operation if possible)
+      // Ensure doc exists (non-blocking create if not present)
       if (!firestoreData) {
-        const newUserData = {
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName || user.email.split("@")[0],
-          photoURL: user.photoURL,
-          role: "user",
-          createdAt: new Date().toISOString(),
-        };
-
-        // Create document in background to not block login
+        const newUserData = this.makeNewUserDataFromAuth(user);
         setDoc(doc(this.db, DB_CONFIG.FIREBASE.COLLECTIONS.USERS, user.uid), {
           ...newUserData,
           createdAt: serverTimestamp(),
@@ -209,36 +219,20 @@ class AuthService {
           console.warn("Could not create user document:", error)
         );
 
+        // use the newly built data as fallback
+        // keep createdAt as ISO string to match previous shape
         firestoreData = newUserData;
       }
 
-      // Quick admin check
-      const isAdmin =
-        tokenResult?.claims?.admin === true || firestoreData?.role === "admin";
+      // Delegate common post-login processing
+      const processed = await this.processPostLogin(
+        user,
+        firestoreData,
+        authToken,
+        tokenResult
+      );
 
-      const userDataForStorage = {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        role: isAdmin ? "admin" : "user",
-        isAdmin: isAdmin,
-        lastLoginAt: new Date().toISOString(),
-        ...firestoreData,
-      };
-
-      // Cache user data for better UX
-      this.cacheUserData(userDataForStorage);
-
-      // Update last login in Firestore (background - no await)
-      this.updateUserData(user.uid, {
-        lastLoginAt: serverTimestamp(),
-      }).catch((error) => console.warn("Could not update last login:", error));
-
-      return {
-        user: userDataForStorage,
-        token: token,
-      };
+      return processed;
     } catch (error) {
       console.error("Google Login Error:", error);
       throw this.handleAuthError(error);
@@ -246,39 +240,30 @@ class AuthService {
   }
 
   /**
-   * Ensure user document exists in Firestore (background operation)
+   * Ensure user document exists in Firestore
    */
   async ensureUserDocumentExists(user) {
     try {
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Timeout")), 3000)
-      );
-
       const userDocRef = doc(
         this.db,
         DB_CONFIG.FIREBASE.COLLECTIONS.USERS,
         user.uid
       );
 
-      const firestorePromise = getDoc(userDocRef).then(async (userDoc) => {
-        if (!userDoc.exists()) {
-          const newUserData = {
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName,
-            photoURL: user.photoURL,
-            role: "user",
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          };
-          await setDoc(userDocRef, newUserData);
-          return newUserData;
-        } else {
-          return userDoc.data();
-        }
-      });
+      const userDoc = await this.getDocWithTimeout(
+        userDocRef,
+        this.timeouts.long
+      );
 
-      return await Promise.race([firestorePromise, timeoutPromise]);
+      if (!userDoc) return null;
+
+      if (!userDoc.exists()) {
+        const newUserData = this.makeNewUserDataFromAuth(user);
+        await setDoc(userDocRef, newUserData);
+        return newUserData;
+      } else {
+        return userDoc.data();
+      }
     } catch (error) {
       console.warn("Could not access Firestore:", error.message);
       return null;
@@ -337,19 +322,10 @@ class AuthService {
       const tokenData =
         tokenResult.status === "fulfilled" ? tokenResult.value : null;
 
-      // Quick admin check
-      const isAdmin = this.checkAdminStatus(tokenData, userData);
-
-      return {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        emailVerified: user.emailVerified,
-        role: isAdmin ? "admin" : "user",
-        isAdmin: isAdmin,
-        ...userData,
-      };
+      // Build consistent user object
+      return this.buildUserDataFromAuthAndFirestore(user, userData, tokenData, {
+        includeEmailVerified: true,
+      });
     } catch (error) {
       console.error("Error getting current user data:", error);
       return null;
@@ -518,17 +494,17 @@ class AuthService {
    */
   async getUserData(uid) {
     try {
-      // Add timeout to prevent hanging
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Timeout getting user data")), 2000)
+      const userDocRef = doc(
+        this.db,
+        DB_CONFIG.FIREBASE.COLLECTIONS.USERS,
+        uid
       );
 
-      const firestorePromise = getDoc(
-        doc(this.db, DB_CONFIG.FIREBASE.COLLECTIONS.USERS, uid)
+      const userDoc = await this.getDocWithTimeout(
+        userDocRef,
+        this.timeouts.short
       );
-
-      const userDoc = await Promise.race([firestorePromise, timeoutPromise]);
-      return userDoc.exists() ? userDoc.data() : null;
+      return userDoc && userDoc.exists() ? userDoc.data() : null;
     } catch (error) {
       console.warn("Error getting user data:", error.message);
       return null;
@@ -551,8 +527,116 @@ class AuthService {
       throw error;
     }
   }
+
+  /**
+   * Get a Firestore document with a timeout to avoid hanging requests
+   * @param {DocumentReference} docRef
+   * @param {number} timeoutMs
+   * @returns {Promise<DocumentSnapshot|null>}
+   */
+  async getDocWithTimeout(docRef, timeoutMs = 2000) {
+    try {
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Timeout getting doc")), timeoutMs)
+      );
+
+      const snap = await Promise.race([getDoc(docRef), timeoutPromise]);
+      return snap;
+    } catch (error) {
+      // Return null on timeout or failures; caller may choose to continue silently
+      // console.warn('getDocWithTimeout error', error.message);
+      return null;
+    }
+  }
+
+  /**
+   * Build a minimal new user data object from an Auth user object
+   * @param {User} user
+   */
+  makeNewUserDataFromAuth(user) {
+    return {
+      uid: user.uid,
+      email: user.email,
+      displayName:
+        user.displayName || (user.email ? user.email.split("@")[0] : ""),
+      photoURL: user.photoURL || null,
+      role: "user",
+      createdAt: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Common post-login processing for both email/password and OAuth flows
+   * - determines admin status
+   * - builds user data to cache
+   * - triggers lastLogin update
+   * @returns {{user: Object, token: string}}
+   */
+  async processPostLogin(user, firestoreData, authToken, tokenResult) {
+    // Determine admin status
+    const userDataForStorage = this.buildUserDataFromAuthAndFirestore(
+      user,
+      firestoreData,
+      tokenResult,
+      { includeLastLogin: true }
+    );
+
+    // Cache user data
+    this.cacheUserData(userDataForStorage);
+
+    // Update last login asynchronously
+    this.updateUserData(user.uid, {
+      lastLoginAt: serverTimestamp(),
+    }).catch((error) => console.warn("Could not update last login:", error));
+
+    return {
+      user: userDataForStorage,
+      token: authToken,
+    };
+  }
+
+  /**
+   * Build a consistent user data object from Auth user + Firestore doc + token claims
+   * @param {User} user - Firebase Auth user
+   * @param {Object|null} firestoreData - Firestore user doc data
+   * @param {Object|null} tokenResult - ID token result (claims)
+   * @param {Object} options - { includeEmailVerified?: boolean, includeLastLogin?: boolean }
+   */
+  buildUserDataFromAuthAndFirestore(
+    user,
+    firestoreData = null,
+    tokenResult = null,
+    options = {}
+  ) {
+    const { includeEmailVerified = false, includeLastLogin = false } = options;
+
+    const isAdmin = this.checkAdminStatus(tokenResult, firestoreData);
+
+    const base = {
+      uid: user.uid,
+      email: user.email,
+      displayName:
+        user.displayName ||
+        (firestoreData && firestoreData.displayName) ||
+        (user.email ? user.email.split("@")[0] : ""),
+      photoURL:
+        user.photoURL || (firestoreData && firestoreData.photoURL) || null,
+      role: isAdmin ? "admin" : (firestoreData && firestoreData.role) || "user",
+      isAdmin: isAdmin,
+      ...(firestoreData || {}),
+    };
+
+    if (includeEmailVerified) {
+      base.emailVerified = !!user.emailVerified;
+    }
+
+    if (includeLastLogin) {
+      base.lastLoginAt = new Date().toISOString();
+    }
+
+    return base;
+  }
 }
 
-// Create and export singleton instance
 const authService = new AuthService();
 export default authService;
