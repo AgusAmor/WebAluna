@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FiUser, FiLogOut } from "react-icons/fi";
 import logo from "../../assets/logos/logotipo.png";
-import { useAuth } from "../../context/AuthContext";
-import { LoginModal } from "../common";
+import { useAuth } from "../../context/AuthContext.jsx";
+import { LoginModal } from "../common/index.js";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);

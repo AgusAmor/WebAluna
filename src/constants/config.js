@@ -1,37 +1,3 @@
-export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_URL || "http://localhost:3001/api",
-  TIMEOUT: 10000,
-
-  ENDPOINTS: {
-    AUTH: {
-      LOGIN: "/auth/login",
-      REGISTER: "/auth/register",
-      LOGOUT: "/auth/logout",
-      ME: "/auth/me",
-    },
-    PRODUCTS: {
-      LIST: "/products",
-      DETAIL: "/products/:id",
-      CREATE: "/products",
-      UPDATE: "/products/:id",
-      DELETE: "/products/:id",
-      CATEGORIES: "/products/categories",
-      SEARCH: "/products/search",
-    },
-    ORDERS: {
-      CREATE: "/orders",
-      LIST: "/orders",
-      DETAIL: "/orders/:id",
-      UPDATE_STATUS: "/orders/:id/status",
-    },
-    USERS: {
-      PROFILE: "/users/profile",
-      UPDATE_PROFILE: "/users/profile",
-      LIST: "/users",
-    },
-  },
-};
-
 export const APP_CONFIG = {
   NAME: "Aluna",
   VERSION: "1.0.0",
@@ -44,7 +10,7 @@ export const APP_CONFIG = {
   MAX_PRODUCTS_PER_PAGE: 48,
 
   MAX_IMAGE_SIZE: 5 * 1024 * 1024,
-  ALLOWED_IMAGE_TYPES: ["image/jpeg", "image/png", "image/webp"],
+  ALLOWED_IMAGE_TYPES: ["image/jpeg", "image/png"],
 };
 
 export const DB_CONFIG = {
@@ -53,22 +19,11 @@ export const DB_CONFIG = {
       USERS: "users",
       PRODUCTS: "products",
       ORDERS: "orders",
-      CATEGORIES: "categories",
-    },
-  },
-
-  SUPABASE: {
-    TABLES: {
-      USERS: "users",
-      PRODUCTS: "products",
-      ORDERS: "orders",
-      CATEGORIES: "categories",
     },
   },
 };
 
 export default {
-  API_CONFIG,
   APP_CONFIG,
   DB_CONFIG,
 };

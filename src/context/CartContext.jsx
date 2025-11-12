@@ -1,6 +1,6 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
-import { CART_ACTIONS } from "../constants";
-import { cartStorageService } from "../services/cartStorageService";
+import { CART_ACTIONS } from "../constants/index.js";
+import { cartStorageService } from "../services/cartStorageService.js";
 
 const initialState = {
   items: [],

@@ -1,14 +1,17 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Header from "../components/layout/Header";
-import Footer from "../components/layout/Footer";
-import { FloatingCartButton, ProtectedRoute } from "../components/common";
-import { AuthProvider } from "../context/AuthContext";
+import Header from "../components/layout/Header.jsx";
+import Footer from "../components/layout/Footer.jsx";
+import {
+  FloatingCartButton,
+  ProtectedRoute,
+} from "../components/common/index.js";
+import { AuthProvider } from "../context/AuthContext.jsx";
 
-const Home = lazy(() => import("../pages/Home"));
-const Products = lazy(() => import("../pages/Products"));
-const Profile = lazy(() => import("../pages/Profile"));
-const Admin = lazy(() => import("../pages/Admin"));
+const Home = lazy(() => import("../pages/Home/index.js"));
+const Products = lazy(() => import("../pages/Products/index.js"));
+const Profile = lazy(() => import("../pages/Profile/index.js"));
+const Admin = lazy(() => import("../pages/Admin/index.js"));
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">

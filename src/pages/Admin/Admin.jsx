@@ -1,6 +1,53 @@
-import React from "react";
+import React, { useState } from "react";
+import { AddProductModal } from "../../components/common";
+import { useAuth } from "../../context/AuthContext";
+import productsService from "../../services/firebaseProductsService";
 
 const Admin = () => {
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
+
+  const handleAddProduct = async (productData) => {
+    setIsLoading(true);
+    try {
+      console.log("Iniciando creación de producto:", {
+        name: productData.name,
+        family: productData.family,
+        hasImage: !!productData.image,
+        imageSize: productData.image?.size,
+        createdBy: user?.uid,
+      });
+
+      const newProduct = await productsService.createProduct(
+        productData,
+        user?.uid
+      );
+
+      console.log("✅ Producto creado exitosamente:", {
+        id: newProduct.id,
+        name: newProduct.name,
+        imageUrl: newProduct.image,
+        pricing: newProduct.pricing,
+      });
+
+      // TODO: Mostrar notificación de éxito
+      // TODO: Actualizar lista de productos si existe
+
+      return newProduct; // Retornar para que el modal pueda usar la respuesta
+    } catch (error) {
+      console.error("❌ Error creating product:", {
+        message: error.message,
+        code: error.code,
+        productName: productData.name,
+      });
+      // TODO: Mostrar notificación de error
+      throw error; // Re-throw para que el modal maneje el error
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-3">
       <div className="container mx-auto px-4 py-8">
@@ -54,8 +101,12 @@ const Admin = () => {
             </div>
             <div className="p-6">
               <div className="space-y-4">
-                <button className="w-full bg-blue-2 text-white py-2 px-4 rounded-lg hover:bg-gold transition-colors font-family-sora font-semibold">
-                  Agregar Nuevo Producto
+                <button
+                  onClick={() => setShowAddProductModal(true)}
+                  className="w-full bg-blue-2 text-white py-2 px-4 rounded-lg hover:bg-gold transition-colors font-family-sora font-semibold"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Guardando..." : "Agregar Nuevo Producto"}
                 </button>
                 <button className="w-full bg-gray-3 text-blue-1 py-2 px-4 rounded-lg hover:bg-gray-2 transition-colors font-family-sora">
                   Ver Todos los Productos
@@ -89,6 +140,13 @@ const Admin = () => {
             </div>
           </div>
         </div>
+
+        {/* Add Product Modal */}
+        <AddProductModal
+          isOpen={showAddProductModal}
+          onClose={() => setShowAddProductModal(false)}
+          onSave={handleAddProduct}
+        />
       </div>
     </div>
   );
