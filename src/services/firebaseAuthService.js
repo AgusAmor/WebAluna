@@ -70,67 +70,7 @@ class AuthService {
     return this.adminVerify(user);
   }
 
-<<<<<<< HEAD
-  /**
-   * Register a new user with email and password
-   * @param {Object} userData - {email, password, name}
-   * @returns {Promise<Object>} User data with token
-   */
-  async register(userData) {
-    const { email, password, name } = userData;
-
-    try {
-      const userCredential = await createUserWithEmailAndPassword(
-        this.auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
-
-      await updateProfile(user, { displayName: name });
-
-      const userDataForStorage = {
-        uid: user.uid,
-        email: user.email,
-        displayName: name,
-        role: "user",
-        createdAt: new Date().toISOString(),
-      };
-
-      // Store in Firestore
-      await setDoc(
-        doc(this.db, DB_CONFIG.FIREBASE.COLLECTIONS.USERS, user.uid),
-        {
-          ...userDataForStorage,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        }
-      );
-
-      const token = await user.getIdToken();
-
-      // Cache user data for better UX
-      this.cacheUserData(userDataForStorage);
-
-      return {
-        user: userDataForStorage,
-        token: token,
-      };
-    } catch (error) {
-      console.error("Registration Error:", error);
-      throw this.handleAuthError(error);
-    }
-  }
-
-  /**
-   * Sign in with email and password
-   * @param {string} email - User email
-   * @param {string} password - User password
-   * @returns {Promise<Object>} User data with token
-   */
-=======
   // Login with email and password
->>>>>>> a7bb510 (Backend con firebase functions. Persistencia de usuarios en Firestore Database.)
   async login(email, password) {
     const userCredential = await signInWithEmailAndPassword(
       this.auth,
