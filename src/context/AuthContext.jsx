@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { useAutoLogout } from "../hooks/useAutoLogout.js";
 import PropTypes from "prop-types";
 import authService from "../services/firebaseAuthService";
 
@@ -10,19 +11,20 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Check for cached user data to improve initial loading UX
-    const cachedUser = authService.getCachedUserData();
-    if (cachedUser) {
-      setUser(cachedUser);
-    }
-
-    const unsubscribe = authService.onAuthStateChange((userData) => {
-      setUser(userData);
+    // Listen for session changes in Firebase Auth
+    const unsubscribe = authService.auth.onAuthStateChanged((currentUser) => {
+      setUser(currentUser);
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
+
+  // Auto-logout after inactivity
+  useAutoLogout(() => {
+    if (user) {
+      logout();
+    }
+  }, 5 * 60 * 1000);
 
   /**
    * Login with email and password
@@ -31,10 +33,9 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       setLoading(true);
-      const result = await authService.login(email, password);
-      const userData = result.user;
-      setUser(userData);
-      return userData;
+      const user = await authService.login(email, password);
+      setUser(user);
+      return user;
     } catch (err) {
       setError(err.message);
       throw err;
@@ -50,10 +51,9 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       setLoading(true);
-      const result = await authService.loginWithGoogle();
-      const userData = result.user;
-      setUser(userData);
-      return userData;
+      const user = await authService.loginWithGoogle();
+      setUser(user);
+      return user;
     } catch (err) {
       setError(err.message);
       throw err;
@@ -69,10 +69,9 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       setLoading(true);
-      const result = await authService.register({ email, password, name });
-      const userData = result.user;
-      setUser(userData);
-      return userData;
+      const user = await authService.register({ email, password, name });
+      setUser(user);
+      return user;
     } catch (err) {
       setError(err.message);
       throw err;
@@ -108,21 +107,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  /**
-   * Update user profile
-   */
-  const updateProfile = async (updates) => {
-    try {
-      setError(null);
-      const userData = await authService.updateUserProfile(updates);
-      setUser(userData);
-      return userData;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    }
-  };
-
   const value = {
     user,
     loading,
@@ -132,7 +116,6 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     resetPassword,
-    updateProfile,
     isAuthenticated: !!user,
     isAdmin: user?.role === "admin",
   };

@@ -28,14 +28,11 @@ const LoginModal = ({ isOpen, onClose }) => {
   // Close modal automatically when user logs in successfully
   useEffect(() => {
     if (isAuthenticated && user && isOpen) {
-      console.log("User authenticated, closing modal and navigating...");
-
-      // Navigate to admin if admin user
+      // Si el usuario tiene rol admin, navega a /admin
       if (user.role === "admin") {
         navigate("/admin");
       }
-
-      // Close modal and reset form
+      // Cierra el modal y resetea el formulario
       onClose();
       setFormData({
         name: "",
@@ -55,7 +52,6 @@ const LoginModal = ({ isOpen, onClose }) => {
       ...prev,
       [name]: value,
     }));
-
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -66,56 +62,47 @@ const LoginModal = ({ isOpen, onClose }) => {
 
   const validateForm = () => {
     const newErrors = {};
-
     if (!isLogin && !formData.name.trim()) {
       newErrors.name = "El nombre es requerido";
     }
-
     if (!formData.email.trim()) {
       newErrors.email = "El email es requerido";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Email inválido";
     }
-
     if (!formData.password) {
       newErrors.password = "La contraseña es requerida";
     } else if (formData.password.length < 6) {
       newErrors.password = "La contraseña debe tener al menos 6 caracteres";
     }
-
     if (!isLogin && formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Las contraseñas no coinciden";
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) return;
-
     try {
       if (isLogin) {
         await login(formData.email, formData.password);
       } else {
         await register(formData.email, formData.password, formData.name);
       }
-      // Modal will close automatically via useEffect when user state changes
+      // Modal se cierra automáticamente por useEffect
     } catch (err) {
-      console.error("Auth error:", err);
-      // Modal stays open on error for user to retry
+      // El error ya se muestra por el contexto
     }
   };
 
   const handleGoogleLogin = async () => {
     try {
       await loginWithGoogle();
-      // Modal will close automatically via useEffect when user state changes
+      // Modal se cierra automáticamente por useEffect
     } catch (err) {
-      console.error("Google login error:", err);
-      // Modal stays open on error for user to retry
+      // El error ya se muestra por el contexto
     }
   };
 
@@ -132,13 +119,12 @@ const LoginModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto font-family-sora">
-      {/* Backdrop - mismo estilo que CartModal */}
+      {/* Backdrop */}
       <div
         className="fixed inset-0 backdrop-blur-sm"
         style={{ backgroundColor: "rgba(38,78,96,0.45)" }}
         onClick={onClose}
       ></div>
-
       {/* Modal */}
       <div className="flex min-h-screen items-center justify-center p-4">
         <div
@@ -154,7 +140,6 @@ const LoginModal = ({ isOpen, onClose }) => {
               {isLogin ? "Accede a tu cuenta" : "Crea una nueva cuenta"}
             </p>
           </div>
-
           {/* Content */}
           <div className="flex-1 overflow-y-auto px-5 pb-5 max-h-[60vh]">
             {/* Error message */}
@@ -163,7 +148,6 @@ const LoginModal = ({ isOpen, onClose }) => {
                 {error}
               </div>
             )}
-
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
@@ -190,7 +174,6 @@ const LoginModal = ({ isOpen, onClose }) => {
                   )}
                 </div>
               )}
-
               <div>
                 <label className="block text-sm font-medium mb-1 text-blue-1 font-family-comfortaa">
                   Email
@@ -213,7 +196,6 @@ const LoginModal = ({ isOpen, onClose }) => {
                   <p className="text-red-500 text-xs mt-1">{errors.email}</p>
                 )}
               </div>
-
               <div>
                 <label className="block text-sm font-medium mb-1 text-blue-1 font-family-comfortaa">
                   Contraseña
@@ -236,7 +218,6 @@ const LoginModal = ({ isOpen, onClose }) => {
                   <p className="text-red-500 text-xs mt-1">{errors.password}</p>
                 )}
               </div>
-
               {!isLogin && (
                 <div>
                   <label className="block text-sm font-medium mb-1 text-blue-1 font-family-comfortaa">
@@ -265,7 +246,6 @@ const LoginModal = ({ isOpen, onClose }) => {
                   )}
                 </div>
               )}
-
               <button
                 type="submit"
                 disabled={loading}
@@ -278,21 +258,18 @@ const LoginModal = ({ isOpen, onClose }) => {
                   : "Registrarse"}
               </button>
             </form>
-
             {/* Divider */}
             <div className="flex items-center my-6">
               <div className="flex-1 border-t border-gray-2"></div>
               <span className="px-4 text-sm text-gray-1">O</span>
               <div className="flex-1 border-t border-gray-2"></div>
             </div>
-
             {/* Google Login */}
             <GoogleLoginButton
               onClick={handleGoogleLogin}
               loading={loading}
               disabled={loading}
             />
-
             {/* Switch mode */}
             <div className="text-center mt-6">
               <button

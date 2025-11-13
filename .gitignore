@@ -1,10 +1,9 @@
-# Dependencies
+# Dependency directories
 node_modules/
-.pnpm-debug.log*
 
 # Build outputs
-dist/
-build/
+/dist/
+/build/
 
 # Environment variables
 .env
@@ -20,15 +19,6 @@ firebase-admin.cjs
 firebase-debug.log
 .firebase/
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
 # Logs
 logs/
 *.log
@@ -41,16 +31,17 @@ pnpm-debug.log*
 .vite/
 .eslintcache
 .pnpm-store/
+.npm
 
 # Editor files
+.vscode/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-.vscode/
 
-# Package managers (using PNPM only)
+# Package managers
 package-lock.json
 yarn.lock
 
