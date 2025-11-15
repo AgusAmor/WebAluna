@@ -13,7 +13,7 @@ const Hero = ({ title, subtitle }) => {
         py-12 px-8 rounded-lg shadow-lg mx-auto my-8 max-w-full
         ${
           isAdminPage
-            ? "bg-linear-to-br from-gold to-gray-3"
+            ? "bg-linear-to-br from-gold to-gray-2"
             : "bg-linear-to-br from-blue-2 to-blue-3"
         }
       `}

@@ -1,12 +1,15 @@
 import React from "react";
+import { Hero } from "../../components/common";
+import { Link } from "react-router-dom";
 
 const Admin = () => {
   return (
     <div className="min-h-screen bg-gray-3">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 font-family-comfortaa text-blue-1">
-          Panel de Administración
-        </h1>
+      <div className="container mx-auto px-4 py-2">
+        <Hero
+          title="Panel de Administración"
+          subtitle="Gestiona productos, pedidos y usuarios desde un solo lugar"
+        />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -44,48 +47,43 @@ const Admin = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Product Management */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6 border-b border-gray-2">
-              <h2 className="text-xl font-semibold font-family-comfortaa text-blue-1">
-                Gestión de Productos
+        {/* Admin Shortcut Cards */}
+        <div className="flex flex-wrap justify-center gap-8 mb-10">
+          {/* Shortcut Card */}
+          <Link
+            to="/admin/productos"
+            className="bg-white rounded-xl shadow-lg px-8 py-7 min-w-[260px] max-w-xs transition-all duration-300 cursor-pointer group hover:shadow-2xl hover:-translate-y-1 relative flex flex-col justify-center"
+          >
+            <span className="absolute left-0 top-0 h-full w-[10px] rounded-tl-xl rounded-bl-xl bg-gold group-hover:bg-blue-1 transition-all duration-300"></span>
+            <div className="pl-4">
+              <h2 className="text-2xl font-bold text-gold font-family-comfortaa mb-2 text-left group-hover:text-blue-1 transition-colors duration-300">
+                Productos
               </h2>
+              <p className="text-gold text-base font-family-sora text-left group-hover:text-blue-1 transition-colors duration-300">
+                Gestionar productos del catálogo
+              </p>
             </div>
-            <div className="p-6">
-              <div className="space-y-4">
-                <button className="w-full bg-blue-2 text-white py-2 px-4 rounded-lg hover:bg-gold transition-colors font-family-sora font-semibold">
-                  Agregar Nuevo Producto
-                </button>
-                <button className="w-full bg-gray-3 text-blue-1 py-2 px-4 rounded-lg hover:bg-gray-2 transition-colors font-family-sora">
-                  Ver Todos los Productos
-                </button>
-                <button className="w-full bg-gray-3 text-blue-1 py-2 px-4 rounded-lg hover:bg-gray-2 transition-colors font-family-sora">
-                  Gestionar Categorías
-                </button>
-              </div>
+          </Link>
+          <div className="bg-white rounded-xl shadow-lg px-8 py-7 min-w-[260px] max-w-xs transition-all duration-300 cursor-pointer group hover:shadow-2xl hover:-translate-y-1 relative">
+            <span className="absolute left-0 top-0 h-full w-[10px] rounded-tl-xl rounded-bl-xl bg-gold group-hover:bg-blue-1 transition-all duration-300"></span>
+            <div className="pl-4">
+              <h2 className="text-2xl font-bold text-gold font-family-comfortaa mb-2 text-left group-hover:text-blue-1 transition-colors duration-300">
+                Usuarios
+              </h2>
+              <p className="text-gold text-base font-family-sora text-left group-hover:text-blue-1 transition-colors duration-300">
+                Administrar usuarios registrados
+              </p>
             </div>
           </div>
-
-          {/* Order Management */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6 border-b border-gray-2">
-              <h2 className="text-xl font-semibold font-family-comfortaa text-blue-1">
-                Gestión de Pedidos
+          <div className="bg-white rounded-xl shadow-lg px-8 py-7 min-w-[260px] max-w-xs transition-all duration-300 cursor-pointer group hover:shadow-2xl hover:-translate-y-1 relative">
+            <span className="absolute left-0 top-0 h-full w-[10px] rounded-tl-xl rounded-bl-xl bg-gold group-hover:bg-blue-1 transition-all duration-300"></span>
+            <div className="pl-4">
+              <h2 className="text-2xl font-bold text-gold font-family-comfortaa mb-2 text-left group-hover:text-blue-1 transition-colors duration-300">
+                Pedidos
               </h2>
-            </div>
-            <div className="p-6">
-              <div className="space-y-4">
-                <button className="w-full bg-gold text-black py-2 px-4 rounded-lg hover:bg-blue-2 hover:text-white transition-colors font-family-sora font-semibold">
-                  Pedidos Pendientes (5)
-                </button>
-                <button className="w-full bg-gray-3 text-blue-1 py-2 px-4 rounded-lg hover:bg-gray-2 transition-colors font-family-sora">
-                  Historial de Pedidos
-                </button>
-                <button className="w-full bg-gray-3 text-blue-1 py-2 px-4 rounded-lg hover:bg-gray-2 transition-colors font-family-sora">
-                  Reportes de Ventas
-                </button>
-              </div>
+              <p className="text-gold text-base font-family-sora text-left group-hover:text-blue-1 transition-colors duration-300">
+                Gestionar y revisar pedidos
+              </p>
             </div>
           </div>
         </div>
