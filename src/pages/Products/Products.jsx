@@ -1,81 +1,48 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { fetchProducts } from "../../services/firebaseProductService";
 import { useCart } from "../../context/CartContext";
 import { Hero } from "../../components/common";
 import { ProductCard } from "../../components/ui";
+import ProductDetailModal from "../../components/ui/ProductDetailModal";
 
 const Products = () => {
   const { addItem } = useCart();
+  const location = useLocation();
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [imgLoaded, setImgLoaded] = useState(false);
   const [selectedFamily, setSelectedFamily] = useState("all");
   const [priceSort, setPriceSort] = useState("none");
 
-  const allProducts = [
-    {
-      id: 1,
-      name: "Lámpara Luna",
-      price: 150,
-      family: "AENOR",
-      size: "15cm x 20cm",
-      imageBase64: null,
-    },
-    {
-      id: 2,
-      name: "Lámpara Estrella",
-      price: 200,
-      family: "AENOR",
-      size: "18cm x 25cm",
-      imageBase64: null,
-    },
-    {
-      id: 3,
-      name: "Lámpara Nebulosa",
-      price: 180,
-      family: "AENOR",
-      size: "20cm x 30cm",
-      imageBase64: null,
-    },
-    {
-      id: 4,
-      name: "Lámpara Sol",
-      price: 220,
-      family: "AENOR",
-      size: "15cm x 28cm",
-      imageBase64: null,
-    },
-    {
-      id: 5,
-      name: "Lámpara Minimal 1",
-      price: 130,
-      family: "CORE",
-      size: "12cm x 18cm",
-      imageBase64: null,
-    },
-    {
-      id: 6,
-      name: "Lámpara Minimal 2",
-      price: 160,
-      family: "CORE",
-      size: "14cm x 20cm",
-      imageBase64: null,
-    },
-    {
-      id: 7,
-      name: "Lámpara Minimal 3",
-      price: 250,
-      family: "CORE",
-      size: "22cm x 35cm",
-      imageBase64: null,
-    },
-    {
-      id: 8,
-      name: "Lámpara Minimal 4",
-      price: 190,
-      family: "CORE",
-      size: "16cm x 24cm",
-      imageBase64: null,
-    },
-  ];
+  // State to store products fetched from backend
+  const [allProducts, setAllProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch products from backend on mount
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        setLoading(true);
+        const products = await fetchProducts();
+        setAllProducts(products);
+      } catch (err) {
+        setError("Failed to load products");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProducts();
+  }, []);
+
+  // Open product modal if navigated from Home
+  useEffect(() => {
+    if (location.state && location.state.openProduct) {
+      setSelectedProduct(location.state.openProduct);
+      // Clear navigation state so modal doesn't reopen on refresh
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [location.state]);
 
   const families = ["all", ...new Set(allProducts.map((p) => p.family))];
 
@@ -84,8 +51,10 @@ const Products = () => {
       (product) => selectedFamily === "all" || product.family === selectedFamily
     )
     .sort((a, b) => {
-      if (priceSort === "asc") return a.price - b.price;
-      if (priceSort === "desc") return b.price - a.price;
+      const priceA = a.pricing?.normal?.price ?? 0;
+      const priceB = b.pricing?.normal?.price ?? 0;
+      if (priceSort === "asc") return priceA - priceB;
+      if (priceSort === "desc") return priceB - priceA;
       return 0;
     });
 
@@ -105,13 +74,13 @@ const Products = () => {
   return (
     <div className="min-h-screen bg-gray-3">
       <div className="max-w-[95%] mx-auto px-4 py-8">
-        {/* Hero */}
+        {/* Hero section */}
         <Hero
           title="Catálogo de Productos"
           subtitle="Descubre nuestra colección de lámparas únicas con impresión 3D"
         />
 
-        {/* Filters */}
+        {/* Filters section */}
         <div className="flex flex-wrap gap-4 mb-8 p-6 bg-white rounded-xl shadow-md">
           <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-semibold mb-2 text-blue-1 font-family-comfortaa">
@@ -158,20 +127,36 @@ const Products = () => {
           </div>
         </div>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-          {filteredProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onCardClick={handleCardClick}
-              onAddToCart={handleAddToCart}
-            />
-          ))}
-        </div>
+        {/* Loading and error states */}
+        {loading && (
+          <div className="text-center py-16">
+            <p className="text-xl text-gray-1 font-family-sora">
+              Loading products...
+            </p>
+          </div>
+        )}
+        {error && (
+          <div className="text-center py-16">
+            <p className="text-xl text-red-500 font-family-sora">{error}</p>
+          </div>
+        )}
 
-        {/* No results message */}
-        {filteredProducts.length === 0 && (
+        {/* Products Grid */}
+        {!loading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+            {filteredProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onCardClick={handleCardClick}
+                onAddToCart={handleAddToCart}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* No results */}
+        {!loading && !error && filteredProducts.length === 0 && (
           <div className="text-center py-16">
             <p className="text-xl text-gray-1 font-family-sora">
               No se encontraron productos con los filtros seleccionados
@@ -183,42 +168,17 @@ const Products = () => {
       {/* Modal for Product Details */}
       {selectedProduct && (
         <div
-          className="fixed inset-0 w-screen h-screen backdrop-blur-sm flex items-center justify-center z-9999"
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto font-family-sora backdrop-blur-sm"
           style={{ backgroundColor: "rgba(38,78,96,0.45)" }}
           onClick={closeModal}
         >
-          <div
-            className="max-w-[420px] w-[90%] p-8 rounded-2xl overflow-hidden bg-white animate-fadeInScale"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Image - Square */}
-            {selectedProduct.imageBase64 ? (
-              <img
-                src={`data:image/jpeg;base64,${selectedProduct.imageBase64}`}
-                alt={selectedProduct.name}
-                className="w-full aspect-square object-cover rounded-xl mb-4 transition-opacity duration-700"
-                onLoad={() => setImgLoaded(true)}
-                style={{ opacity: imgLoaded ? 1 : 0 }}
-              />
-            ) : (
-              <div className="w-full aspect-square bg-linear-to-br from-blue-3 to-blue-2 rounded-xl mb-4 flex items-center justify-center">
-                <span className="text-white">Sin imagen</span>
-              </div>
-            )}
-
-            {/* Modal Info */}
-            <h2 className="text-2xl font-black font-family-comfortaa text-blue-1 mb-2">
-              {selectedProduct.name}
-            </h2>
-            <p className="text-blue-2 font-semibold mb-1 font-family-sora">
-              {selectedProduct.family}
-            </p>
-            <p className="text-xl font-bold text-gold mb-2 font-family-comfortaa">
-              ${selectedProduct.price}
-            </p>
-            <p className="text-gray-1 font-family-sora mb-4">
-              Tamaño: {selectedProduct.size}
-            </p>
+          <div onClick={(e) => e.stopPropagation()}>
+            <ProductDetailModal
+              product={selectedProduct}
+              isOpen={!!selectedProduct}
+              onClose={closeModal}
+              onAddToCart={handleAddToCart}
+            />
           </div>
         </div>
       )}

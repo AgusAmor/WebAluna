@@ -1,0 +1,124 @@
+import PropTypes from "prop-types";
+import { useState } from "react";
+
+const ProductDetailModal = ({ product, isOpen, onClose, onAddToCart }) => {
+  const [selectedType, setSelectedType] = useState("normal");
+  if (!isOpen || !product) return null;
+
+  const selectedPrice = product.pricing?.[selectedType]?.price;
+  const selectedSize = product.pricing?.[selectedType]?.size;
+
+  return (
+    <div className="relative bg-white rounded-2xl shadow-2xl border border-gray-2 max-w-sm md:max-w-3xl w-full max-h-[80vh] overflow-y-auto p-6 animate-fadeInScale flex flex-col md:flex-row gap-10">
+      <button
+        className="absolute top-3 right-3 text-blue-1 hover:text-gold text-xl font-bold"
+        onClick={onClose}
+        aria-label="Cerrar"
+      >
+        ×
+      </button>
+      {/* Left: Product Image or Placeholder */}
+      <div className="flex-shrink-0 flex justify-center items-start md:items-center w-full md:w-72">
+        {product.imageUrl ? (
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            className="w-80 aspect-square object-cover rounded-lg"
+          />
+        ) : (
+          <div className="w-80 aspect-square bg-linear-to-br from-blue-3 to-blue-2 rounded-lg flex items-center justify-center">
+            <span className="text-white">Sin imagen</span>
+          </div>
+        )}
+      </div>
+      {/* Right: Product Details */}
+      <div className="flex-1 flex flex-col justify-start">
+        <h2 className="text-2xl font-black text-blue-1 mb-2 font-family-comfortaa">
+          {product.name}
+        </h2>
+        {product.family && (
+          <p className="text-blue-2 font-semibold mb-2">
+            Familia: {product.family}
+          </p>
+        )}
+        {product.description && (
+          <p className="text-gray-1 mb-4 font-family-sora">
+            {product.description}
+          </p>
+        )}
+        {/* Selectable price/size vertical list */}
+        {product.pricing && (
+          <div className="mb-4">
+            <h3 className="text-lg font-bold text-blue-2 mb-2">
+              Precios y medidas
+            </h3>
+            <ul className="space-y-2">
+              {Object.entries(product.pricing).map(([type, info]) => (
+                <li key={type}>
+                  <button
+                    type="button"
+                    className={`w-full flex items-center justify-between rounded-lg shadow-sm font-bold transition-all duration-200 focus:outline-none focus:ring-2 cursor-pointer
+                      ${
+                        selectedType === type
+                          ? "bg-gold text-white ring-gold opacity-100 scale-105 text-base px-5 py-3"
+                          : "bg-blue-2 text-white opacity-70 scale-100 text-sm px-4 py-2"
+                      }`}
+                    onClick={() => setSelectedType(type)}
+                  >
+                    <span className="flex gap-2 items-center">
+                      <span
+                        className={`font-family-sora rounded-full transition-all duration-200
+                        ${
+                          selectedType === type
+                            ? "text-sm px-3 py-1 bg-gold text-white opacity-100 scale-105"
+                            : "text-xs px-2 py-1 bg-gold text-white opacity-70 scale-100"
+                        }`}
+                      >
+                        {type}
+                      </span>
+                      <span className="text-gray-3 text-xs">{info.size}</span>
+                    </span>
+                    <span className="text-lg font-black">${info.price}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {/* Add to Cart Button */}
+        <button
+          onClick={() =>
+            onAddToCart({
+              ...product,
+              selectedPrice,
+              selectedSize,
+              selectedType,
+            })
+          }
+          className="bg-blue-2 text-white px-4 py-2 rounded-lg text-sm font-bold font-family-comfortaa hover:bg-gold transition-all duration-300 hover:-translate-y-0.5 active:scale-95 w-full mt-2"
+        >
+          Agregar al carrito
+        </button>
+        {product.createdBy && (
+          <p className="text-xs text-gray-2 mt-2">
+            Creado por: {product.createdBy}
+          </p>
+        )}
+        {product.createdAt && (
+          <p className="text-xs text-gray-2">
+            Creado el: {new Date(product.createdAt).toLocaleDateString()}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+ProductDetailModal.propTypes = {
+  product: PropTypes.object,
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onAddToCart: PropTypes.func.isRequired,
+};
+
+export default ProductDetailModal;

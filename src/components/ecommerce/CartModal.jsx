@@ -44,9 +44,12 @@ const CartModal = ({ isOpen, onClose }) => {
             ) : (
               <ul className="space-y-4">
                 {items.map((item) => (
-                  <li key={item.id} className="flex gap-4 items-center">
+                  <li
+                    key={`${item.id}_${item.type || "normal"}`}
+                    className="flex gap-4 items-center bg-white rounded-lg p-3 shadow-sm"
+                  >
                     {/* Product Image */}
-                    <div className="w-15 h-15 bg-gray-2 rounded-md shrink-0">
+                    <div className="w-15 h-15 bg-gold rounded-md shrink-0 flex items-center justify-center border-2 border-blue-2">
                       {item.imageBase64 ? (
                         <img
                           src={`data:image/jpeg;base64,${item.imageBase64}`}
@@ -60,43 +63,60 @@ const CartModal = ({ isOpen, onClose }) => {
 
                     {/* Product Info */}
                     <div className="flex-1">
-                      <h4 className="font-family-comfortaa font-semibold text-blue-2 mb-1">
+                      <h4 className="font-family-comfortaa font-semibold text-blue-1 mb-1 flex items-center gap-2">
                         {item.name}
+                        {item.type && (
+                          <span className="bg-gold text-white text-xs px-2 py-1 rounded-full font-family-sora">
+                            {item.type}
+                          </span>
+                        )}
                       </h4>
                       <p className="font-family-comfortaa font-black text-gold mb-2">
                         ${item.price}
                       </p>
 
-                      {/* Controls */}
+                      {/* Controls + Subtotal */}
                       <div className="flex items-center gap-3">
                         <button
-                          onClick={() => removeItem(item.id)}
-                          className="text-blue-1 hover:text-gold hover:scale-150 transition-all duration-300"
+                          onClick={() =>
+                            removeItem(`${item.id}_${item.type || "normal"}`)
+                          }
+                          className="text-gold hover:text-blue-1 hover:bg-gray-2 rounded-full p-2 transition-all duration-300"
                           aria-label="Eliminar producto"
                         >
                           <FaTrash />
                         </button>
                         <button
                           onClick={() =>
-                            updateQuantity(item.id, item.quantity - 1)
+                            updateQuantity(
+                              `${item.id}_${item.type || "normal"}`,
+                              item.quantity - 1
+                            )
                           }
-                          className="text-blue-1 hover:text-gold hover:scale-150 transition-all duration-300"
+                          className="text-blue-1 hover:bg-gold hover:text-black rounded-full p-2 transition-all duration-300"
                           aria-label="Disminuir cantidad"
                         >
                           <FaMinus />
                         </button>
-                        <span className="text-2xl font-family-comfortaa font-black text-blue-2 min-w-8 text-center">
+                        <span className="text-2xl font-family-comfortaa font-black text-blue-1 min-w-8 text-center">
                           {item.quantity}
                         </span>
                         <button
                           onClick={() =>
-                            updateQuantity(item.id, item.quantity + 1)
+                            updateQuantity(
+                              `${item.id}_${item.type || "normal"}`,
+                              item.quantity + 1
+                            )
                           }
-                          className="text-blue-1 hover:text-gold hover:scale-150 transition-all duration-300"
+                          className="text-blue-1 hover:bg-gold hover:text-black rounded-full p-2 transition-all duration-300"
                           aria-label="Aumentar cantidad"
                         >
                           <FaPlus />
                         </button>
+                        <span className="text-xs text-blue-2 ml-2 font-family-sora font-bold">
+                          Subtotal: $
+                          {(item.price * item.quantity).toLocaleString("es-AR")}
+                        </span>
                       </div>
                     </div>
                   </li>

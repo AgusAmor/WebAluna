@@ -15,6 +15,8 @@ import { auth } from "./firebase";
  * Handles custom claims to determine admin role.
  * Sends user data to backend after registration.
  */
+
+const BASE_URL = import.meta.env.VITE_FIREBASE_FUNCTIONS_BASE_URL;
 class AuthService {
   /**
    * Checks if an email exists in Firebase Authentication by calling backend Cloud Function.
@@ -22,14 +24,11 @@ class AuthService {
    * @returns {boolean} true if exists, false otherwise
    */
   async verifyEmailExists(email) {
-    const response = await fetch(
-      "https://southamerica-east1-aluna-1af1f.cloudfunctions.net/verifyUserEmail",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      }
-    );
+    const response = await fetch(`${BASE_URL}/verifyUserEmail`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
     const data = await response.json();
     if (response.ok && typeof data.exists === "boolean") {
       return data.exists;
@@ -85,17 +84,14 @@ class AuthService {
 
     // Send user data to backend
     const token = await user.getIdToken();
-    await fetch(
-      "https://southamerica-east1-aluna-1af1f.cloudfunctions.net/createUserDoc",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(userDataForStorage),
-      }
-    );
+    await fetch(`${BASE_URL}/createUserDoc`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(userDataForStorage),
+    });
 
     return this.adminVerify(user);
   }

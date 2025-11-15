@@ -21,14 +21,18 @@ const cartReducer = (state, action) => {
       };
 
     case CART_ACTIONS.ADD_ITEM: {
+      // Use id + selectedType to distinguish items of different sizes
+      const itemKey = `${action.payload.id}_${
+        action.payload.selectedType || "normal"
+      }`;
       const existingItem = state.items.find(
-        (item) => item.id === action.payload.id
+        (item) => `${item.id}_${item.selectedType || "normal"}` === itemKey
       );
       let updatedItems;
 
       if (existingItem) {
         updatedItems = state.items.map((item) =>
-          item.id === action.payload.id
+          `${item.id}_${item.selectedType || "normal"}` === itemKey
             ? {
                 ...item,
                 quantity: item.quantity + (action.payload.quantity || 1),
@@ -38,7 +42,13 @@ const cartReducer = (state, action) => {
       } else {
         updatedItems = [
           ...state.items,
-          { ...action.payload, quantity: action.payload.quantity || 1 },
+          {
+            ...action.payload,
+            price: action.payload.selectedPrice, // store selected price
+            size: action.payload.selectedSize, // store selected size
+            type: action.payload.selectedType, // store selected type
+            quantity: action.payload.quantity || 1,
+          },
         ];
       }
 
@@ -60,12 +70,14 @@ const cartReducer = (state, action) => {
     }
 
     case CART_ACTIONS.UPDATE_QUANTITY: {
+      // Support composite key (id_type) for cart items
       const updatedItems = state.items
-        .map((item) =>
-          item.id === action.payload.id
+        .map((item) => {
+          const itemKey = `${item.id}_${item.type || "normal"}`;
+          return itemKey === action.payload.id
             ? { ...item, quantity: Math.max(0, action.payload.quantity) }
-            : item
-        )
+            : item;
+        })
         .filter((item) => item.quantity > 0);
 
       const newTotal = updatedItems.reduce(
@@ -86,9 +98,11 @@ const cartReducer = (state, action) => {
     }
 
     case CART_ACTIONS.REMOVE_ITEM: {
-      const updatedItems = state.items.filter(
-        (item) => item.id !== action.payload.id
-      );
+      // Support composite key (id_type) for cart items
+      const updatedItems = state.items.filter((item) => {
+        const itemKey = `${item.id}_${item.type || "normal"}`;
+        return itemKey !== action.payload.id;
+      });
       const newTotal = updatedItems.reduce(
         (sum, item) => sum + item.price * item.quantity,
         0

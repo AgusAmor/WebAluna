@@ -1,23 +1,38 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
+import { useEffect, useState } from "react";
+import { fetchProducts } from "../../services/firebaseProductService";
 import "./Carousel.css";
 
 const Home = () => {
   const { addItem } = useCart();
   const navigate = useNavigate();
 
-  const sampleProducts = [
-    { id: 1, name: "Lámpara Luna", price: 150, imageBase64: null },
-    { id: 2, name: "Lámpara Estrella", price: 200, imageBase64: null },
-    { id: 3, name: "Lámpara Nebulosa", price: 250, imageBase64: null },
-  ];
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        setLoading(true);
+        const fetched = await fetchProducts();
+        setProducts(fetched);
+      } catch (err) {
+        setError("No se pudieron cargar los productos");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProducts();
+  }, []);
 
   const handleAddToCart = (product) => {
     addItem(product);
   };
 
-  const goToCatalog = () => {
-    navigate("/productos");
+  const goToCatalog = (product) => {
+    navigate("/productos", { state: { openProduct: product } });
   };
 
   return (
@@ -60,38 +75,49 @@ const Home = () => {
           aria-label="Carrusel de lámparas 3D destacadas"
         >
           <div className="carousel">
-            {[
-              ...sampleProducts,
-              ...sampleProducts,
-              ...sampleProducts,
-              ...sampleProducts,
-            ].map((product, index) => (
-              <div
-                key={index}
-                className="carousel-item"
-                onClick={goToCatalog}
-                role="button"
-                tabIndex={0}
-                aria-label={`Ver ${product.name} - Lámpara 3D personalizada`}
-              >
-                {product.imageBase64 ? (
-                  <img
-                    src={`data:image/jpeg;base64,${product.imageBase64}`}
-                    alt={`${product.name} - Lámpara impresa en 3D - Aluna`}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-linear-to-br from-blue-3 to-blue-2 flex items-center justify-center">
-                    <div className="text-center text-white p-4">
-                      <h3 className="text-lg md:text-xl font-bold mb-2">
-                        {product.name} 3D
-                      </h3>
-                      <p className="text-base md:text-lg">${product.price}</p>
-                    </div>
-                  </div>
-                )}
+            {loading ? (
+              <div className="carousel-item flex items-center justify-center text-gray-2 text-lg">
+                Cargando productos...
               </div>
-            ))}
+            ) : error ? (
+              <div className="carousel-item flex items-center justify-center text-red-500 text-lg">
+                {error}
+              </div>
+            ) : (
+              [...products, ...products, ...products, ...products].map(
+                (product, index) => (
+                  <div
+                    key={index}
+                    className="carousel-item"
+                    onClick={() => goToCatalog(product)}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Ver ${product.name} - Lámpara 3D personalizada`}
+                  >
+                    {product.imageUrl ? (
+                      <img
+                        src={product.imageUrl}
+                        alt={`${product.name} - Lámpara impresa en 3D - Aluna`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-linear-to-br from-blue-3 to-blue-2 flex items-center justify-center">
+                        <div className="text-center text-white p-4">
+                          <h3 className="text-lg md:text-xl font-bold mb-2">
+                            {product.name} 3D
+                          </h3>
+                          <p className="text-base md:text-lg">
+                            $
+                            {product.price ||
+                              (product.pricing?.normal?.price ?? "")}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              )
+            )}
           </div>
         </div>
       </section>
