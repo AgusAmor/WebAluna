@@ -97,14 +97,20 @@ export const AuthProvider = ({ children }) => {
   /**
    * Reset password
    */
-  const resetPassword = async (email) => {
-    try {
-      setError(null);
-      return await authService.resetPassword(email);
-    } catch (err) {
-      setError(err.message);
-      throw err;
+  /**
+   * Handles password reset request: verifies email existence and sends reset email if valid.
+   * Returns a message or throws an error for UI display.
+   */
+  const requestPasswordReset = async (email) => {
+    setError(null);
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      throw new Error("Please enter a valid email address.");
     }
+    const exists = await authService.verifyEmailExists(email);
+    if (!exists) {
+      throw new Error("Email is not registered.");
+    }
+    return await authService.resetPassword(email);
   };
 
   const value = {
@@ -115,7 +121,7 @@ export const AuthProvider = ({ children }) => {
     loginWithGoogle,
     register,
     logout,
-    resetPassword,
+    requestPasswordReset,
     isAuthenticated: !!user,
     isAdmin: user?.role === "admin",
   };

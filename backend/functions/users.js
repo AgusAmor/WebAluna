@@ -62,3 +62,40 @@ exports.createUserDoc = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.verifyUserEmail = async (req, res) => {
+  if (handleCors(req, res)) return;
+
+  let body = req.body;
+  if (typeof body === "string") {
+    try {
+      body = JSON.parse(body);
+    } catch (e) {
+      return res.status(400).json({ error: "Invalid JSON body" });
+    }
+  }
+
+  const { email } = body;
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+
+  try {
+    const user = await admin.auth().getUserByEmail(email);
+    return res.json({ exists: true });
+  } catch (error) {
+    if (error.code === "auth/user-not-found") {
+      return res.json({ exists: false });
+    }
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+exports.changePassword = async (uid, newPassword) => {
+  try {
+    await admin.auth().updateUser(uid, { password: newPassword });
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+};

@@ -1,6 +1,17 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const handleCors = require("./middlewares/corsMiddleware.js");
-const { createUserDoc } = require("./users.js");
+const { createUserDoc, verifyUserEmail } = require("./users.js");
+/**
+ * Exposes the verifyUserEmail HTTPS function in the southamerica-east1 region.
+ * Handles CORS and delegates logic to the controller.
+ */
+exports.verifyUserEmail = onRequest(
+  { region: "southamerica-east1" },
+  async (req, res) => {
+    if (handleCors(req, res)) return;
+    await verifyUserEmail(req, res);
+  }
+);
 
 /**
  * Exposes the createUserDoc HTTPS function in the southamerica-east1 region.
