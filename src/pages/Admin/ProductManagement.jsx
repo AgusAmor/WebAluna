@@ -6,6 +6,7 @@ import {
   fetchProducts,
   createProduct,
   uploadProductImage,
+  deleteProduct,
 } from "../../services/firebaseProductService";
 import { useAuth } from "../../context/AuthContext";
 
@@ -15,8 +16,10 @@ const ProductManagement = () => {
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
+  const [saving, setSaving] = useState(false); // New state for product creation
   const imageInputRef = useRef(null);
   const { user } = useAuth();
+  const [deletingId, setDeletingId] = useState(null); // Track which product is being deleted
 
   useEffect(() => {
     async function loadProducts() {
@@ -77,7 +80,9 @@ const ProductManagement = () => {
                 id="add-product-form"
                 onSubmit={async (e) => {
                   e.preventDefault();
+                  if (saving) return; // Prevent multiple submissions
                   setError(null);
+                  setSaving(true);
                   const form = e.target;
                   // Collect form data
                   const name = form.elements["name"].value;
@@ -94,6 +99,7 @@ const ProductManagement = () => {
                     fileInput && fileInput.files && fileInput.files[0];
                   if (!file) {
                     setError("Image is required");
+                    setSaving(false);
                     return;
                   }
                   // Upload image to Firebase Storage and get URL
@@ -105,12 +111,13 @@ const ProductManagement = () => {
                     imageUrl = await uploadProductImage(file, uniqueName);
                   } catch (err) {
                     setError("Error uploading image: " + (err.message || err));
+                    setSaving(false);
                     return;
                   }
                   // Get Firebase Auth token
                   let token = "";
                   if (user && user.getIdToken) {
-                    token = await user.getIdToken();
+                    token = await user.getIdToken(true); // force refresh
                   } else if (
                     user &&
                     user.stsTokenManager &&
@@ -120,6 +127,7 @@ const ProductManagement = () => {
                   }
                   if (!token) {
                     setError("User token not found. Please log in again.");
+                    setSaving(false);
                     return;
                   }
                   // Build product object
@@ -143,6 +151,8 @@ const ProductManagement = () => {
                     setImagePreview(null);
                   } catch (err) {
                     setError(err.message || "Error creating product");
+                  } finally {
+                    setSaving(false);
                   }
                 }}
               >
@@ -310,9 +320,14 @@ const ProductManagement = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 rounded-lg bg-blue-2 text-white font-bold hover:bg-gold cursor-pointer transition-colors"
+                    className={`px-4 py-2 rounded-lg font-bold transition-colors ${
+                      saving
+                        ? "bg-gray-2 text-gray-3 cursor-not-allowed"
+                        : "bg-blue-2 text-white hover:bg-gold cursor-pointer"
+                    }`}
+                    disabled={saving}
                   >
-                    Guardar
+                    {saving ? "Guardando..." : "Guardar"}
                   </button>
                 </div>
               </form>
@@ -384,12 +399,96 @@ const ProductManagement = () => {
                       ${product.pricing?.small?.price ?? "-"}
                     </td>
                     <td className="py-2 px-2 text-center">
-                      <button className="bg-blue-2 text-white px-3 py-1 rounded-lg text-xs font-bold mr-2 hover:bg-gold transition-colors">
-                        Editar
-                      </button>
-                      <button className="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-700 transition-colors">
-                        Eliminar
-                      </button>
+                      <div className="flex flex-col items-center gap-2">
+                        <button className="bg-blue-2 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-gold transition-colors w-24">
+                          Editar
+                        </button>
+                        <button
+                          className={`bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-700 transition-colors w-24 flex items-center justify-center ${
+                            deletingId === product.id
+                              ? "opacity-60 cursor-not-allowed"
+                              : ""
+                          }`}
+                          disabled={deletingId === product.id}
+                          onClick={async () => {
+                            if (deletingId) return;
+                            setDeletingId(product.id);
+                            setError(null);
+                            let token = "";
+                            if (user && user.getIdToken) {
+                              token = await user.getIdToken(true); // force refresh
+                            } else if (
+                              user &&
+                              user.stsTokenManager &&
+                              user.stsTokenManager.accessToken
+                            ) {
+                              token = user.stsTokenManager.accessToken;
+                            }
+                            // Log token for debugging
+                            console.log("Token enviado a backend:", token);
+                            if (!token) {
+                              setError(
+                                "User token not found. Please log in again."
+                              );
+                              setDeletingId(null);
+                              return;
+                            }
+                            try {
+                              await deleteProduct(product.id, token);
+                              // Eliminar imagen del storage si existe
+                              if (product.imageUrl) {
+                                try {
+                                  const { deleteProductImage } = await import(
+                                    "../../services/firebaseProductService"
+                                  );
+                                  await deleteProductImage(product.imageUrl);
+                                } catch (imgErr) {
+                                  console.error(
+                                    "Error eliminando imagen del storage:",
+                                    imgErr
+                                  );
+                                }
+                              }
+                              // Remove from UI
+                              setProducts((prev) =>
+                                prev.filter((p) => p.id !== product.id)
+                              );
+                            } catch (err) {
+                              setError(err.message || "Error deleting product");
+                            } finally {
+                              setDeletingId(null);
+                            }
+                          }}
+                        >
+                          {deletingId === product.id ? (
+                            <span className="flex items-center justify-center w-full h-full">
+                              <svg
+                                className="animate-spin h-5 w-5 mx-auto text-white"
+                                viewBox="0 0 24 24"
+                              >
+                                <circle
+                                  className="opacity-20"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                  fill="none"
+                                />
+                                <path
+                                  fill="currentColor"
+                                  d="M12 2a10 10 0 0 1 10 10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                  strokeLinecap="round"
+                                />
+                              </svg>
+                            </span>
+                          ) : (
+                            "Eliminar"
+                          )}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

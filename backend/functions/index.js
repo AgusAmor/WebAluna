@@ -1,7 +1,18 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const handleCors = require("./middlewares/corsMiddleware.js");
 const { createUserDoc, verifyUserEmail } = require("./users.js");
-const { getProducts, getProductById } = require("./products.js");
+const { getProducts, getProductById, deleteProduct } = require("./products.js");
+/**
+ * Exposes the deleteProduct HTTPS function in the southamerica-east1 region.
+ * Deletes a product and its image from Storage.
+ */
+exports.deleteProduct = onRequest(
+  { region: "southamerica-east1" },
+  async (req, res) => {
+    if (handleCors(req, res)) return;
+    await deleteProduct(req, res);
+  }
+);
 
 /**
  * Exposes the createProduct HTTPS function in the southamerica-east1 region.

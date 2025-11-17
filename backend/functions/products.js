@@ -2,6 +2,64 @@ const admin = require("./config/firebaseAdmin.js");
 const handleCors = require("./middlewares/corsMiddleware.js");
 
 /**
+ * POST /deleteProduct
+ * Deletes a product from Firestore and its image from Firebase Storage
+ * Expects: { id: string, imageUrl: string } in body, and Authorization header
+ */
+exports.deleteProduct = async (req, res) => {
+  if (handleCors(req, res)) return;
+  let body = req.body;
+  if (typeof body === "string") {
+    try {
+      body = JSON.parse(body);
+    } catch (e) {
+      return res.status(400).json({ error: "Invalid JSON body" });
+    }
+  }
+  const { id } = body;
+  if (!id) {
+    return res.status(400).json({ error: "Product id required" });
+  }
+  // Auth check
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ error: "No token provided" });
+  }
+  const token = authHeader.split(" ")[1];
+  let decoded = null;
+  try {
+    decoded = await admin.auth().verifyIdToken(token);
+    console.log("[deleteProduct] UID:", decoded.uid, "Claims:", decoded);
+  } catch (err) {
+    console.error("[deleteProduct] Token verification error:", err);
+    return res.status(401).json({ error: "Invalid token" });
+  }
+  // Check for admin claim
+  let isAdmin = false;
+  if (decoded && typeof decoded.admin !== "undefined") {
+    isAdmin = decoded.admin;
+  }
+  if (!isAdmin) {
+    console.error(
+      "[deleteProduct] User is not admin:",
+      decoded ? decoded.uid : null,
+      "Decoded token:",
+      decoded
+    );
+    return res
+      .status(403)
+      .json({ error: "User is not admin", claims: decoded });
+  }
+  try {
+    // Delete Firestore document
+    await admin.firestore().collection("products").doc(id).delete();
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/**
  * Creates a product document in Firestore.
  * Expects product data in request body (JSON).
  * Writes product data to the 'products' collection.
@@ -11,8 +69,6 @@ const handleCors = require("./middlewares/corsMiddleware.js");
 exports.createProduct = async (req, res) => {
   // Handle CORS and preflight requests
   if (handleCors(req, res)) return;
-
-  // Parse request body to ensure it's an object
   let body = req.body;
   if (typeof body === "string") {
     try {
@@ -21,8 +77,8 @@ exports.createProduct = async (req, res) => {
       return res.status(400).json({ error: "Invalid JSON body" });
     }
   }
-
-  // Extract and verify Firebase Auth token
+  const productData = body;
+  // Auth check
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     return res.status(401).json({ error: "No token provided" });
@@ -31,43 +87,34 @@ exports.createProduct = async (req, res) => {
   let decoded;
   try {
     decoded = await admin.auth().verifyIdToken(token);
+    console.log("[createProduct] UID:", decoded.uid, "Claims:", decoded);
   } catch (err) {
+    console.error("[createProduct] Token verification error:", err);
     return res.status(401).json({ error: "Invalid token" });
   }
-
-  // Destructure product data from request body
-  const { name, family, description, pricing, imageUrl } = body;
-  console.log("[createProduct] Incoming request body:", {
-    name,
-    family,
-    description,
-    pricing,
-    imageUrl,
-  });
-  if (!name || !family || !description || !pricing || !imageUrl) {
-    console.error("[createProduct] Missing required product fields");
-    return res.status(400).json({ error: "Missing required product fields" });
+  // Check for admin claim
+  let isAdmin = false;
+  if (decoded && typeof decoded.admin !== "undefined") {
+    isAdmin = decoded.admin;
   }
-  // Get UID of admin from token
-  const createdBy = decoded.uid;
+  if (!isAdmin) {
+    console.error(
+      "[createProduct] User is not admin:",
+      decoded ? decoded.uid : null,
+      "Decoded token:",
+      decoded
+    );
+    return res
+      .status(403)
+      .json({ error: "User is not admin", claims: decoded });
+  }
   try {
-    // Save product document in Firestore
-    const docRef = await admin.firestore().collection("products").add({
-      name,
-      family,
-      description,
-      pricing,
-      imageUrl,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      createdBy,
-    });
-    // Get saved product with timestamps
-    const savedDoc = await docRef.get();
-    const product = { id: docRef.id, ...savedDoc.data() };
-    res.json({ success: true, product });
+    const docRef = await admin
+      .firestore()
+      .collection("products")
+      .add(productData);
+    res.json({ success: true, id: docRef.id });
   } catch (error) {
-    console.error(`[createProduct] Error:`, error);
     res.status(500).json({ error: error.message });
   }
 };

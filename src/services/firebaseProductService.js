@@ -1,5 +1,50 @@
 import { storage } from "./firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
+
+// Service to fetch products from Firebase backend Cloud Functions
+const BASE_URL = import.meta.env.VITE_FIREBASE_FUNCTIONS_BASE_URL;
+
+/**
+ * Deletes a product from Firestore via backend Cloud Function.
+ * @param {string} id - Product ID
+ * @param {string} token - Firebase Auth token
+ * @returns {Promise<Object>} Result
+ */
+export async function deleteProduct(id, token) {
+  const response = await fetch(`${BASE_URL}/deleteProduct`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ id }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to delete product");
+  }
+  return await response.json();
+}
+
+/**
+ * Deletes an image from Firebase Storage using JS SDK.
+ * @param {string} imageUrl - Full image URL
+ * @returns {Promise<void>}
+ */
+export async function deleteProductImage(imageUrl) {
+  // Extract storage path from imageUrl
+  const match = imageUrl.match(/\/o\/([^?]+)/);
+  if (!match || !match[1])
+    throw new Error("No se pudo extraer el path de la imagen");
+  const filePath = decodeURIComponent(match[1]);
+  const fileRef = ref(storage, filePath);
+  await deleteObject(fileRef);
+}
 
 /**
  * Uploads an image file to Firebase Storage and returns its public URL.
@@ -12,19 +57,7 @@ export async function uploadProductImage(file, path) {
   await uploadBytes(storageRef, file);
   return await getDownloadURL(storageRef);
 }
-// Service to fetch products from Firebase backend Cloud Functions
 
-const BASE_URL = import.meta.env.VITE_FIREBASE_FUNCTIONS_BASE_URL;
-
-/**
- * Creates a new product by sending product data and image to the backend Cloud Function.
- * @param {Object} product - Product data (name, price, description, etc.)
- * @param {string} imageBase64 - Base64-encoded image string
- * @param {string} imageMimeType - MIME type of the image (e.g., 'image/png')
- * @param {string} token - Firebase Auth token for authentication
- * @returns {Promise<Object>} Created product info
- * @throws {Error} If the request fails
- */
 /**
  * Creates a new product by sending product data (with imageUrl) to the backend Cloud Function.
  * @param {Object} product - Product data (name, price, description, imageUrl, etc.)
