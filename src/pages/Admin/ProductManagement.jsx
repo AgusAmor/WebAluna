@@ -2,7 +2,12 @@ import React, { useEffect, useState, useRef } from "react";
 import { MdAdd } from "react-icons/md";
 import { TiUpload } from "react-icons/ti";
 import { Hero } from "../../components/common";
-import { fetchProducts } from "../../services/firebaseProductService";
+import {
+  fetchProducts,
+  createProduct,
+  uploadProductImage,
+} from "../../services/firebaseProductService";
+import { useAuth } from "../../context/AuthContext";
 
 const ProductManagement = () => {
   const [products, setProducts] = useState([]);
@@ -11,6 +16,7 @@ const ProductManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const imageInputRef = useRef(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     async function loadProducts() {
@@ -28,7 +34,7 @@ const ProductManagement = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-3 px-4 py-2">
+    <div className="min-h-screen bg-gray-3 px-4 py-2 pb-20">
       <Hero
         title="Gestión de Productos"
         subtitle="Aquí podrás administrar los productos del catálogo."
@@ -69,12 +75,83 @@ const ProductManagement = () => {
               <form
                 className="space-y-4 overflow-y-auto flex-1"
                 id="add-product-form"
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setError(null);
+                  const form = e.target;
+                  // Collect form data
+                  const name = form.elements["name"].value;
+                  const description = form.elements["description"].value;
+                  const family = form.elements["family"].value;
+                  // Prices
+                  const normalPrice = form.elements["normalPrice"].value;
+                  const normalSize = form.elements["normalSize"].value;
+                  const smallPrice = form.elements["smallPrice"].value;
+                  const smallSize = form.elements["smallSize"].value;
+                  // Image
+                  const fileInput = imageInputRef.current;
+                  const file =
+                    fileInput && fileInput.files && fileInput.files[0];
+                  if (!file) {
+                    setError("Image is required");
+                    return;
+                  }
+                  // Upload image to Firebase Storage and get URL
+                  let imageUrl = "";
+                  try {
+                    const uniqueName = `products/${Date.now()}_${Math.floor(
+                      Math.random() * 10000
+                    )}_${file.name}`;
+                    imageUrl = await uploadProductImage(file, uniqueName);
+                  } catch (err) {
+                    setError("Error uploading image: " + (err.message || err));
+                    return;
+                  }
+                  // Get Firebase Auth token
+                  let token = "";
+                  if (user && user.getIdToken) {
+                    token = await user.getIdToken();
+                  } else if (
+                    user &&
+                    user.stsTokenManager &&
+                    user.stsTokenManager.accessToken
+                  ) {
+                    token = user.stsTokenManager.accessToken;
+                  }
+                  if (!token) {
+                    setError("User token not found. Please log in again.");
+                    return;
+                  }
+                  // Build product object
+                  const product = {
+                    name,
+                    description,
+                    family,
+                    price: Number(normalPrice),
+                    imageUrl,
+                    pricing: {
+                      normal: { price: Number(normalPrice), size: normalSize },
+                      small: { price: Number(smallPrice), size: smallSize },
+                    },
+                  };
+                  try {
+                    const result = await createProduct(product, token);
+                    // Reload products
+                    const data = await fetchProducts();
+                    setProducts(data);
+                    setShowModal(false);
+                    setImagePreview(null);
+                  } catch (err) {
+                    setError(err.message || "Error creating product");
+                  }
+                }}
               >
                 <div className="flex flex-col gap-4">
                   <label className="font-bold text-blue-2 mb-1 flex items-center gap-1">
                     Nombre <span className="text-gold">*</span>
                   </label>
                   <input
+                    name="name"
                     type="text"
                     placeholder="Nombre"
                     required
@@ -84,6 +161,7 @@ const ProductManagement = () => {
                     Descripción <span className="text-gold">*</span>
                   </label>
                   <textarea
+                    name="description"
                     placeholder="Descripción"
                     required
                     className="w-full px-4 py-2 border border-gray-2 rounded-lg resize-none focus:border-gold focus:outline-none"
@@ -93,6 +171,7 @@ const ProductManagement = () => {
                     Familia <span className="text-gold">*</span>
                   </label>
                   <select
+                    name="family"
                     className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
                     required
                   >
@@ -174,6 +253,7 @@ const ProductManagement = () => {
                         Normal <span className="text-gold">*</span>
                       </h3>
                       <input
+                        name="normalPrice"
                         type="number"
                         min={0}
                         placeholder="36000"
@@ -181,6 +261,7 @@ const ProductManagement = () => {
                         className="w-full px-3 py-2 border border-gray-2 rounded-md bg-white focus:border-gold focus:outline-none text-sm md:text-base"
                       />
                       <input
+                        name="normalSize"
                         type="text"
                         placeholder="24cm x 11,5cm x 11,5cm"
                         defaultValue="24cm x 11,5cm x 11,5cm"
@@ -193,6 +274,7 @@ const ProductManagement = () => {
                         Small <span className="text-gold">*</span>
                       </h3>
                       <input
+                        name="smallPrice"
                         type="number"
                         min={0}
                         placeholder="30000"
@@ -200,6 +282,7 @@ const ProductManagement = () => {
                         className="w-full px-3 py-2 border border-gray-2 rounded-md bg-white focus:border-gold focus:outline-none text-sm md:text-base"
                       />
                       <input
+                        name="smallSize"
                         type="text"
                         placeholder="17cm x 9,5cm x 9,5cm"
                         defaultValue="17cm x 9,5cm x 9,5cm"

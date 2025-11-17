@@ -2,6 +2,19 @@ const { onRequest } = require("firebase-functions/v2/https");
 const handleCors = require("./middlewares/corsMiddleware.js");
 const { createUserDoc, verifyUserEmail } = require("./users.js");
 const { getProducts, getProductById } = require("./products.js");
+
+/**
+ * Exposes the createProduct HTTPS function in the southamerica-east1 region.
+ * Handles CORS and delegates logic to the products controller.
+ */
+exports.createProduct = onRequest(
+  { region: "southamerica-east1" },
+  async (req, res) => {
+    if (handleCors(req, res)) return;
+    await require("./products.js").createProduct(req, res);
+  }
+);
+
 /**
  * Exposes the verifyUserEmail HTTPS function in the southamerica-east1 region.
  * Handles CORS and delegates logic to the controller.
