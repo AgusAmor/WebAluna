@@ -11,15 +11,24 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Listen for session changes in Firebase Auth
-    const unsubscribe = authService.auth.onAuthStateChanged((currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
+    // Listen for authentication state changes in Firebase Auth and update user role using custom claims
+    const unsubscribe = authService.auth.onAuthStateChanged(
+      async (currentUser) => {
+        if (currentUser) {
+          // Force token refresh to get updated custom claims
+          await currentUser.getIdToken(true);
+          const userWithRole = await authService.adminVerify(currentUser);
+          setUser(userWithRole);
+        } else {
+          setUser(null);
+        }
+        setLoading(false);
+      }
+    );
     return () => unsubscribe();
   }, []);
 
-  // Auto-logout after inactivity
+  // Automatically log out the user after a period of inactivity
   useAutoLogout(() => {
     if (user) {
       logout();
@@ -27,7 +36,8 @@ export const AuthProvider = ({ children }) => {
   }, 5 * 60 * 1000);
 
   /**
-   * Login with email and password
+   * Logs in a user using email and password credentials
+   * Updates user state and handles errors
    */
   const login = async (email, password) => {
     try {
@@ -45,7 +55,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
-   * Login with Google
+   * Logs in a user using Google authentication popup
+   * Updates user state and handles errors
    */
   const loginWithGoogle = async () => {
     try {
@@ -63,7 +74,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
-   * Register new user
+   * Registers a new user with email, password, and name
+   * Updates user state and handles errors
    */
   const register = async (email, password, name) => {
     try {
@@ -81,7 +93,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
-   * Logout
+   * Logs out the current user and clears user state
+   * Handles errors during logout
    */
   const logout = async () => {
     try {
@@ -95,11 +108,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
-   * Reset password
-   */
-  /**
-   * Handles password reset request: verifies email existence and sends reset email if valid.
-   * Returns a message or throws an error for UI display.
+   * Handles password reset request: verifies if the email exists and sends a reset email if valid
+   * Returns a message or throws an error for UI display
    */
   const requestPasswordReset = async (email) => {
     setError(null);
@@ -134,7 +144,8 @@ AuthProvider.propTypes = {
 };
 
 /**
- * Custom hook to use auth context
+ * Custom hook to access the authentication context
+ * Throws an error if used outside of AuthProvider
  */
 export const useAuth = () => {
   const context = useContext(AuthContext);

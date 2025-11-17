@@ -100,7 +100,12 @@ const Header = () => {
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
                       <div className="px-4 py-2 border-b border-gray-2">
                         <p className="text-sm font-semibold text-blue-1 truncate">
-                          {user?.displayName || user?.email}
+                          {/* Show display name if available, otherwise show email username (before '@') */}
+                          {user?.displayName && user.displayName.trim() !== ""
+                            ? user.displayName
+                            : user?.email
+                            ? user.email.split("@")[0]
+                            : ""}
                         </p>
                         <p className="text-xs text-gray-1">
                           {user?.role === "admin" ? "Administrador" : "Usuario"}
@@ -224,14 +229,24 @@ const Header = () => {
                     >
                       <FiUser size={20} />
                       <span className="text-sm font-family-comfortaa">
-                        {user?.displayName?.split(" ")[0] || "Nombre usuario"}
+                        {/* Show first name if available, otherwise show email username (before '@') */}
+                        {user?.displayName && user.displayName.trim() !== ""
+                          ? user.displayName.split(" ")[0]
+                          : user?.email
+                          ? user.email.split("@")[0]
+                          : ""}
                       </span>
                     </button>
                     {showUserMenu && (
                       <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-50">
                         <div className="px-4 py-3 border-b border-gray-2">
                           <p className="text-sm font-semibold text-blue-1 truncate">
-                            {user?.displayName || user?.email}
+                            {/* Show display name if available, otherwise show email username (before '@') */}
+                            {user?.displayName && user.displayName.trim() !== ""
+                              ? user.displayName
+                              : user?.email
+                              ? user.email.split("@")[0]
+                              : ""}
                           </p>
                           <p className="text-xs text-gray-1">{user?.email}</p>
                           <p className="text-xs text-gold font-semibold mt-1">
@@ -333,14 +348,24 @@ const Header = () => {
                     >
                       <FiUser size={20} />
                       <span className="text-sm font-family-comfortaa">
-                        {user?.displayName?.split(" ")[0] || "Nombre usuario"}
+                        {/* Show first name if available, otherwise show email username (before '@') */}
+                        {user?.displayName && user.displayName.trim() !== ""
+                          ? user.displayName.split(" ")[0]
+                          : user?.email
+                          ? user.email.split("@")[0]
+                          : ""}
                       </span>
                     </button>
                     {showUserMenu && (
                       <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-50">
                         <div className="px-4 py-3 border-b border-gray-2">
                           <p className="text-sm font-semibold text-blue-1 truncate">
-                            {user?.displayName || user?.email}
+                            {/* Show display name if available, otherwise show email username (before '@') */}
+                            {user?.displayName && user.displayName.trim() !== ""
+                              ? user.displayName
+                              : user?.email
+                              ? user.email.split("@")[0]
+                              : ""}
                           </p>
                           <p className="text-xs text-gray-1">{user?.email}</p>
                           <p className="text-xs text-gold font-semibold mt-1">
