@@ -1,7 +1,12 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const handleCors = require("./middlewares/corsMiddleware.js");
 const { createUserDoc, verifyUserEmail } = require("./users.js");
-const { getProducts, getProductById, deleteProduct } = require("./products.js");
+const {
+  getProducts,
+  getProductById,
+  deleteProduct,
+  updateProduct,
+} = require("./products.js");
 /**
  * Exposes the deleteProduct HTTPS function in the southamerica-east1 region.
  * Deletes a product and its image from Storage.
@@ -71,5 +76,17 @@ exports.getProductById = onRequest(
   async (req, res) => {
     if (handleCors(req, res)) return;
     await getProductById(req, res);
+  }
+);
+
+/**
+ * Exposes the updateProduct HTTPS function in the southamerica-east1 region.
+ * Updates a product in Firestore by ID. Only admin users can update products.
+ */
+exports.updateProduct = onRequest(
+  { region: "southamerica-east1" },
+  async (req, res) => {
+    if (handleCors(req, res)) return;
+    await updateProduct(req, res);
   }
 );

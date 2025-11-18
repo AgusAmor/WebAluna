@@ -10,7 +10,8 @@ import {
 const BASE_URL = import.meta.env.VITE_FIREBASE_FUNCTIONS_BASE_URL;
 
 /**
- * Deletes a product from Firestore via backend Cloud Function.
+ * Deletes a product from Firestore.
+ * Sends the product ID and user token for authentication.
  * @param {string} id - Product ID
  * @param {string} token - Firebase Auth token
  * @returns {Promise<Object>} Result
@@ -32,7 +33,8 @@ export async function deleteProduct(id, token) {
 }
 
 /**
- * Deletes an image from Firebase Storage using JS SDK.
+ * Deletes an image from Firebase Storage.
+ * Extracts the storage path from the image URL and deletes the file.
  * @param {string} imageUrl - Full image URL
  * @returns {Promise<void>}
  */
@@ -47,7 +49,29 @@ export async function deleteProductImage(imageUrl) {
 }
 
 /**
+ * Replaces a product image in Firebase Storage.
+ * Deletes the previous image using its URL, then uploads the new image file.
+ * Returns the new image URL.
+ * @param {File} newFile - The new image file to upload
+ * @param {string} newPath - The storage path for the new image (e.g., 'products/filename.jpg')
+ * @param {string} oldImageUrl - The full URL of the previous image to delete
+ * @returns {Promise<string>} - The public URL of the uploaded image
+ */
+export async function replaceProductImage(newFile, newPath, oldImageUrl) {
+  if (oldImageUrl) {
+    try {
+      await deleteProductImage(oldImageUrl);
+    } catch (err) {
+      // Log error but continue with upload
+      console.error("Error deleting previous image:", err);
+    }
+  }
+  return await uploadProductImage(newFile, newPath);
+}
+
+/**
  * Uploads an image file to Firebase Storage and returns its public URL.
+ * Uses the provided file and storage path.
  * @param {File} file - The image file to upload
  * @param {string} path - The storage path (e.g., 'products/filename.jpg')
  * @returns {Promise<string>} - The public URL of the uploaded image
@@ -59,7 +83,8 @@ export async function uploadProductImage(file, path) {
 }
 
 /**
- * Creates a new product by sending product data (with imageUrl) to the backend Cloud Function.
+ * Creates a new product by sending product data.
+ * Requires a valid Firebase Auth token for authentication.
  * @param {Object} product - Product data (name, price, description, imageUrl, etc.)
  * @param {string} token - Firebase Auth token for authentication
  * @returns {Promise<Object>} Created product info
@@ -82,7 +107,31 @@ export async function createProduct(product, token) {
 }
 
 /**
- * Fetches all products from the backend Cloud Function.
+ * Updates an existing product in Firestore.
+ * Requires the product ID, updated fields, and a valid Firebase Auth token.
+ * @param {string} id - Product ID
+ * @param {Object} productData - Campos a actualizar
+ * @param {string} token - Firebase Auth token
+ * @returns {Promise<Object>} Result
+ */
+export async function updateProduct(id, productData, token) {
+  const response = await fetch(`${BASE_URL}/updateProduct`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ id, ...productData }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to update product");
+  }
+  return await response.json();
+}
+
+/**
+ * Fetches all products.
  * @returns {Promise<Array>} Array of product objects
  * @throws {Error} If the request fails
  */
@@ -99,7 +148,7 @@ export async function fetchProducts() {
 }
 
 /**
- * Fetches a single product by its ID from the backend Cloud Function.
+ * Fetches a single product by ID.
  * @param {string} id - The product ID
  * @returns {Promise<Object>} Product object
  * @throws {Error} If the request fails

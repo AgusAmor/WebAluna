@@ -2,9 +2,57 @@ const admin = require("./config/firebaseAdmin.js");
 const handleCors = require("./middlewares/corsMiddleware.js");
 
 /**
+ * POST /updateProduct
+ * Updates a product in Firestore by ID.
+ * Only admin users are allowed to update products.
+ */
+exports.updateProduct = async (req, res) => {
+  if (handleCors(req, res)) return;
+  let body = req.body;
+  if (typeof body === "string") {
+    try {
+      body = JSON.parse(body);
+    } catch (e) {
+      return res.status(400).json({ error: "Invalid JSON body" });
+    }
+  }
+  const { id, ...productData } = body;
+  if (!id) {
+    return res.status(400).json({ error: "Product id required" });
+  }
+  // Auth check
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ error: "No token provided" });
+  }
+  const token = authHeader.split(" ")[1];
+  let decoded = null;
+  try {
+    decoded = await admin.auth().verifyIdToken(token);
+  } catch (err) {
+    return res.status(401).json({ error: "Invalid token" });
+  }
+  let isAdmin = false;
+  if (decoded && typeof decoded.admin !== "undefined") {
+    isAdmin = decoded.admin;
+  }
+  if (!isAdmin) {
+    return res
+      .status(403)
+      .json({ error: "User is not admin", claims: decoded });
+  }
+  try {
+    await admin.firestore().collection("products").doc(id).update(productData);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/**
  * POST /deleteProduct
- * Deletes a product from Firestore and its image from Firebase Storage
- * Expects: { id: string, imageUrl: string } in body, and Authorization header
+ * Deletes a product from Firestore.
+ * Only admin users are allowed to delete products.
  */
 exports.deleteProduct = async (req, res) => {
   if (handleCors(req, res)) return;
@@ -60,11 +108,10 @@ exports.deleteProduct = async (req, res) => {
 };
 
 /**
+ * POST /createProduct
  * Creates a product document in Firestore.
- * Expects product data in request body (JSON).
  * Writes product data to the 'products' collection.
- * Validates Firebase Auth token from Authorization header.
- * Handles CORS and parses request body.
+ * Requires a valid Firebase Auth token and admin privileges.
  */
 exports.createProduct = async (req, res) => {
   // Handle CORS and preflight requests
@@ -121,7 +168,8 @@ exports.createProduct = async (req, res) => {
 
 /**
  * GET /products
- * Returns all products from Firestore 'products' collection
+ * Returns all products from Firestore 'products' collection.
+ * No authentication required.
  */
 exports.getProducts = async (req, res) => {
   if (handleCors(req, res)) return;
@@ -139,7 +187,8 @@ exports.getProducts = async (req, res) => {
 
 /**
  * GET /products/:id
- * Returns a single product by ID from Firestore
+ * Returns a single product by ID from Firestore.
+ * No authentication required.
  */
 exports.getProductById = async (req, res) => {
   if (handleCors(req, res)) return;

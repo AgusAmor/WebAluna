@@ -7,9 +7,13 @@ import {
   createProduct,
   uploadProductImage,
   deleteProduct,
+  updateProduct,
+  replaceProductImage,
 } from "../../services/firebaseProductService";
 import { useAuth } from "../../context/AuthContext";
+import ProductForm from "./ProductForm";
 
+// ProductManagement component: handles product CRUD, modal state, and UI feedback for admin product management.
 const ProductManagement = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,6 +24,7 @@ const ProductManagement = () => {
   const imageInputRef = useRef(null);
   const { user } = useAuth();
   const [deletingId, setDeletingId] = useState(null); // Track which product is being deleted
+  const [editProduct, setEditProduct] = useState(null); // Producto en edición
 
   useEffect(() => {
     async function loadProducts() {
@@ -52,12 +57,16 @@ const ProductManagement = () => {
             Agregar producto
           </button>
         </div>
-        {/* Modal para agregar producto */}
+        {/* Modal for adding or editing a product. Reuses ProductForm component. */}
         {showModal && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
             onClick={(e) => {
-              if (e.target === e.currentTarget) setShowModal(false);
+              if (e.target === e.currentTarget) {
+                setShowModal(false);
+                setEditProduct(null);
+                setImagePreview(null);
+              }
             }}
           >
             <div
@@ -66,55 +75,77 @@ const ProductManagement = () => {
             >
               <button
                 className="absolute top-3 right-3 text-blue-2 hover:text-gold text-xl font-bold"
-                onClick={() => setShowModal(false)}
+                onClick={() => {
+                  setShowModal(false);
+                  setEditProduct(null);
+                  setImagePreview(null);
+                }}
                 aria-label="Cerrar"
               >
                 ×
               </button>
               <h2 className="text-2xl font-bold text-blue-2 mb-4 font-family-comfortaa">
-                Agregar producto
+                {editProduct ? "Editar producto" : "Agregar producto"}
               </h2>
-              {/* Form for adding a product. Reset on cancel. */}
-              <form
-                className="space-y-4 overflow-y-auto flex-1"
-                id="add-product-form"
+              <ProductForm
+                initialProduct={editProduct}
+                imagePreview={imagePreview}
+                setImagePreview={setImagePreview}
+                saving={saving}
+                error={error}
+                buttonLabel={editProduct ? "Aplicar cambios" : "Guardar"}
+                onCancel={() => {
+                  setShowModal(false);
+                  setEditProduct(null);
+                  setImagePreview(null);
+                }}
                 onSubmit={async (e) => {
                   e.preventDefault();
-                  if (saving) return; // Prevent multiple submissions
+                  if (saving) return;
                   setError(null);
                   setSaving(true);
                   const form = e.target;
-                  // Collect form data
                   const name = form.elements["name"].value;
                   const description = form.elements["description"].value;
                   const family = form.elements["family"].value;
-                  // Prices
                   const normalPrice = form.elements["normalPrice"].value;
                   const normalSize = form.elements["normalSize"].value;
                   const smallPrice = form.elements["smallPrice"].value;
                   const smallSize = form.elements["smallSize"].value;
-                  // Image
-                  const fileInput = imageInputRef.current;
+                  const fileInput = form.querySelector("#product-image-upload");
                   const file =
                     fileInput && fileInput.files && fileInput.files[0];
-                  if (!file) {
+                  let imageUrl =
+                    imagePreview || (editProduct && editProduct.imageUrl) || "";
+                  let imageChanged = false;
+                  if (file) {
+                    try {
+                      const uniqueName = `products/${Date.now()}_${Math.floor(
+                        Math.random() * 10000
+                      )}_${file.name}`;
+                      if (editProduct && editProduct.imageUrl) {
+                        // Use replaceProductImage to delete old image and upload new one
+                        imageUrl = await replaceProductImage(
+                          file,
+                          uniqueName,
+                          editProduct.imageUrl
+                        );
+                      } else {
+                        imageUrl = await uploadProductImage(file, uniqueName);
+                      }
+                      imageChanged = true;
+                    } catch (err) {
+                      setError(
+                        "Error uploading image: " + (err.message || err)
+                      );
+                      setSaving(false);
+                      return;
+                    }
+                  } else if (!imageUrl) {
                     setError("Image is required");
                     setSaving(false);
                     return;
                   }
-                  // Upload image to Firebase Storage and get URL
-                  let imageUrl = "";
-                  try {
-                    const uniqueName = `products/${Date.now()}_${Math.floor(
-                      Math.random() * 10000
-                    )}_${file.name}`;
-                    imageUrl = await uploadProductImage(file, uniqueName);
-                  } catch (err) {
-                    setError("Error uploading image: " + (err.message || err));
-                    setSaving(false);
-                    return;
-                  }
-                  // Get Firebase Auth token
                   let token = "";
                   if (user && user.getIdToken) {
                     token = await user.getIdToken(true); // force refresh
@@ -130,7 +161,6 @@ const ProductManagement = () => {
                     setSaving(false);
                     return;
                   }
-                  // Build product object
                   const product = {
                     name,
                     description,
@@ -143,197 +173,34 @@ const ProductManagement = () => {
                     },
                   };
                   try {
-                    const result = await createProduct(product, token);
-                    // Reload products
-                    const data = await fetchProducts();
-                    setProducts(data);
+                    if (editProduct) {
+                      await updateProduct(editProduct.id, product, token);
+                      const data = await fetchProducts();
+                      setProducts(data);
+                    } else {
+                      const result = await createProduct(product, token);
+                      const data = await fetchProducts();
+                      setProducts(data);
+                    }
                     setShowModal(false);
+                    setEditProduct(null);
                     setImagePreview(null);
                   } catch (err) {
-                    setError(err.message || "Error creating product");
+                    setError(
+                      err.message ||
+                        (editProduct
+                          ? "Error editing product"
+                          : "Error creating product")
+                    );
                   } finally {
                     setSaving(false);
                   }
                 }}
-              >
-                <div className="flex flex-col gap-4">
-                  <label className="font-bold text-blue-2 mb-1 flex items-center gap-1">
-                    Nombre <span className="text-gold">*</span>
-                  </label>
-                  <input
-                    name="name"
-                    type="text"
-                    placeholder="Nombre"
-                    required
-                    className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
-                  />
-                  <label className="font-bold  text-blue-2 mb-1 flex items-center gap-1 ">
-                    Descripción <span className="text-gold">*</span>
-                  </label>
-                  <textarea
-                    name="description"
-                    placeholder="Descripción"
-                    required
-                    className="w-full px-4 py-2 border border-gray-2 rounded-lg resize-none focus:border-gold focus:outline-none"
-                    rows={2}
-                  />
-                  <label className="font-bold text-blue-2 mb-1 flex items-center gap-1">
-                    Familia <span className="text-gold">*</span>
-                  </label>
-                  <select
-                    name="family"
-                    className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
-                    required
-                  >
-                    <option value="AENOR">AENOR</option>
-                    <option value="CORE">CORE</option>
-                  </select>
-                  <div className="flex flex-col gap-2">
-                    <label className="font-bold text-blue-2 mb-1 flex items-center gap-1">
-                      Imagen <span className="text-gold">*</span>
-                    </label>
-                    <div className="border-2 border-dashed border-gray-2 rounded-lg w-full h-[37vh] flex flex-col items-center justify-center gap-2 p-4">
-                      {imagePreview ? (
-                        <>
-                          <img
-                            src={imagePreview}
-                            alt="Vista previa"
-                            className="max-h-32 max-w-[220px] rounded-lg shadow mb-2 object-contain"
-                          />
-                          <button
-                            type="button"
-                            className="text-red-500 text-xs font-semibold mb-2 underline hover:text-red-700"
-                            onClick={() => {
-                              setImagePreview(null);
-                              if (imageInputRef.current) {
-                                imageInputRef.current.value = "";
-                              }
-                            }}
-                          >
-                            Eliminar imagen
-                          </button>
-                          <label
-                            htmlFor="product-image-upload"
-                            className="bg-blue-2 text-white px-4 py-2 rounded-lg font-bold text-base hover:bg-gold cursor-pointer transition-colors block text-center w-fit"
-                          >
-                            Subir imagen
-                          </label>
-                        </>
-                      ) : (
-                        <>
-                          <TiUpload size={36} className="text-gray-3" />
-                          <span className="text-gray-3 text-xs font-semibold">
-                            Solo archivos JPG o PNG
-                          </span>
-                          <label
-                            htmlFor="product-image-upload"
-                            className="bg-blue-2 text-white px-4 py-2 rounded-lg font-bold text-base hover:bg-gold cursor-pointer transition-colors block text-center w-fit"
-                          >
-                            Subir imagen
-                          </label>
-                        </>
-                      )}
-                      <input
-                        id="product-image-upload"
-                        type="file"
-                        accept="image/jpeg,image/png"
-                        className="hidden"
-                        ref={imageInputRef}
-                        onChange={(e) => {
-                          const file = e.target.files[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onload = (ev) =>
-                              setImagePreview(ev.target.result);
-                            reader.readAsDataURL(file);
-                          } else {
-                            setImagePreview(null);
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-2 mt-6">
-                  <label className="font-bold text-blue-2 mb-1">Precios</label>
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* Product size and price inputs, responsive layout */}
-                    <div className="rounded-lg p-4 flex flex-col gap-3 bg-gray-2/40">
-                      <h3 className="font-semibold text-blue-2 mb-2 text-left text-base flex items-center gap-1">
-                        Normal <span className="text-gold">*</span>
-                      </h3>
-                      <input
-                        name="normalPrice"
-                        type="number"
-                        min={0}
-                        placeholder="36000"
-                        required
-                        className="w-full px-3 py-2 border border-gray-2 rounded-md bg-white focus:border-gold focus:outline-none text-sm md:text-base"
-                      />
-                      <input
-                        name="normalSize"
-                        type="text"
-                        placeholder="24cm x 11,5cm x 11,5cm"
-                        defaultValue="24cm x 11,5cm x 11,5cm"
-                        required
-                        className="w-full px-3 py-2 border border-gray-2 rounded-md bg-white focus:border-gold focus:outline-none text-sm md:text-base"
-                      />
-                    </div>
-                    <div className="rounded-lg p-4 flex flex-col gap-3 bg-gray-2/40">
-                      <h3 className="font-semibold text-blue-2 mb-2 text-left text-base flex items-center gap-1">
-                        Small <span className="text-gold">*</span>
-                      </h3>
-                      <input
-                        name="smallPrice"
-                        type="number"
-                        min={0}
-                        placeholder="30000"
-                        required
-                        className="w-full px-3 py-2 border border-gray-2 rounded-md bg-white focus:border-gold focus:outline-none text-sm md:text-base"
-                      />
-                      <input
-                        name="smallSize"
-                        type="text"
-                        placeholder="17cm x 9,5cm x 9,5cm"
-                        defaultValue="17cm x 9,5cm x 9,5cm"
-                        required
-                        className="w-full px-3 py-2 border border-gray-2 rounded-md bg-white focus:border-gold focus:outline-none text-sm md:text-base"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2 mt-4">
-                  <button
-                    type="button"
-                    className="px-4 py-2 rounded-lg bg-gray-2 text-blue-2 font-bold hover:bg-blue-2 hover:text-white cursor-pointer transition-colors"
-                    onClick={() => {
-                      // Reset form fields
-                      const form = document.getElementById("add-product-form");
-                      if (form) form.reset();
-                      setImagePreview(null);
-                      if (imageInputRef && imageInputRef.current)
-                        imageInputRef.current.value = "";
-                      setShowModal(false);
-                    }}
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className={`px-4 py-2 rounded-lg font-bold transition-colors ${
-                      saving
-                        ? "bg-gray-2 text-gray-3 cursor-not-allowed"
-                        : "bg-blue-2 text-white hover:bg-gold cursor-pointer"
-                    }`}
-                    disabled={saving}
-                  >
-                    {saving ? "Guardando..." : "Guardar"}
-                  </button>
-                </div>
-              </form>
+              />
             </div>
           </div>
         )}
+        {/* Product table */}
         <div className="bg-white rounded-xl shadow-md mt-2 overflow-x-auto">
           {loading ? (
             <div className="text-center py-8 text-blue-2 font-bold">
@@ -400,9 +267,19 @@ const ProductManagement = () => {
                     </td>
                     <td className="py-2 px-2 text-center">
                       <div className="flex flex-col items-center gap-2">
-                        <button className="bg-blue-2 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-gold transition-colors w-24">
+                        {/* Edit button: opens modal with product data for editing. */}
+                        <button
+                          className="bg-blue-2 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-gold transition-colors w-24"
+                          type="button"
+                          onClick={() => {
+                            setEditProduct(product);
+                            setImagePreview(product.imageUrl || null);
+                            setShowModal(true);
+                          }}
+                        >
                           Editar
                         </button>
+                        {/* Delete button: removes product and image from Firestore/Storage. */}
                         <button
                           className={`bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-700 transition-colors w-24 flex items-center justify-center ${
                             deletingId === product.id
@@ -424,8 +301,6 @@ const ProductManagement = () => {
                             ) {
                               token = user.stsTokenManager.accessToken;
                             }
-                            // Log token for debugging
-                            console.log("Token enviado a backend:", token);
                             if (!token) {
                               setError(
                                 "User token not found. Please log in again."
