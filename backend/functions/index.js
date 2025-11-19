@@ -1,6 +1,6 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const handleCors = require("./middlewares/corsMiddleware.js");
-const { createUserDoc, verifyUserEmail } = require("./users.js");
+const { createUserDoc, verifyUserEmail, getUsers, getUserById, updateUser, deleteUser } = require("./users.js");
 const {
   getProducts,
   getProductById,
@@ -52,6 +52,54 @@ exports.createUserDoc = onRequest(
   async (req, res) => {
     if (handleCors(req, res)) return;
     await createUserDoc(req, res);
+  }
+);
+
+/**
+ * Exposes the getUsers HTTPS function in the southamerica-east1 region.
+ * Returns all users from Firestore.
+ */
+exports.getUsers = onRequest(
+  { region: "southamerica-east1" },
+  async (req, res) => {
+    if (handleCors(req, res)) return;
+    await getUsers(req, res);
+  }
+);
+
+/**
+ * Exposes the getUserById HTTPS function in the southamerica-east1 region.
+ * Returns a user by ID from Firestore.
+ */
+exports.getUserById = onRequest(
+  { region: "southamerica-east1" },
+  async (req, res) => {
+    if (handleCors(req, res)) return;
+    await getUserById(req, res);
+  }
+);
+
+/**
+ * Exposes the updateUser HTTPS function in the southamerica-east1 region.
+ * Updates a user in Firestore by ID. Only admin users can update users.
+ */
+exports.updateUser = onRequest(
+  { region: "southamerica-east1" },
+  async (req, res) => {
+    if (handleCors(req, res)) return;
+    await updateUser(req, res);
+  }
+);
+
+/**
+ * Exposes the deleteUser HTTPS function in the southamerica-east1 region.
+ * Deletes a user in Firestore by ID. Only admin users can delete users.
+ */
+exports.deleteUser = onRequest(
+  { region: "southamerica-east1" },
+  async (req, res) => {
+    if (handleCors(req, res)) return;
+    await deleteUser(req, res);
   }
 );
 

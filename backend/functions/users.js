@@ -10,10 +10,10 @@ const handleCors = require("./middlewares/corsMiddleware.js");
  */
 
 exports.createUserDoc = async (req, res) => {
-  // Handle CORS and preflight requests
+  // Handles CORS and preflight requests
   if (handleCors(req, res)) return;
 
-  // Parse request body to ensure it's an object
+  // Parses request body to ensure it's an object
   let body = req.body;
   if (typeof body === "string") {
     try {
@@ -23,7 +23,7 @@ exports.createUserDoc = async (req, res) => {
     }
   }
 
-  // Extract and verify Firebase Auth token from Authorization header
+  // Extracts and verifies Firebase Auth token from Authorization header
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     return res.status(401).json({ error: "No token provided" });
@@ -36,13 +36,13 @@ exports.createUserDoc = async (req, res) => {
     return res.status(401).json({ error: "Invalid token" });
   }
 
-  // Destructure user data from request body
-  const { email, displayName, uid, lastLoginAt, ...rest } = body;
+  // Destructures user data from request body
+  const { email, displayName, uid, lastLoginAt, phone, addresses, status, ...rest } = body;
   if (!uid || !email) {
     return res.status(400).json({ error: "uid and email are required" });
   }
   try {
-    // Save user document in Firestore
+    // Saves user document in Firestore, ensuring all required fields exist
     await admin
       .firestore()
       .collection("users")
@@ -50,6 +50,9 @@ exports.createUserDoc = async (req, res) => {
       .set({
         email,
         displayName: displayName || "",
+        phone: phone || "",
+        addresses: Array.isArray(addresses) ? addresses : [],
+        status: status || "active",
         ...rest,
         lastLoginAt: lastLoginAt
           ? admin.firestore.Timestamp.fromDate(new Date(lastLoginAt))
@@ -97,5 +100,155 @@ exports.changePassword = async (uid, newPassword) => {
     return { success: true };
   } catch (error) {
     return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Retrieves all user documents from Firestore.
+ * GET /users
+ * No authentication required.
+ */
+exports.getUsers = async (req, res) => {
+  // Handles CORS and preflight requests
+  if (handleCors(req, res)) return;
+  try {
+    // Retrieves all user documents from Firestore
+    const snapshot = await admin.firestore().collection("users").get();
+    const users = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    res.json({ users });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/**
+ * Retrieves a user document by ID from Firestore.
+ * GET /users/:id
+ * No authentication required.
+ */
+exports.getUserById = async (req, res) => {
+  // Handles CORS and preflight requests
+  if (handleCors(req, res)) return;
+  const { id } = req.params;
+  try {
+    // Retrieves user document by ID
+    const doc = await admin.firestore().collection("users").doc(id).get();
+    if (!doc.exists) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json({ id: doc.id, ...doc.data() });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/**
+ * Updates a user document by ID in Firestore.
+ * POST /updateUser
+ * Only admin users can update users.
+ */
+exports.updateUser = async (req, res) => {
+  // Handles CORS and preflight requests
+  if (handleCors(req, res)) return;
+  let body = req.body;
+  // Parses request body to ensure it's an object
+  if (typeof body === "string") {
+    try {
+      body = JSON.parse(body);
+    } catch (e) {
+      return res.status(400).json({ error: "Invalid JSON body" });
+    }
+  }
+  const { id, ...userData } = body;
+  if (!id) {
+    return res.status(400).json({ error: "User id required" });
+  }
+  // Checks for admin authentication
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ error: "No token provided" });
+  }
+  const token = authHeader.split(" ")[1];
+  let decoded = null;
+  try {
+    decoded = await admin.auth().verifyIdToken(token);
+  } catch (err) {
+    return res.status(401).json({ error: "Invalid token" });
+  }
+  let isAdmin = false;
+  if (decoded && typeof decoded.admin !== "undefined") {
+    isAdmin = decoded.admin;
+  }
+  if (!isAdmin) {
+    return res.status(403).json({ error: "User is not admin", claims: decoded });
+  }
+  try {
+    // Updates user document in Firestore, ensuring all required fields exist
+    await admin.firestore().collection("users").doc(id).update({
+      displayName: userData.displayName || "",
+      email: userData.email || "",
+      phone: userData.phone || "",
+      addresses: Array.isArray(userData.addresses) ? userData.addresses : [],
+      status: userData.status || "active",
+      ...userData,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/**
+ * Deletes a user document by ID from Firestore.
+ * POST /deleteUser
+ * Only admin users can delete users.
+ */
+exports.deleteUser = async (req, res) => {
+  // Handles CORS and preflight requests
+  if (handleCors(req, res)) return;
+  let body = req.body;
+  // Parses request body to ensure it's an object
+  if (typeof body === "string") {
+    try {
+      body = JSON.parse(body);
+    } catch (e) {
+      return res.status(400).json({ error: "Invalid JSON body" });
+    }
+  }
+  const { id } = body;
+  if (!id) {
+    return res.status(400).json({ error: "User id required" });
+  }
+  // Checks for admin authentication
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ error: "No token provided" });
+  }
+  const token = authHeader.split(" ")[1];
+  let decoded = null;
+  try {
+    decoded = await admin.auth().verifyIdToken(token);
+  } catch (err) {
+    return res.status(401).json({ error: "Invalid token" });
+  }
+  let isAdmin = false;
+  if (decoded && typeof decoded.admin !== "undefined") {
+    isAdmin = decoded.admin;
+  }
+  if (!isAdmin) {
+    return res.status(403).json({ error: "User is not admin", claims: decoded });
+  }
+  try {
+    // Deletes user document from Firestore
+    await admin.firestore().collection("users").doc(id).delete();
+    // Deletes user from Firebase Authentication
+    await admin.auth().deleteUser(id);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
