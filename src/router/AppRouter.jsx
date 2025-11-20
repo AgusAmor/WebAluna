@@ -9,9 +9,11 @@ const Home = lazy(() => import("../pages/Home"));
 const Products = lazy(() => import("../pages/Products"));
 const Profile = lazy(() => import("../pages/Profile"));
 const Admin = lazy(() => import("../pages/Admin"));
+
 const ProductManagement = lazy(() =>
   import("../pages/Admin/ProductManagement.jsx")
 );
+const UserManagement = lazy(() => import("../pages/Admin/UserManagement.jsx"));
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -73,11 +75,20 @@ const AppRouter = () => {
                     </ProtectedRoute>
                   }
                 />
+
                 <Route
                   path="/admin/productos"
                   element={
                     <ProtectedRoute requireAdmin>
                       <ProductManagement />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/usuarios"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <UserManagement />
                     </ProtectedRoute>
                   }
                 />

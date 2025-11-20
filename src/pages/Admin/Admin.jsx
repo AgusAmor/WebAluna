@@ -54,7 +54,7 @@ const Admin = () => {
             to="/admin/productos"
             className="bg-white rounded-xl shadow-lg px-8 py-7 min-w-[260px] max-w-xs transition-all duration-300 cursor-pointer group hover:shadow-2xl hover:-translate-y-1 relative flex flex-col justify-center"
           >
-            <span className="absolute left-0 top-0 h-full w-[10px] rounded-tl-xl rounded-bl-xl bg-gold group-hover:bg-blue-1 transition-all duration-300"></span>
+            <span className="absolute left-0 top-0 h-full w-2.5 rounded-tl-xl rounded-bl-xl bg-gold group-hover:bg-blue-1 transition-all duration-300"></span>
             <div className="pl-4">
               <h2 className="text-2xl font-bold text-gold font-family-comfortaa mb-2 text-left group-hover:text-blue-1 transition-colors duration-300">
                 Productos
@@ -64,8 +64,11 @@ const Admin = () => {
               </p>
             </div>
           </Link>
-          <div className="bg-white rounded-xl shadow-lg px-8 py-7 min-w-[260px] max-w-xs transition-all duration-300 cursor-pointer group hover:shadow-2xl hover:-translate-y-1 relative">
-            <span className="absolute left-0 top-0 h-full w-[10px] rounded-tl-xl rounded-bl-xl bg-gold group-hover:bg-blue-1 transition-all duration-300"></span>
+          <Link
+            to="/admin/usuarios"
+            className="bg-white rounded-xl shadow-lg px-8 py-7 min-w-[260px] max-w-xs transition-all duration-300 cursor-pointer group hover:shadow-2xl hover:-translate-y-1 relative flex flex-col justify-center"
+          >
+            <span className="absolute left-0 top-0 h-full w-2.5 rounded-tl-xl rounded-bl-xl bg-gold group-hover:bg-blue-1 transition-all duration-300"></span>
             <div className="pl-4">
               <h2 className="text-2xl font-bold text-gold font-family-comfortaa mb-2 text-left group-hover:text-blue-1 transition-colors duration-300">
                 Usuarios
@@ -74,7 +77,7 @@ const Admin = () => {
                 Administrar usuarios registrados
               </p>
             </div>
-          </div>
+          </Link>
           <div className="bg-white rounded-xl shadow-lg px-8 py-7 min-w-[260px] max-w-xs transition-all duration-300 cursor-pointer group hover:shadow-2xl hover:-translate-y-1 relative">
             <span className="absolute left-0 top-0 h-full w-[10px] rounded-tl-xl rounded-bl-xl bg-gold group-hover:bg-blue-1 transition-all duration-300"></span>
             <div className="pl-4">
