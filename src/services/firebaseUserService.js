@@ -57,3 +57,27 @@ export async function deleteUser(id, token) {
   }
   return await response.json();
 }
+
+/**
+ * Updates a user in Firestore via Cloud Function.
+ * Requires the user ID, updated user data, and a valid Firebase Auth token.
+ * @param {string} id - User ID
+ * @param {Object} userData - User data to update
+ * @param {string} token - Firebase Auth token
+ * @returns {Promise<Object>} Result
+ */
+export async function updateUser(id, userData, token) {
+  const response = await fetch(`${BASE_URL}/updateUserDoc?id=${id}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(userData),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to update user");
+  }
+  return await response.json();
+}

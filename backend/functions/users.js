@@ -194,3 +194,110 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+/**
+ * Updates a user document in Firestore and the user information from Firebase Auth.
+ * POST /users/:id
+ * Requires authentication (Firebase token in Authorization header).
+ */
+exports.updateUserDoc = async (req, res) => {
+  // Handles CORS and preflight requests
+  if (handleCors(req, res)) return;
+
+  // Parse request body to ensure it is an object
+  let body = req.body;
+  if (typeof body === "string") {
+    try {
+      body = JSON.parse(body);
+    } catch (e) {
+      return res.status(400).json({ error: "Invalid JSON body" });
+    }
+  }
+
+  // Extract and verify Firebase Auth token from Authorization header
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ error: "No token provided" });
+  }
+  const token = authHeader.split(" ")[1];
+  let decoded;
+  try {
+    decoded = await admin.auth().verifyIdToken(token);
+  } catch (err) {
+    return res.status(401).json({ error: "Invalid token" });
+  }
+
+  // Extract user id from request params or query string
+  let id = req.params && req.params.id;
+  if (!id && req.query && req.query.id) id = req.query.id;
+  if (!id) {
+    return res
+      .status(400)
+      .json({ error: "User id required in params or query" });
+  }
+
+  // Destructure allowed fields from request body
+  const {
+    displayName = "",
+    email = "",
+    role = "user",
+    accountStatus = "active",
+    phone = "",
+    admin: isAdmin = false,
+    addresses = [],
+  } = body;
+
+  // Basic validation for required fields
+  if (
+    !displayName.trim() ||
+    !email.trim() ||
+    !role.trim() ||
+    !accountStatus.trim()
+  ) {
+    return res.status(400).json({
+      error:
+        "Faltan campos obligatorios: displayName, email, role, accountStatus",
+    });
+  }
+
+  // Update user information in Firebase Auth first, then Firestore if successful
+  try {
+    // Prepare update object for Firebase Auth (all fields are valid)
+    const updateAuth = {
+      displayName,
+      email,
+      phoneNumber: phone,
+    };
+
+    // Update Firebase Auth user profile first
+    try {
+      await admin.auth().updateUser(id, updateAuth);
+    } catch (authError) {
+      // Log and return the error from Firebase Auth (e.g., invalid phone/email, already in use)
+      console.error("Firebase Auth updateUser error:", authError);
+      return res.status(400).json({
+        error: authError.message || "Failed to update user in Auth",
+        code: authError.code || undefined,
+      });
+    }
+
+    // If Auth update succeeded, update Firestore user document with new data
+    await admin.firestore().collection("users").doc(id).update({
+      displayName,
+      email,
+      role,
+      accountStatus,
+      phone,
+      admin: isAdmin,
+      addresses,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Respond with success if both updates succeeded
+    res.json({ success: true });
+  } catch (error) {
+    // Log and return any Firestore/general error
+    console.error("Firestore or general error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};

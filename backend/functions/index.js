@@ -7,7 +7,9 @@ const {
   getUserById,
   deleteUser,
   changePassword,
+  updateUserDoc,
 } = require("./users.js");
+
 const {
   getProducts,
   getProductById,
@@ -147,5 +149,17 @@ exports.updateProduct = onRequest(
   async (req, res) => {
     if (handleCors(req, res)) return;
     await updateProduct(req, res);
+  }
+);
+
+/**
+ * Exposes the updateUserDoc HTTPS function in the southamerica-east1 region.
+ * Updates a user document in Firestore by ID.
+ */
+exports.updateUserDoc = onRequest(
+  { region: "southamerica-east1" },
+  async (req, res) => {
+    if (handleCors(req, res)) return;
+    await updateUserDoc(req, res);
   }
 );

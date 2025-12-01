@@ -1,5 +1,5 @@
 import React from "react";
-import { FaTrash } from "react-icons/fa";
+import { FaTrash, FaCheck } from "react-icons/fa";
 
 /**
  * AddressForm component for editing a single address in the user form.
@@ -55,7 +55,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => (
       <input
         name="region"
         type="text"
-        placeholder="Región"
+        placeholder="Barrio"
         value={addr.region}
         onChange={(e) => onChange(idx, e)}
         className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
@@ -93,8 +93,10 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => (
         value={addr.recipientPhone}
         onChange={(e) => onChange(idx, e)}
         className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
-        pattern="^\+?\d{7,15}$"
-        maxLength={20}
+        pattern="^\+?\d{8,15}$"
+        maxLength={15}
+        minLength={8}
+        title="Debe tener entre 8 y 15 dígitos, puede comenzar con el código de país o no."
       />
     </div>
     <div className="flex items-center gap-3 mt-2">
@@ -109,21 +111,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => (
         />
         <span className="w-5 h-5 flex items-center justify-center rounded border-2 border-gold bg-white transition-colors peer-checked:bg-gold peer-checked:border-gold group-hover:border-blue-2">
           {/* Check icon appears when checked */}
-          {addr.isDefault && (
-            <svg
-              className="w-3 h-3 text-white"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="3"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          )}
+          {addr.isDefault && <FaCheck className="w-3 h-3 text-white" />}
         </span>
         <span className="ml-2 text-blue-2 text-sm">Dirección favorita</span>
       </label>

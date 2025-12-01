@@ -23,7 +23,6 @@ const UserForm = ({
     city: "",
     region: "",
     postalCode: "",
-    country: "",
     isDefault: false,
     recipientName: "",
     recipientPhone: "",
@@ -34,6 +33,8 @@ const UserForm = ({
     displayName: "",
     email: "",
     phone: "",
+    phoneCountry: "+549",
+    phoneLocal: "",
     accountStatus: "active",
     role: "user",
     admin: false,
@@ -43,10 +44,22 @@ const UserForm = ({
   // Populate form state with initialUser data or reset to empty if not present
   useEffect(() => {
     if (initialUser) {
+      // Split phone number from E.164
+      let phoneCountry = "+549";
+      let phoneLocal = "";
+      if (initialUser.phone && /^\+\d{8,15}$/.test(initialUser.phone)) {
+        const match = initialUser.phone.match(/^(\+\d{1,3})(\d{6,12})$/);
+        if (match) {
+          phoneCountry = match[1];
+          phoneLocal = match[2];
+        }
+      }
       setForm({
         displayName: initialUser.displayName || "",
         email: initialUser.email || "",
         phone: initialUser.phone || "",
+        phoneCountry,
+        phoneLocal,
         accountStatus: initialUser.accountStatus || "active",
         role: initialUser.role || "user",
         admin: !!initialUser.admin,
@@ -65,6 +78,8 @@ const UserForm = ({
         displayName: "",
         email: "",
         phone: "",
+        phoneCountry: "+549",
+        phoneLocal: "",
         accountStatus: "active",
         role: "user",
         admin: false,
@@ -94,16 +109,21 @@ const UserForm = ({
   const handleAddressChange = (idx, e) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => {
-      const addresses = prev.addresses.map((addr, i) =>
+      let addresses = prev.addresses.map((addr, i) =>
         i === idx
           ? { ...addr, [name]: type === "checkbox" ? checked : value }
           : addr
       );
       // If isDefault is checked, unset isDefault for all other addresses
       if (name === "isDefault" && checked) {
-        addresses.forEach((addr, i) => {
-          if (i !== idx) addr.isDefault = false;
-        });
+        addresses = addresses.map((addr, i) => ({
+          ...addr,
+          isDefault: i === idx,
+        }));
+      }
+      // If after change none is default, and only one address, set it as default
+      if (addresses.length === 1 && !addresses[0].isDefault) {
+        addresses[0].isDefault = true;
       }
       return { ...prev, addresses };
     });
@@ -111,13 +131,30 @@ const UserForm = ({
 
   // Add a new empty address to the addresses array
   const addAddress = () => {
-    setForm((prev) => ({
-      ...prev,
-      addresses: [
-        ...prev.addresses,
-        { ...emptyAddress, id: `addr-${Date.now()}` },
-      ],
-    }));
+    setForm((prev) => {
+      const isFirst =
+        !prev.addresses ||
+        prev.addresses.length === 0 ||
+        (prev.addresses.length === 1 &&
+          Object.values(prev.addresses[0]).every(
+            (v) => v === "" || v === false || v === null
+          ));
+      const newAddress = {
+        ...emptyAddress,
+        id: `addr-${Date.now()}`,
+        isDefault: isFirst,
+      };
+      let addresses = [];
+      if (isFirst) {
+        addresses = [newAddress];
+      } else {
+        addresses = [...prev.addresses, newAddress];
+      }
+      return {
+        ...prev,
+        addresses,
+      };
+    });
   };
 
   // Remove an address from the addresses array, ensuring at least one remains
@@ -134,7 +171,15 @@ const UserForm = ({
   // Handle form submission and pass form data to parent
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(form);
+    // Join phoneCountry and phoneLocal into E.164 phone
+    let phone = "";
+    if (form.phoneCountry && form.phoneLocal) {
+      phone = `${form.phoneCountry}${form.phoneLocal}`;
+    }
+    onSubmit({
+      ...form,
+      phone,
+    });
   };
 
   return (
@@ -172,16 +217,33 @@ const UserForm = ({
           </div>
           <div className="flex-1">
             <label className="font-bold text-blue-2 mb-1">Teléfono</label>
-            <input
-              name="phone"
-              type="tel"
-              placeholder="Teléfono"
-              value={form.phone}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none mb-2 md:mb-0"
-              pattern="^\+?\d{7,15}$"
-              maxLength={20}
-            />
+            <div className="flex gap-2">
+              <input
+                name="phoneCountry"
+                type="text"
+                value={form.phoneCountry}
+                onChange={handleChange}
+                className="w-24 px-3 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none mb-2 md:mb-0"
+                pattern="^\+\d{1,4}$"
+                maxLength={5}
+                minLength={2}
+                title="Código de país en formato internacional."
+                required={false}
+              />
+              <input
+                name="phoneLocal"
+                type="text"
+                value={form.phoneLocal}
+                onChange={handleChange}
+                className="flex-1 px-3 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none mb-2 md:mb-0"
+                pattern="^\d{6,12}$"
+                maxLength={12}
+                minLength={6}
+                placeholder="Ej: 1123456789"
+                title="Número local internacional, entre 6 y 12 dígitos, sin código de país."
+                required={false}
+              />
+            </div>
           </div>
         </div>
         <div className="flex flex-col md:flex-row gap-4 mb-3">

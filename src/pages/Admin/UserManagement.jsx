@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Hero } from "../../components/common";
 import UserForm from "./UserForm";
-import { fetchUsers, deleteUser } from "../../services/firebaseUserService";
+import {
+  fetchUsers,
+  deleteUser,
+  updateUser,
+} from "../../services/firebaseUserService";
 import { useAuth } from "../../context/AuthContext";
 
 const UserManagement = () => {
@@ -74,15 +78,21 @@ const UserManagement = () => {
                   setEditUser(null);
                 }}
                 onSubmit={async (formData) => {
-                  // Here you can implement the logic to update the user in the backend
-                  // For now, just close the modal
                   setSaving(true);
+                  setError(null);
                   try {
-                    // TODO: Lógica para actualizar usuario en backend
+                    if (editUser && user) {
+                      // Get Firebase Auth token
+                      const token = await user.getIdToken();
+                      await updateUser(editUser.id, formData, token);
+                      // Refresh user list
+                      const updatedUsers = await fetchUsers();
+                      setUsers(updatedUsers);
+                    }
                     setShowModal(false);
                     setEditUser(null);
                   } catch (e) {
-                    // setError(e.message || "Error al guardar usuario");
+                    setError(e.message || "Error al guardar usuario");
                   } finally {
                     setSaving(false);
                   }
@@ -163,7 +173,19 @@ const UserManagement = () => {
                       <td className="py-2 px-2 text-center">
                         {Array.isArray(userItem.addresses) &&
                         userItem.addresses.length > 0
-                          ? userItem.addresses[0]
+                          ? (() => {
+                              const fav = userItem.addresses.find(
+                                (a) => a.isDefault
+                              );
+                              if (!fav) return "-";
+                              return (
+                                `${fav.street || ""} ${fav.number || ""} · ${
+                                  fav.region || ""
+                                }`
+                                  .trim()
+                                  .replace(/^\s*•\s*$/, "-") || "-"
+                              );
+                            })()
                           : "-"}
                       </td>
                       <td className="py-2 px-2 text-center">
