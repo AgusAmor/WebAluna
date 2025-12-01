@@ -1,13 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { MdAdd } from "react-icons/md";
 import { Hero } from "../../components/common";
-import {
-  fetchUsers,
-  updateUser,
-  deleteUser,
-  fetchUserById,
-} from "../../services/firebaseUserService";
-import authService from "../../services/firebaseAuthService";
+import UserForm from "./UserForm";
+import { fetchUsers, deleteUser } from "../../services/firebaseUserService";
 import { useAuth } from "../../context/AuthContext";
 
 const UserManagement = () => {
@@ -17,11 +11,10 @@ const UserManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editUser, setEditUser] = useState(null);
-  // State for addresses in the form
-  const [formAddresses, setFormAddresses] = useState([]);
   const [deletingId, setDeletingId] = useState(null);
   const { user } = useAuth();
 
+  // Fetch users from backend on component mount
   useEffect(() => {
     async function loadUsers() {
       try {
@@ -37,30 +30,6 @@ const UserManagement = () => {
     loadUsers();
   }, []);
 
-  // When opening modal, set addresses state
-  //   useEffect(() => {
-  //     if (showModal) {
-  //       setFormAddresses(
-  //         Array.isArray(editUser?.addresses) && editUser.addresses.length > 0
-  //           ? editUser.addresses
-  //           : [
-  //               {
-  //                 id: "addr-1",
-  //                 street: "",
-  //                 apartment: "",
-  //                 city: "",
-  //                 region: "",
-  //                 postalCode: "",
-  //                 country: "",
-  //                 isDefault: true,
-  //                 recipientName: "",
-  //                 recipientPhone: "",
-  //               },
-  //             ]
-  //       );
-  //     }
-  //   }, [showModal, editUser]);
-
   return (
     <div className="min-h-screen bg-gray-3 px-4 py-2 pb-20">
       <Hero
@@ -68,16 +37,7 @@ const UserManagement = () => {
         subtitle="Administra los usuarios registrados en el sistema."
       />
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-center mb-4 mt-2">
-          <button
-            className="flex items-center gap-2 bg-gold text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-blue-2 hover:text-white transition-colors"
-            onClick={() => setShowModal(true)}
-          >
-            <MdAdd size={22} />
-            Agregar usuario
-          </button>
-        </div>
-        {/* Modal for adding or editing a user. */}
+        {/* Modal for adding or editing a user */}
         {showModal && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
@@ -105,10 +65,34 @@ const UserManagement = () => {
               <h2 className="text-2xl font-bold text-blue-2 mb-4 font-family-comfortaa">
                 {editUser ? "Editar usuario" : "Agregar usuario"}
               </h2>
+              <UserForm
+                initialUser={editUser}
+                saving={saving}
+                error={error}
+                onCancel={() => {
+                  setShowModal(false);
+                  setEditUser(null);
+                }}
+                onSubmit={async (formData) => {
+                  // Here you can implement the logic to update the user in the backend
+                  // For now, just close the modal
+                  setSaving(true);
+                  try {
+                    // TODO: Lógica para actualizar usuario en backend
+                    setShowModal(false);
+                    setEditUser(null);
+                  } catch (e) {
+                    // setError(e.message || "Error al guardar usuario");
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
+                buttonLabel={editUser ? "Guardar cambios" : "Agregar usuario"}
+              />
             </div>
           </div>
         )}
-        {/* Users table */}
+        {/* Users table listing all registered users */}
         <div className="bg-white rounded-xl shadow-md mt-2 overflow-x-auto">
           {loading ? (
             <div className="text-center py-8 text-blue-2 font-bold">
@@ -188,7 +172,7 @@ const UserManagement = () => {
                       <td className="py-2 px-2 text-center">{createdAt}</td>
                       <td className="py-2 px-2 text-center">
                         <div className="flex flex-col items-center gap-2">
-                          {/* Edit button: opens modal with user data for editing. */}
+                          {/* Edit button: opens modal with user data for editing */}
                           <button
                             className="bg-blue-2 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-gold transition-colors w-24"
                             type="button"
@@ -199,7 +183,7 @@ const UserManagement = () => {
                           >
                             Editar
                           </button>
-                          {/* Delete button: removes user from Firestore and Authentication. */}
+                          {/* Delete button: removes user from Firestore and Authentication */}
                           <button
                             className={`bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-700 transition-colors w-24 flex items-center justify-center ${
                               deletingId === userItem.id

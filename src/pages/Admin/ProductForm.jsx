@@ -17,11 +17,14 @@ const ProductForm = ({
 
   return (
     <form
-      className="space-y-4 overflow-y-auto flex-1"
+      className="space-y-4 flex-1"
       id="add-product-form"
       onSubmit={onSubmit}
     >
-      <div className="flex flex-col gap-4">
+      <div
+        className="flex flex-col gap-4 overflow-y-auto"
+        style={{ maxHeight: "60vh" }}
+      >
         {/* Product name input */}
         <label className="font-bold text-blue-2 mb-1 flex items-center gap-1">
           Nombre <span className="text-gold">*</span>
@@ -194,27 +197,26 @@ const ProductForm = ({
         {error && (
           <div className="text-red-500 font-bold text-center mt-2">{error}</div>
         )}
-        {/* Action buttons: Cancel and Save/Apply Changes */}
-        <div className="flex justify-end gap-2 mt-4">
-          <button
-            type="button"
-            className="px-4 py-2 rounded-lg bg-gray-2 text-blue-2 font-bold hover:bg-blue-2 hover:text-white cursor-pointer transition-colors"
-            onClick={onCancel}
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            className={`px-4 py-2 rounded-lg font-bold transition-colors ${
-              saving
-                ? "bg-gray-2 text-gray-3 cursor-not-allowed"
-                : "bg-blue-2 text-white hover:bg-gold cursor-pointer"
-            }`}
-            disabled={saving}
-          >
-            {saving ? "Guardando..." : buttonLabel}
-          </button>
-        </div>
+      </div>
+      <div className="flex justify-end gap-2 mt-4">
+        <button
+          type="button"
+          className="px-4 py-2 rounded-lg bg-gray-2 text-blue-2 font-bold hover:bg-blue-2 hover:text-white cursor-pointer transition-colors"
+          onClick={onCancel}
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          className={`px-4 py-2 rounded-lg font-bold transition-colors ${
+            saving
+              ? "bg-gray-2 text-gray-3 cursor-not-allowed"
+              : "bg-blue-2 text-white hover:bg-gold cursor-pointer"
+          }`}
+          disabled={saving}
+        >
+          {saving ? "Guardando..." : buttonLabel}
+        </button>
       </div>
     </form>
   );
