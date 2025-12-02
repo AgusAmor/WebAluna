@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FiUser, FiLogOut } from "react-icons/fi";
+import { HiMenu } from "react-icons/hi";
 import logo from "../../assets/logos/logotipo.png";
 import { useAuth } from "../../context/AuthContext";
 import { LoginModal } from "../common";
@@ -145,21 +146,7 @@ const Header = () => {
                 aria-expanded={isMenuOpen}
               >
                 <span className="sr-only">Open menu</span>
-                <svg
-                  className="w-5 h-5"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 17 14"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M1 1h15M1 7h15M1 13h15"
-                  />
-                </svg>
+                <HiMenu className="w-5 h-5" />
               </button>
             </div>
           </div>

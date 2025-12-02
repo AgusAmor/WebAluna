@@ -38,7 +38,7 @@ const UserForm = ({
     accountStatus: "active",
     role: "user",
     admin: false,
-    addresses: [emptyAddress],
+    addresses: [], // Start empty, will be populated if editing existing user
   });
 
   // Populate form state with initialUser data or reset to empty if not present
@@ -63,6 +63,7 @@ const UserForm = ({
         accountStatus: initialUser.accountStatus || "active",
         role: initialUser.role || "user",
         admin: !!initialUser.admin,
+        // Load existing addresses if they exist, otherwise empty array
         addresses:
           Array.isArray(initialUser.addresses) &&
           initialUser.addresses.length > 0
@@ -71,7 +72,7 @@ const UserForm = ({
                 ...a,
                 id: a.id || `addr-${i + 1}`,
               }))
-            : [emptyAddress],
+            : [], // Empty if no addresses
       });
     } else {
       setForm({
@@ -83,7 +84,7 @@ const UserForm = ({
         accountStatus: "active",
         role: "user",
         admin: false,
-        addresses: [emptyAddress],
+        addresses: [], // Empty for new users
       });
     }
     // eslint-disable-next-line
@@ -269,7 +270,6 @@ const UserForm = ({
             >
               <option value="active">Activo</option>
               <option value="suspended">Suspendido</option>
-              <option value="deleted">Eliminado</option>
             </select>
           </div>
         </div>
@@ -278,16 +278,21 @@ const UserForm = ({
           <label className="font-bold text-blue-2 mb-1.5 block">
             Direcciones de envío
           </label>
-          {form.addresses.map((addr, idx) => (
-            <AddressForm
-              key={addr.id}
-              addr={addr}
-              idx={idx}
-              onChange={handleAddressChange}
-              onRemove={removeAddress}
-              canRemove={form.addresses.length > 1}
-            />
-          ))}
+          {/* Only show address forms if there are addresses being edited */}
+          {form.addresses.length > 0 && (
+            <>
+              {form.addresses.map((addr, idx) => (
+                <AddressForm
+                  key={addr.id}
+                  addr={addr}
+                  idx={idx}
+                  onChange={handleAddressChange}
+                  onRemove={removeAddress}
+                  canRemove={form.addresses.length > 1}
+                />
+              ))}
+            </>
+          )}
           <div className="flex justify-center">
             <button
               type="button"

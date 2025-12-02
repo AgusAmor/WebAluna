@@ -114,11 +114,57 @@ class AuthService {
 
   /**
    * Logs in a user using Google authentication popup.
+   * If it's a new user, creates a user document in Firestore.
    * @returns {object} user with role property
    */
   async loginWithGoogle() {
     const result = await signInWithPopup(this.auth, this.googleProvider);
     const user = result.user;
+
+    // Check if user document exists in Firestore
+    const token = await user.getIdToken();
+    let userExists = false;
+    try {
+      const response = await fetch(`${BASE_URL}/getUserById?id=${user.uid}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      // User exists if response is successful
+      userExists = response.ok;
+
+      // If user doesn't exist (404 or error), create document in Firestore
+      if (!userExists) {
+        const userDataForStorage = {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName || "",
+          phone: user.phoneNumber || "",
+          photoURL: user.photoURL || "",
+          emailVerified: user.emailVerified,
+          createdAt: user.metadata?.creationTime || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          lastLoginAt:
+            user.metadata?.lastSignInTime || new Date().toISOString(),
+          accountStatus: "active",
+          addresses: [],
+          totalOrders: 0,
+          totalSpent: 0,
+        };
+        await fetch(`${BASE_URL}/createUserDoc`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(userDataForStorage),
+        });
+      }
+    } catch (err) {
+      // Log error but don't fail - user authentication succeeded
+      console.error("Error checking/creating user in Firestore:", err);
+    }
+
     return this.adminVerify(user);
   }
 

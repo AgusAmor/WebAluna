@@ -1,48 +1,41 @@
 const admin = require("./config/firebaseAdmin.js");
-const handleCors = require("./middlewares/corsMiddleware.js");
+const { verifyToken, isAdmin, requireAdmin } = require("./utils/authUtils.js");
+const {
+  parseBody,
+  validateEmail,
+  validateId,
+  validateRequiredFields,
+} = require("./utils/validation.js");
+const { sendSuccess, handleError } = require("./utils/responseHandler.js");
 
 /**
  * Creates a user document in Firestore.
- * Expects: uid and email in request body (JSON).
- * Writes user data to the 'users' collection.
- * Validates Firebase Auth token from Authorization header.
- * Handles CORS and parses request body.
+ * POST /createUserDoc
+ * Body: { uid, email, displayName, ...rest }
+ * New users always have admin: false
  */
-
 exports.createUserDoc = async (req, res) => {
-  // Handle CORS and preflight requests
-  if (handleCors(req, res)) return;
+  try {
+    const body = parseBody(req.body);
+    const decoded = await verifyToken(req.headers.authorization);
 
-  // Parse request body to ensure it's an object
-  let body = req.body;
-  if (typeof body === "string") {
-    try {
-      body = JSON.parse(body);
-    } catch (e) {
-      return res.status(400).json({ error: "Invalid JSON body" });
+    const { email, displayName, uid, lastLoginAt, ...rest } = body;
+
+    // Validate required fields
+    if (!uid || !email) {
+      throw { status: 400, message: "uid and email are required" };
     }
-  }
+    validateEmail(email);
 
-  // Extract and verify Firebase Auth token from Authorization header
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ error: "No token provided" });
-  }
-  const token = authHeader.split(" ")[1];
-  let decoded;
-  try {
-    decoded = await admin.auth().verifyIdToken(token);
-  } catch (err) {
-    return res.status(401).json({ error: "Invalid token" });
-  }
+    // Ensure uid matches authenticated user
+    if (uid !== decoded.uid) {
+      throw {
+        status: 403,
+        message: "Cannot create user document for another user",
+      };
+    }
 
-  // Destructure user data from request body
-  const { email, displayName, uid, lastLoginAt, ...rest } = body;
-  if (!uid || !email) {
-    return res.status(400).json({ error: "uid and email are required" });
-  }
-  try {
-    // Save user document in Firestore
+    // Create user document with admin: false
     await admin
       .firestore()
       .collection("users")
@@ -51,253 +44,226 @@ exports.createUserDoc = async (req, res) => {
         email,
         displayName: displayName || "",
         ...rest,
+        admin: false,
         lastLoginAt: lastLoginAt
           ? admin.firestore.Timestamp.fromDate(new Date(lastLoginAt))
           : admin.firestore.FieldValue.serverTimestamp(),
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
-    res.json({ success: true });
+
+    sendSuccess(res, { success: true });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    handleError(res, error);
   }
 };
 
+/**
+ * Verifies if an email exists in Firebase Authentication.
+ * POST /verifyUserEmail
+ * Body: { email: string }
+ */
 exports.verifyUserEmail = async (req, res) => {
-  if (handleCors(req, res)) return;
+  try {
+    const body = parseBody(req.body);
+    validateEmail(body.email);
 
-  let body = req.body;
-  if (typeof body === "string") {
     try {
-      body = JSON.parse(body);
-    } catch (e) {
-      return res.status(400).json({ error: "Invalid JSON body" });
+      await admin.auth().getUserByEmail(body.email);
+      sendSuccess(res, { exists: true });
+    } catch (error) {
+      if (error.code === "auth/user-not-found") {
+        sendSuccess(res, { exists: false });
+      } else {
+        throw error;
+      }
     }
-  }
-
-  const { email } = body;
-  if (!email) {
-    return res.status(400).json({ error: "Email is required" });
-  }
-
-  try {
-    const user = await admin.auth().getUserByEmail(email);
-    return res.json({ exists: true });
   } catch (error) {
-    if (error.code === "auth/user-not-found") {
-      return res.json({ exists: false });
-    }
-    return res.status(500).json({ error: error.message });
-  }
-};
-
-exports.changePassword = async (uid, newPassword) => {
-  try {
-    await admin.auth().updateUser(uid, { password: newPassword });
-    return { success: true };
-  } catch (error) {
-    return { success: false, error: error.message };
+    handleError(res, error);
   }
 };
 
 /**
  * Retrieves all user documents from Firestore.
  * GET /users
- * No authentication required.
  */
 exports.getUsers = async (req, res) => {
-  // Handles CORS and preflight requests
-  if (handleCors(req, res)) return;
   try {
-    // Retrieves all user documents from Firestore
     const snapshot = await admin.firestore().collection("users").get();
     const users = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
-    res.json({ users });
+    sendSuccess(res, { users });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    handleError(res, error);
   }
 };
 
 /**
  * Retrieves a user document by ID from Firestore.
- * GET /users/:id
- * No authentication required.
+ * GET /getUserById?id=userId
  */
 exports.getUserById = async (req, res) => {
-  // Handles CORS and preflight requests
-  if (handleCors(req, res)) return;
-  const { id } = req.params;
   try {
-    // Retrieves user document by ID
+    const id = req.query.id;
+    validateId(id, "User ID");
+
     const doc = await admin.firestore().collection("users").doc(id).get();
     if (!doc.exists) {
-      return res.status(404).json({ error: "User not found" });
+      throw { status: 404, message: "User not found" };
     }
-    res.json({ id: doc.id, ...doc.data() });
+    sendSuccess(res, { id: doc.id, ...doc.data() });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    handleError(res, error);
   }
 };
 
 /**
- * Deletes a user document by ID from Firestore.
+ * Deletes a user document and Firebase Auth user.
  * POST /deleteUser
+ * Body: { id: string }
  * Only admin users can delete users.
  */
 exports.deleteUser = async (req, res) => {
-  // Handles CORS and preflight requests
-  if (handleCors(req, res)) return;
-  let body = req.body;
-  // Parses request body to ensure it's an object
-  if (typeof body === "string") {
-    try {
-      body = JSON.parse(body);
-    } catch (e) {
-      return res.status(400).json({ error: "Invalid JSON body" });
-    }
-  }
-  const { id } = body;
-  if (!id) {
-    return res.status(400).json({ error: "User id required" });
-  }
-  // Checks for admin authentication
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ error: "No token provided" });
-  }
-  const token = authHeader.split(" ")[1];
-  let decoded = null;
   try {
-    decoded = await admin.auth().verifyIdToken(token);
-  } catch (err) {
-    return res.status(401).json({ error: "Invalid token" });
-  }
-  let isAdmin = false;
-  if (decoded && typeof decoded.admin !== "undefined") {
-    isAdmin = decoded.admin;
-  }
-  if (!isAdmin) {
-    return res
-      .status(403)
-      .json({ error: "User is not admin", claims: decoded });
-  }
-  try {
-    // Deletes user document from Firestore
-    await admin.firestore().collection("users").doc(id).delete();
-    // Deletes user from Firebase Authentication
-    await admin.auth().deleteUser(id);
-    res.json({ success: true });
+    const body = parseBody(req.body);
+    const decoded = await requireAdmin(req);
+    validateId(body.id, "user id");
+
+    // Delete from Firestore and Auth
+    await admin.firestore().collection("users").doc(body.id).delete();
+    await admin.auth().deleteUser(body.id);
+
+    sendSuccess(res, { success: true });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    handleError(res, error);
   }
 };
 
 /**
- * Updates a user document in Firestore and the user information from Firebase Auth.
- * POST /users/:id
- * Requires authentication (Firebase token in Authorization header).
+ * Updates a user document in Firestore and Firebase Auth.
+ * POST /updateUserDoc?id=userId
+ * Only users can update their own profile, admins can update any user.
  */
 exports.updateUserDoc = async (req, res) => {
-  // Handles CORS and preflight requests
-  if (handleCors(req, res)) return;
+  try {
+    const body = parseBody(req.body);
+    const decoded = await verifyToken(req.headers.authorization);
 
-  // Parse request body to ensure it is an object
-  let body = req.body;
-  if (typeof body === "string") {
-    try {
-      body = JSON.parse(body);
-    } catch (e) {
-      return res.status(400).json({ error: "Invalid JSON body" });
+    let id = req.params?.id || req.query?.id;
+    validateId(id, "user id");
+
+    // Check authorization
+    const userIsAdmin = isAdmin(decoded);
+    if (!userIsAdmin && decoded.uid !== id) {
+      throw {
+        status: 403,
+        message: "Cannot update another user's profile",
+      };
     }
-  }
 
-  // Extract and verify Firebase Auth token from Authorization header
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ error: "No token provided" });
-  }
-  const token = authHeader.split(" ")[1];
-  let decoded;
-  try {
-    decoded = await admin.auth().verifyIdToken(token);
-  } catch (err) {
-    return res.status(401).json({ error: "Invalid token" });
-  }
+    const {
+      displayName = "",
+      email = "",
+      role = "user",
+      accountStatus = "active",
+      phone = "",
+      admin: requestedAdmin = false,
+      addresses = [],
+    } = body;
 
-  // Extract user id from request params or query string
-  let id = req.params && req.params.id;
-  if (!id && req.query && req.query.id) id = req.query.id;
-  if (!id) {
-    return res
-      .status(400)
-      .json({ error: "User id required in params or query" });
-  }
+    // Validate required fields
+    validateRequiredFields({ displayName, email, role, accountStatus }, [
+      "displayName",
+      "email",
+      "role",
+      "accountStatus",
+    ]);
 
-  // Destructure allowed fields from request body
-  const {
-    displayName = "",
-    email = "",
-    role = "user",
-    accountStatus = "active",
-    phone = "",
-    admin: isAdmin = false,
-    addresses = [],
-  } = body;
-
-  // Basic validation for required fields
-  if (
-    !displayName.trim() ||
-    !email.trim() ||
-    !role.trim() ||
-    !accountStatus.trim()
-  ) {
-    return res.status(400).json({
-      error:
-        "Faltan campos obligatorios: displayName, email, role, accountStatus",
-    });
-  }
-
-  // Update user information in Firebase Auth first, then Firestore if successful
-  try {
-    // Prepare update object for Firebase Auth (all fields are valid)
-    const updateAuth = {
-      displayName,
-      email,
-      phoneNumber: phone,
-    };
-
-    // Update Firebase Auth user profile first
+    // Update Firebase Auth first
     try {
-      await admin.auth().updateUser(id, updateAuth);
-    } catch (authError) {
-      // Log and return the error from Firebase Auth (e.g., invalid phone/email, already in use)
-      console.error("Firebase Auth updateUser error:", authError);
-      return res.status(400).json({
-        error: authError.message || "Failed to update user in Auth",
-        code: authError.code || undefined,
+      await admin.auth().updateUser(id, {
+        displayName,
+        email,
+        phoneNumber: phone,
       });
+    } catch (authError) {
+      throw {
+        status: 400,
+        message: authError.message || "Failed to update user in Auth",
+      };
     }
 
-    // If Auth update succeeded, update Firestore user document with new data
-    await admin.firestore().collection("users").doc(id).update({
+    // Prepare Firestore update
+    const firestoreUpdate = {
       displayName,
       email,
       role,
       accountStatus,
       phone,
-      admin: isAdmin,
       addresses,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    // Only admins can modify admin field
+    if (userIsAdmin) {
+      firestoreUpdate.admin = requestedAdmin;
+
+      // Sync custom claims
+      if (requestedAdmin !== userIsAdmin) {
+        await admin.auth().setCustomUserClaims(id, { admin: requestedAdmin });
+      }
+    }
+
+    // Update Firestore
+    await admin.firestore().collection("users").doc(id).update(firestoreUpdate);
+
+    sendSuccess(res, { success: true });
+  } catch (error) {
+    handleError(res, error);
+  }
+};
+
+/**
+ * Sets a user as admin or removes admin privileges.
+ * POST /setAdminRole
+ * Body: { userId: string, isAdmin: boolean }
+ * Only admin users can call this function.
+ */
+exports.setAdminRole = async (req, res) => {
+  try {
+    const body = parseBody(req.body);
+    const decoded = await requireAdmin(req);
+
+    const { userId, isAdmin: shouldBeAdmin } = body;
+    validateId(userId, "userId");
+
+    if (typeof shouldBeAdmin !== "boolean") {
+      throw { status: 400, message: "isAdmin must be a boolean" };
+    }
+
+    // Prevent self-demotion
+    if (decoded.uid === userId && !shouldBeAdmin) {
+      throw {
+        status: 403,
+        message: "Cannot remove your own admin privileges",
+      };
+    }
+
+    // Update both Auth and Firestore
+    await admin.auth().setCustomUserClaims(userId, { admin: shouldBeAdmin });
+    await admin.firestore().collection("users").doc(userId).update({
+      admin: shouldBeAdmin,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    // Respond with success if both updates succeeded
-    res.json({ success: true });
+    const action = shouldBeAdmin ? "promoted to" : "removed from";
+    sendSuccess(res, {
+      success: true,
+      message: `User ${action} admin`,
+    });
   } catch (error) {
-    // Log and return any Firestore/general error
-    console.error("Firestore or general error:", error);
-    res.status(500).json({ error: error.message });
+    handleError(res, error);
   }
 };

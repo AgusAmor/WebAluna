@@ -1,205 +1,107 @@
 const admin = require("./config/firebaseAdmin.js");
-const handleCors = require("./middlewares/corsMiddleware.js");
+const { requireAdmin, verifyToken } = require("./utils/authUtils.js");
+const { parseBody, validateId } = require("./utils/validation.js");
+const { sendSuccess, handleError } = require("./utils/responseHandler.js");
 
 /**
- * POST /updateProduct
  * Updates a product in Firestore by ID.
+ * POST /updateProduct
+ * Body: { id, ...productData }
  * Only admin users are allowed to update products.
  */
 exports.updateProduct = async (req, res) => {
-  if (handleCors(req, res)) return;
-  let body = req.body;
-  if (typeof body === "string") {
-    try {
-      body = JSON.parse(body);
-    } catch (e) {
-      return res.status(400).json({ error: "Invalid JSON body" });
-    }
-  }
-  const { id, ...productData } = body;
-  if (!id) {
-    return res.status(400).json({ error: "Product id required" });
-  }
-  // Auth check
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ error: "No token provided" });
-  }
-  const token = authHeader.split(" ")[1];
-  let decoded = null;
   try {
-    decoded = await admin.auth().verifyIdToken(token);
-  } catch (err) {
-    return res.status(401).json({ error: "Invalid token" });
-  }
-  let isAdmin = false;
-  if (decoded && typeof decoded.admin !== "undefined") {
-    isAdmin = decoded.admin;
-  }
-  if (!isAdmin) {
-    return res
-      .status(403)
-      .json({ error: "User is not admin", claims: decoded });
-  }
-  try {
+    const body = parseBody(req.body);
+    await requireAdmin(req);
+
+    const { id, ...productData } = body;
+    validateId(id, "Product id");
+
     await admin.firestore().collection("products").doc(id).update(productData);
-    res.json({ success: true });
+
+    sendSuccess(res, { success: true });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    handleError(res, error);
   }
 };
 
 /**
- * POST /deleteProduct
  * Deletes a product from Firestore.
+ * POST /deleteProduct
+ * Body: { id: string }
  * Only admin users are allowed to delete products.
  */
 exports.deleteProduct = async (req, res) => {
-  if (handleCors(req, res)) return;
-  let body = req.body;
-  if (typeof body === "string") {
-    try {
-      body = JSON.parse(body);
-    } catch (e) {
-      return res.status(400).json({ error: "Invalid JSON body" });
-    }
-  }
-  const { id } = body;
-  if (!id) {
-    return res.status(400).json({ error: "Product id required" });
-  }
-  // Auth check
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ error: "No token provided" });
-  }
-  const token = authHeader.split(" ")[1];
-  let decoded = null;
   try {
-    decoded = await admin.auth().verifyIdToken(token);
-    console.log("[deleteProduct] UID:", decoded.uid, "Claims:", decoded);
-  } catch (err) {
-    console.error("[deleteProduct] Token verification error:", err);
-    return res.status(401).json({ error: "Invalid token" });
-  }
-  // Check for admin claim
-  let isAdmin = false;
-  if (decoded && typeof decoded.admin !== "undefined") {
-    isAdmin = decoded.admin;
-  }
-  if (!isAdmin) {
-    console.error(
-      "[deleteProduct] User is not admin:",
-      decoded ? decoded.uid : null,
-      "Decoded token:",
-      decoded
-    );
-    return res
-      .status(403)
-      .json({ error: "User is not admin", claims: decoded });
-  }
-  try {
-    // Delete Firestore document
+    const body = parseBody(req.body);
+    await requireAdmin(req);
+
+    const { id } = body;
+    validateId(id, "Product id");
+
     await admin.firestore().collection("products").doc(id).delete();
-    res.json({ success: true });
+    sendSuccess(res, { success: true });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    handleError(res, error);
   }
 };
 
 /**
- * POST /createProduct
  * Creates a product document in Firestore.
- * Writes product data to the 'products' collection.
- * Requires a valid Firebase Auth token and admin privileges.
+ * POST /createProduct
+ * Body: { ...productData }
+ * Requires admin privileges.
  */
 exports.createProduct = async (req, res) => {
-  // Handle CORS and preflight requests
-  if (handleCors(req, res)) return;
-  let body = req.body;
-  if (typeof body === "string") {
-    try {
-      body = JSON.parse(body);
-    } catch (e) {
-      return res.status(400).json({ error: "Invalid JSON body" });
-    }
-  }
-  const productData = body;
-  // Auth check
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ error: "No token provided" });
-  }
-  const token = authHeader.split(" ")[1];
-  let decoded;
   try {
-    decoded = await admin.auth().verifyIdToken(token);
-    console.log("[createProduct] UID:", decoded.uid, "Claims:", decoded);
-  } catch (err) {
-    console.error("[createProduct] Token verification error:", err);
-    return res.status(401).json({ error: "Invalid token" });
-  }
-  // Check for admin claim
-  let isAdmin = false;
-  if (decoded && typeof decoded.admin !== "undefined") {
-    isAdmin = decoded.admin;
-  }
-  if (!isAdmin) {
-    console.error(
-      "[createProduct] User is not admin:",
-      decoded ? decoded.uid : null,
-      "Decoded token:",
-      decoded
-    );
-    return res
-      .status(403)
-      .json({ error: "User is not admin", claims: decoded });
-  }
-  try {
+    const productData = parseBody(req.body);
+    await requireAdmin(req);
+
     const docRef = await admin
       .firestore()
       .collection("products")
       .add(productData);
-    res.json({ success: true, id: docRef.id });
+
+    sendSuccess(res, { success: true, id: docRef.id });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    handleError(res, error);
   }
 };
 
 /**
- * GET /products
  * Returns all products from Firestore 'products' collection.
+ * GET /products
  * No authentication required.
  */
 exports.getProducts = async (req, res) => {
-  if (handleCors(req, res)) return;
   try {
     const snapshot = await admin.firestore().collection("products").get();
     const products = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
-    res.json({ products });
+    sendSuccess(res, { products });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    handleError(res, error);
   }
 };
 
 /**
- * GET /products/:id
  * Returns a single product by ID from Firestore.
+ * GET /products/:id
  * No authentication required.
  */
 exports.getProductById = async (req, res) => {
-  if (handleCors(req, res)) return;
-  const { id } = req.params;
   try {
+    const { id } = req.params;
+    validateId(id, "Product id");
+
     const doc = await admin.firestore().collection("products").doc(id).get();
     if (!doc.exists) {
-      return res.status(404).json({ error: "Product not found" });
+      throw { status: 404, message: "Product not found" };
     }
-    res.json({ id: doc.id, ...doc.data() });
+    sendSuccess(res, { id: doc.id, ...doc.data() });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    handleError(res, error);
   }
 };

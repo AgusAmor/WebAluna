@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
+import { IoIosClose } from "react-icons/io";
 import { useAuth } from "../../context/AuthContext";
 import { GoogleLoginButton } from "../ui";
 import { FiMail, FiLock, FiUser } from "react-icons/fi";
@@ -119,18 +120,18 @@ const LoginModal = ({ isOpen, onClose }) => {
       } else {
         await register(formData.email, formData.password, formData.name);
       }
-      // Modal se cierra automáticamente por useEffect
+      // Modal closes automatically via useEffect
     } catch (err) {
-      // El error ya se muestra por el contexto
+      // Error is already displayed by the context
     }
   };
 
   const handleGoogleLogin = async () => {
     try {
       await loginWithGoogle();
-      // Modal se cierra automáticamente por useEffect
+      // Modal closes automatically via useEffect
     } catch (err) {
-      // El error ya se muestra por el contexto
+      // Error is already displayed by the context
     }
   };
 
@@ -184,7 +185,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                 {error}
               </div>
             )}
-            {/* Formulario de recuperación */}
+            {/* Password Recovery Form */}
             {showReset ? (
               <form onSubmit={handleResetSubmit} className="space-y-4">
                 <div>

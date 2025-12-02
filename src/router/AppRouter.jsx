@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ImSpinner2 } from "react-icons/im";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import { FloatingCartButton, ProtectedRoute } from "../components/common";
@@ -18,7 +19,7 @@ const UserManagement = lazy(() => import("../pages/Admin/UserManagement.jsx"));
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">
     <div className="text-center">
-      <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-2"></div>
+      <ImSpinner2 className="animate-spin h-12 w-12 text-blue-2 mx-auto" />
       <p className="mt-4 text-gray-1">Cargando...</p>
     </div>
   </div>

@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
 import { BsFillShieldLockFill } from "react-icons/bs";
+import { ImSpinner2 } from "react-icons/im";
 import { useAuth } from "../../context/AuthContext";
 
 /**
@@ -16,8 +17,8 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-3">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-2"></div>
-          <p className="mt-4 text-blue-1 font-family-comfortaa">Cargando...</p>
+          <ImSpinner2 className="animate-spin h-12 w-12 text-blue-2 mx-auto" />
+          <p className="mt-4 text-blue-1 font-family-comfortaa">Loading...</p>
         </div>
       </div>
     );

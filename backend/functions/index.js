@@ -1,13 +1,15 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const handleCors = require("./middlewares/corsMiddleware.js");
+
+// Import all handlers
 const {
   createUserDoc,
   verifyUserEmail,
   getUsers,
   getUserById,
   deleteUser,
-  changePassword,
   updateUserDoc,
+  setAdminRole,
 } = require("./users.js");
 
 const {
@@ -15,151 +17,47 @@ const {
   getProductById,
   deleteProduct,
   updateProduct,
+  createProduct,
 } = require("./products.js");
 
-/**
- * Exposes the getUsers HTTPS function in the southamerica-east1 region.
- * Returns all user documents from Firestore.
- */
-exports.getUsers = onRequest(
-  { region: "southamerica-east1" },
-  async (req, res) => {
-    if (handleCors(req, res)) return;
-    await getUsers(req, res);
-  }
-);
+const REGION = "southamerica-east1";
 
 /**
- * Exposes the getUserById HTTPS function in the southamerica-east1 region.
- * Returns a user document by ID from Firestore.
+ * Wraps an async handler with CORS support
+ * @param {Function} handler - Async handler function
+ * @returns {Function} Express middleware
  */
-exports.getUserById = onRequest(
-  { region: "southamerica-east1" },
-  async (req, res) => {
-    if (handleCors(req, res)) return;
-    await getUserById(req, res);
-  }
-);
+const withCors = (handler) => async (req, res) => {
+  if (handleCors(req, res)) return;
+  await handler(req, res);
+};
 
 /**
- * Exposes the deleteUser HTTPS function in the southamerica-east1 region.
- * Deletes a user document and Firebase Auth user by ID. Only admin users can delete users.
+ * Creates a Cloud Function wrapper
+ * @param {Function} handler - Handler function to wrap
+ * @returns {Function} Cloud Function
  */
-exports.deleteUser = onRequest(
-  { region: "southamerica-east1" },
-  async (req, res) => {
-    if (handleCors(req, res)) return;
-    await deleteUser(req, res);
-  }
-);
+const createCloudFunction = (handler) =>
+  onRequest({ region: REGION }, withCors(handler));
 
-/**
- * Exposes the changePassword HTTPS function in the southamerica-east1 region.
- * Changes a user's password by UID.
- */
-exports.changePassword = onRequest(
-  { region: "southamerica-east1" },
-  async (req, res) => {
-    if (handleCors(req, res)) return;
-    // changePassword expects (uid, newPassword) as params, adapt as needed
-    const { uid, newPassword } = req.body || {};
-    const result = await changePassword(uid, newPassword);
-    res.json(result);
-  }
-);
+// ============================================
+// USER FUNCTIONS
+// ============================================
 
-/**
- * Exposes the deleteProduct HTTPS function in the southamerica-east1 region.
- * Deletes a product and its image from Storage.
- */
-exports.deleteProduct = onRequest(
-  { region: "southamerica-east1" },
-  async (req, res) => {
-    if (handleCors(req, res)) return;
-    await deleteProduct(req, res);
-  }
-);
+exports.getUsers = createCloudFunction(getUsers);
+exports.getUserById = createCloudFunction(getUserById);
+exports.createUserDoc = createCloudFunction(createUserDoc);
+exports.verifyUserEmail = createCloudFunction(verifyUserEmail);
+exports.updateUserDoc = createCloudFunction(updateUserDoc);
+exports.deleteUser = createCloudFunction(deleteUser);
+exports.setAdminRole = createCloudFunction(setAdminRole);
 
-/**
- * Exposes the createProduct HTTPS function in the southamerica-east1 region.
- * Handles CORS and delegates logic to the products controller.
- */
-exports.createProduct = onRequest(
-  { region: "southamerica-east1" },
-  async (req, res) => {
-    if (handleCors(req, res)) return;
-    await require("./products.js").createProduct(req, res);
-  }
-);
+// ============================================
+// PRODUCT FUNCTIONS
+// ============================================
 
-/**
- * Exposes the verifyUserEmail HTTPS function in the southamerica-east1 region.
- * Handles CORS and delegates logic to the controller.
- */
-exports.verifyUserEmail = onRequest(
-  { region: "southamerica-east1" },
-  async (req, res) => {
-    if (handleCors(req, res)) return;
-    await verifyUserEmail(req, res);
-  }
-);
-
-/**
- * Exposes the createUserDoc HTTPS function in the southamerica-east1 region.
- * Handles CORS and delegates logic to the users controller.
- */
-exports.createUserDoc = onRequest(
-  { region: "southamerica-east1" },
-  async (req, res) => {
-    if (handleCors(req, res)) return;
-    await createUserDoc(req, res);
-  }
-);
-
-/**
- * Exposes the getProducts HTTPS function in the southamerica-east1 region.
- * Returns all products from Firestore.
- */
-exports.getProducts = onRequest(
-  { region: "southamerica-east1" },
-  async (req, res) => {
-    if (handleCors(req, res)) return;
-    await getProducts(req, res);
-  }
-);
-
-/**
- * Exposes the getProductById HTTPS function in the southamerica-east1 region.
- * Returns a product by ID from Firestore.
- */
-exports.getProductById = onRequest(
-  { region: "southamerica-east1" },
-  async (req, res) => {
-    if (handleCors(req, res)) return;
-    await getProductById(req, res);
-  }
-);
-
-/**
- * Exposes the updateProduct HTTPS function in the southamerica-east1 region.
- * Updates a product in Firestore by ID. Only admin users can update products.
- */
-exports.updateProduct = onRequest(
-  { region: "southamerica-east1" },
-  async (req, res) => {
-    if (handleCors(req, res)) return;
-    await updateProduct(req, res);
-  }
-);
-
-/**
- * Exposes the updateUserDoc HTTPS function in the southamerica-east1 region.
- * Updates a user document in Firestore by ID.
- */
-exports.updateUserDoc = onRequest(
-  { region: "southamerica-east1" },
-  async (req, res) => {
-    if (handleCors(req, res)) return;
-    await updateUserDoc(req, res);
-  }
-);
+exports.getProducts = createCloudFunction(getProducts);
+exports.getProductById = createCloudFunction(getProductById);
+exports.createProduct = createCloudFunction(createProduct);
+exports.updateProduct = createCloudFunction(updateProduct);
+exports.deleteProduct = createCloudFunction(deleteProduct);

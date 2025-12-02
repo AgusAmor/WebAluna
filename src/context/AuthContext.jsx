@@ -56,6 +56,7 @@ export const AuthProvider = ({ children }) => {
 
   /**
    * Logs in a user using Google authentication popup
+   * AuthService handles creating user document in Firestore if it's a new user
    * Updates user state and handles errors
    */
   const loginWithGoogle = async () => {

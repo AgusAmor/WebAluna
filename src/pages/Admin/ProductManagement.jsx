@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { MdAdd } from "react-icons/md";
-import { TiUpload } from "react-icons/ti";
+import { IoIosClose } from "react-icons/io";
+import { ImSpinner2 } from "react-icons/im";
 import { Hero } from "../../components/common";
 import {
   fetchProducts,
@@ -24,7 +25,7 @@ const ProductManagement = () => {
   const imageInputRef = useRef(null);
   const { user } = useAuth();
   const [deletingId, setDeletingId] = useState(null); // Track which product is being deleted
-  const [editProduct, setEditProduct] = useState(null); // Producto en edición
+  const [editProduct, setEditProduct] = useState(null); // Product being edited
 
   useEffect(() => {
     async function loadProducts() {
@@ -74,15 +75,15 @@ const ProductManagement = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <button
-                className="absolute top-3 right-3 text-blue-2 hover:text-gold text-xl font-bold"
+                className="absolute top-3 right-3 text-blue-2 hover:text-gold"
                 onClick={() => {
                   setShowModal(false);
                   setEditProduct(null);
                   setImagePreview(null);
                 }}
-                aria-label="Cerrar"
+                aria-label="Close"
               >
-                ×
+                <IoIosClose className="w-6 h-6" />
               </button>
               <h2 className="text-2xl font-bold text-blue-2 mb-4 font-family-comfortaa">
                 {editProduct ? "Editar producto" : "Agregar producto"}
@@ -337,27 +338,7 @@ const ProductManagement = () => {
                         >
                           {deletingId === product.id ? (
                             <span className="flex items-center justify-center w-full h-full">
-                              <svg
-                                className="animate-spin h-5 w-5 mx-auto text-white"
-                                viewBox="0 0 24 24"
-                              >
-                                <circle
-                                  className="opacity-20"
-                                  cx="12"
-                                  cy="12"
-                                  r="10"
-                                  stroke="currentColor"
-                                  strokeWidth="4"
-                                  fill="none"
-                                />
-                                <path
-                                  fill="currentColor"
-                                  d="M12 2a10 10 0 0 1 10 10"
-                                  stroke="currentColor"
-                                  strokeWidth="4"
-                                  strokeLinecap="round"
-                                />
-                              </svg>
+                              <ImSpinner2 className="animate-spin h-5 w-5 mx-auto text-white" />
                             </span>
                           ) : (
                             "Eliminar"

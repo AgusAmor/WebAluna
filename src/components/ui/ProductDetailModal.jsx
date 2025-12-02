@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import { useState } from "react";
+import { IoIosClose } from "react-icons/io";
 
 const ProductDetailModal = ({ product, isOpen, onClose, onAddToCart }) => {
   const [selectedType, setSelectedType] = useState("normal");
@@ -11,11 +12,11 @@ const ProductDetailModal = ({ product, isOpen, onClose, onAddToCart }) => {
   return (
     <div className="relative bg-white rounded-2xl shadow-2xl border border-gray-2 max-w-sm md:max-w-3xl w-full max-h-[80vh] overflow-y-auto p-6 animate-fadeInScale flex flex-col md:flex-row gap-10">
       <button
-        className="absolute top-3 right-3 text-blue-1 hover:text-gold text-xl font-bold"
+        className="absolute top-3 right-3 text-blue-1 hover:text-gold"
         onClick={onClose}
-        aria-label="Cerrar"
+        aria-label="Close"
       >
-        ×
+        <IoIosClose className="w-6 h-6" />
       </button>
       {/* Left: Product Image or Placeholder */}
       <div className="flex-shrink-0 flex justify-center items-start md:items-center w-full md:w-72">

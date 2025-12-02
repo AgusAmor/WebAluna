@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { ImSpinner2 } from "react-icons/im";
 import { Hero } from "../../components/common";
 import UserForm from "./UserForm";
 import {
@@ -140,145 +141,138 @@ const UserManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {users.map((userItem) => {
-                  // Format creation date
-                  let createdAt = "-";
-                  if (userItem.createdAt) {
-                    const ts = userItem.createdAt;
-                    const seconds = ts.seconds || ts._seconds;
-                    if (seconds) {
-                      const date = new Date(seconds * 1000);
-                      const pad = (n) => n.toString().padStart(2, "0");
-                      createdAt = `${pad(date.getDate())}/${pad(
-                        date.getMonth() + 1
-                      )}/${date.getFullYear()} · ${pad(date.getHours())}:${pad(
-                        date.getMinutes()
-                      )}`;
+                {users
+                  .filter((userItem) => !user || userItem.id !== user.uid)
+                  .map((userItem) => {
+                    // Format creation date
+                    let createdAt = "-";
+                    if (userItem.createdAt) {
+                      const ts = userItem.createdAt;
+                      const seconds = ts.seconds || ts._seconds;
+                      if (seconds) {
+                        const date = new Date(seconds * 1000);
+                        const pad = (n) => n.toString().padStart(2, "0");
+                        createdAt = `${pad(date.getDate())}/${pad(
+                          date.getMonth() + 1
+                        )}/${date.getFullYear()} · ${pad(
+                          date.getHours()
+                        )}:${pad(date.getMinutes())}`;
+                      }
                     }
-                  }
-                  return (
-                    <tr
-                      key={userItem.id}
-                      className="border-b border-gray-2 hover:bg-gray-3/40"
-                    >
-                      <td className="py-2 px-2 text-center">
-                        {userItem.displayName || "-"}
-                      </td>
-                      <td className="py-2 px-2 text-center font-bold text-blue-1">
-                        {userItem.email}
-                      </td>
-                      <td className="py-2 px-2 text-center">
-                        {userItem.phone || "-"}
-                      </td>
-                      <td className="py-2 px-2 text-center">
-                        {Array.isArray(userItem.addresses) &&
-                        userItem.addresses.length > 0
-                          ? (() => {
-                              const fav = userItem.addresses.find(
-                                (a) => a.isDefault
-                              );
-                              if (!fav) return "-";
-                              return (
-                                `${fav.street || ""} ${fav.number || ""} · ${
-                                  fav.region || ""
-                                }`
-                                  .trim()
-                                  .replace(/^\s*•\s*$/, "-") || "-"
-                              );
-                            })()
-                          : "-"}
-                      </td>
-                      <td className="py-2 px-2 text-center">
-                        {userItem.accountStatus || "-"}
-                      </td>
-                      <td className="py-2 px-2 text-center">{createdAt}</td>
-                      <td className="py-2 px-2 text-center">
-                        <div className="flex flex-col items-center gap-2">
-                          {/* Edit button: opens modal with user data for editing */}
-                          <button
-                            className="bg-blue-2 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-gold transition-colors w-24"
-                            type="button"
-                            onClick={() => {
-                              setEditUser(userItem);
-                              setShowModal(true);
-                            }}
-                          >
-                            Editar
-                          </button>
-                          {/* Delete button: removes user from Firestore and Authentication */}
-                          <button
-                            className={`bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-700 transition-colors w-24 flex items-center justify-center ${
-                              deletingId === userItem.id
-                                ? "opacity-60 cursor-not-allowed"
-                                : ""
-                            }`}
-                            disabled={deletingId === userItem.id}
-                            onClick={async () => {
-                              if (deletingId) return;
-                              setDeletingId(userItem.id);
-                              setError(null);
-                              let token = "";
-                              if (user && user.getIdToken) {
-                                token = await user.getIdToken(true);
-                              } else if (
-                                user &&
-                                user.stsTokenManager &&
-                                user.stsTokenManager.accessToken
-                              ) {
-                                token = user.stsTokenManager.accessToken;
-                              }
-                              if (!token) {
-                                setError(
-                                  "User token not found. Please log in again."
+                    return (
+                      <tr
+                        key={userItem.id}
+                        className="border-b border-gray-2 hover:bg-gray-3/40"
+                      >
+                        <td className="py-2 px-2 text-center">
+                          {userItem.displayName || "-"}
+                        </td>
+                        <td className="py-2 px-2 text-center font-bold text-blue-1">
+                          {userItem.email}
+                        </td>
+                        <td className="py-2 px-2 text-center">
+                          {userItem.phone || "-"}
+                        </td>
+                        <td className="py-2 px-2 text-center">
+                          {Array.isArray(userItem.addresses) &&
+                          userItem.addresses.length > 0
+                            ? (() => {
+                                const fav = userItem.addresses.find(
+                                  (a) => a.isDefault
                                 );
-                                setDeletingId(null);
-                                return;
-                              }
-                              try {
-                                await deleteUser(userItem.id, token);
-                                setUsers((prev) =>
-                                  prev.filter((u) => u.id !== userItem.id)
+                                if (!fav) return "-";
+                                return (
+                                  `${fav.street || ""} ${fav.number || ""} · ${
+                                    fav.region || ""
+                                  }`
+                                    .trim()
+                                    .replace(/^\s*•\s*$/, "-") || "-"
                                 );
-                              } catch (err) {
-                                setError(err.message || "Error deleting user");
-                              } finally {
-                                setDeletingId(null);
+                              })()
+                            : "-"}
+                        </td>
+                        <td className="py-2 px-2 text-center">
+                          {userItem.accountStatus || "-"}
+                        </td>
+                        <td className="py-2 px-2 text-center">{createdAt}</td>
+                        <td className="py-2 px-2 text-center">
+                          <div className="flex flex-col items-center gap-2">
+                            {/* Edit button: opens modal with user data for editing */}
+                            <button
+                              className="bg-blue-2 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-gold transition-colors w-24"
+                              type="button"
+                              onClick={() => {
+                                setEditUser(userItem);
+                                setShowModal(true);
+                              }}
+                            >
+                              Editar
+                            </button>
+                            {/* Delete button: removes user from Firestore and Authentication */}
+                            <button
+                              className={`bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-700 transition-colors w-24 flex items-center justify-center ${
+                                deletingId === userItem.id || userItem.admin
+                                  ? "opacity-60 cursor-not-allowed"
+                                  : ""
+                              }`}
+                              disabled={
+                                deletingId === userItem.id || userItem.admin
                               }
-                            }}
-                          >
-                            {deletingId === userItem.id ? (
-                              <span className="flex items-center justify-center w-full h-full">
-                                <svg
-                                  className="animate-spin h-5 w-5 mx-auto text-white"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <circle
-                                    className="opacity-20"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    strokeWidth="4"
-                                    fill="none"
-                                  />
-                                  <path
-                                    fill="currentColor"
-                                    d="M12 2a10 10 0 0 1 10 10"
-                                    stroke="currentColor"
-                                    strokeWidth="4"
-                                    strokeLinecap="round"
-                                  />
-                                </svg>
-                              </span>
-                            ) : (
-                              "Eliminar"
-                            )}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                              title={
+                                userItem.admin
+                                  ? "No se puede eliminar un usuario admin"
+                                  : "Eliminar usuario"
+                              }
+                              onClick={async () => {
+                                if (deletingId || userItem.admin) return;
+                                setDeletingId(userItem.id);
+                                setError(null);
+                                let token = "";
+                                if (user && user.getIdToken) {
+                                  token = await user.getIdToken(true);
+                                } else if (
+                                  user &&
+                                  user.stsTokenManager &&
+                                  user.stsTokenManager.accessToken
+                                ) {
+                                  token = user.stsTokenManager.accessToken;
+                                }
+                                if (!token) {
+                                  setError(
+                                    "User token not found. Please log in again."
+                                  );
+                                  setDeletingId(null);
+                                  return;
+                                }
+                                try {
+                                  await deleteUser(userItem.id, token);
+                                  setUsers((prev) =>
+                                    prev.filter((u) => u.id !== userItem.id)
+                                  );
+                                } catch (err) {
+                                  setError(
+                                    err.message || "Error deleting user"
+                                  );
+                                } finally {
+                                  setDeletingId(null);
+                                }
+                              }}
+                            >
+                              {deletingId === userItem.id ? (
+                                <span className="flex items-center justify-center w-full h-full">
+                                  <ImSpinner2 className="animate-spin h-5 w-5 mx-auto text-white" />
+                                </span>
+                              ) : userItem.admin ? (
+                                "Admin"
+                              ) : (
+                                "Eliminar"
+                              )}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
           )}

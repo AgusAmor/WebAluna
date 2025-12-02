@@ -1,108 +1,783 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { MdEdit } from "react-icons/md";
+import { FaTrash, FaKey } from "react-icons/fa";
+import { ImSpinner2 } from "react-icons/im";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import {
+  fetchUserById,
+  updateUser,
+  deleteUser,
+} from "../../services/firebaseUserService";
+import AddressForm from "../../components/common/AddressForm";
 
 const Profile = () => {
+  const { user, logout, resetPassword } = useAuth();
+  const navigate = useNavigate();
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [editFormData, setEditFormData] = useState(null);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+  /**
+   * Fetches user data from Firestore when component mounts or user changes
+   */
+  useEffect(() => {
+    const fetchData = async () => {
+      if (user && user.uid) {
+        try {
+          const data = await fetchUserById(user.uid);
+          setUserData(data);
+          setEditFormData(data);
+        } catch (e) {
+          console.error("Error fetching user profile:", e);
+          setUserData(null);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [user]);
+
+  /**
+   * Handles address field changes in edit mode
+   */
+  const handleAddressChange = (idx, e) => {
+    const { name, value, type, checked } = e.target;
+    setEditFormData((prev) => {
+      const newAddresses = [...prev.addresses];
+      newAddresses[idx] = {
+        ...newAddresses[idx],
+        [name]: type === "checkbox" ? checked : value,
+      };
+
+      if (type === "checkbox" && checked) {
+        newAddresses.forEach((addr, i) => {
+          if (i !== idx) addr.isDefault = false;
+        });
+      }
+
+      return { ...prev, addresses: newAddresses };
+    });
+  };
+
+  /**
+   * Saves profile changes to Firestore
+   */
+  const handleSaveProfile = async () => {
+    setError(null);
+    setSuccess(null);
+    setIsSaving(true);
+
+    try {
+      if (!user) throw new Error("Usuario no autenticado");
+
+      const token = await user.getIdToken();
+      const updateData = {
+        displayName: editFormData.displayName,
+        email: editFormData.email,
+        phone: editFormData.phone,
+        addresses: editFormData.addresses || [],
+      };
+
+      await updateUser(user.uid, updateData, token);
+      setUserData(editFormData);
+      setIsEditingProfile(false);
+      setSuccess("✓ Cambios guardados exitosamente");
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error("Error saving profile:", err);
+      setError(err.message || "Error al guardar cambios");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  /**
+   * Cancels edit mode and reverts changes
+   */
+  const handleCancelEdit = () => {
+    setEditFormData(userData);
+    setIsEditingProfile(false);
+    setError(null);
+  };
+
+  /**
+   * Handles password reset request
+   */
+  const handleResetPassword = async () => {
+    if (
+      !window.confirm("¿Deseas recibir un email para resetear tu contraseña?")
+    ) {
+      return;
+    }
+
+    setIsResettingPassword(true);
+    try {
+      await resetPassword(userData?.email);
+      setSuccess(
+        "Email de recuperación enviado. Revisa tu bandeja de entrada."
+      );
+      setTimeout(() => setSuccess(null), 4000);
+    } catch (err) {
+      console.error("Error resetting password:", err);
+      setError(err.message || "Error al enviar email de recuperación");
+      setTimeout(() => setError(null), 4000);
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
+
+  /**
+   * Handles account deletion
+   */
+  const handleDeleteAccount = async () => {
+    if (
+      !window.confirm(
+        "⚠️ ¿Estás seguro? Esta acción eliminará tu cuenta permanentemente."
+      )
+    ) {
+      return;
+    }
+
+    if (
+      !window.confirm(
+        "Esta es tu última oportunidad. ¿Deseas continuar con la eliminación?"
+      )
+    ) {
+      return;
+    }
+
+    setIsDeletingAccount(true);
+    try {
+      const token = await user.getIdToken();
+      await deleteUser(user.uid, token);
+      setSuccess("Cuenta eliminada. Redirigiendo...");
+      setTimeout(() => {
+        logout();
+        navigate("/");
+      }, 2000);
+    } catch (err) {
+      console.error("Error deleting account:", err);
+      setError(err.message || "Error al eliminar la cuenta");
+      setIsDeletingAccount(false);
+      setTimeout(() => setError(null), 4000);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-3">
+        <div className="flex flex-col items-center gap-4">
+          <ImSpinner2 className="animate-spin h-8 w-8 text-blue-2" />
+          <span className="text-lg text-gray-1">Cargando perfil...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!userData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-3">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-500 mb-2">
+            Error cargando perfil
+          </h2>
+          <p className="text-gray-1">
+            No se pudo cargar tu información. Por favor intenta más tarde.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  /**
+   * Formats dates as dd/MM/yyyy HH:mm
+   */
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+
+    try {
+      let date;
+
+      if (dateStr && typeof dateStr === "object" && "seconds" in dateStr) {
+        date = new Date(dateStr.seconds * 1000);
+      } else if (
+        dateStr &&
+        typeof dateStr === "object" &&
+        "_seconds" in dateStr
+      ) {
+        date = new Date(dateStr._seconds * 1000);
+      } else if (typeof dateStr === "string") {
+        date = new Date(dateStr);
+      } else if (dateStr instanceof Date) {
+        date = dateStr;
+      } else {
+        return "-";
+      }
+
+      if (isNaN(date.getTime())) {
+        return "-";
+      }
+
+      return date.toLocaleDateString("es-AR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    } catch (err) {
+      console.error("Error formatting date:", err);
+      return "-";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-3">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 font-family-comfortaa">
-          Mi Perfil
-        </h1>
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        {/* Header Section */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-2 font-family-comfortaa text-blue-2">
+            Mi Perfil
+          </h1>
+          <p className="text-gray-1">
+            Gestiona tu información personal y direcciones
+          </p>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Profile Info */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow p-6 mb-6">
-              <h2 className="text-xl font-semibold mb-4 font-family-comfortaa">
-                Información Personal
-              </h2>
-              <form className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Nombre
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full px-3 py-2 border rounded-lg"
-                      defaultValue="Juan Pérez"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Apellido
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full px-3 py-2 border rounded-lg"
-                      defaultValue="García"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    className="w-full px-3 py-2 border rounded-lg"
-                    defaultValue="juan.perez@email.com"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Teléfono
-                  </label>
-                  <input
-                    type="tel"
-                    className="w-full px-3 py-2 border rounded-lg"
-                    defaultValue="+54 11 1234-5678"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Dirección
-                  </label>
-                  <textarea
-                    className="w-full px-3 py-2 border rounded-lg"
-                    rows="3"
-                    defaultValue="Av. Corrientes 1234, CABA, Argentina"
-                  />
-                </div>
-
-                <button className="bg-blue-2 text-white py-2 px-6 rounded-lg hover:bg-blue-1 transition-colors">
-                  Guardar Cambios
+          {/* Main Content - Profile & Addresses */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Personal Information Card */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold font-family-comfortaa text-blue-2">
+                  Información Personal
+                </h2>
+                <button
+                  onClick={() => {
+                    if (isEditingProfile) {
+                      handleCancelEdit();
+                    } else {
+                      setIsEditingProfile(true);
+                    }
+                  }}
+                  className="text-blue-2 hover:text-blue-1 font-semibold text-sm transition-colors"
+                  title={
+                    isEditingProfile ? "Cancelar edición" : "Editar perfil"
+                  }
+                >
+                  {isEditingProfile ? (
+                    <p className="font-semibold text-red-400 hover:text-gold cursor-pointer transition-all duration-200">
+                      Cancelar
+                    </p>
+                  ) : (
+                    <div className="flex items-center gap-1 cursor-pointer text-gold hover:text-blue-1 transition-all duration-200">
+                      <MdEdit className="inline-block text-xl" /> <p>Editar</p>
+                    </div>
+                  )}
                 </button>
-              </form>
+              </div>
+
+              {isEditingProfile ? (
+                // Edit Mode
+                <div className="space-y-4">
+                  {/* Name */}
+                  <div>
+                    <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-2">
+                      Nombre Completo
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData?.displayName || ""}
+                      onChange={(e) =>
+                        setEditFormData((prev) => ({
+                          ...prev,
+                          displayName: e.target.value,
+                        }))
+                      }
+                      className="w-full px-4 py-3 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
+                      placeholder="Tu nombre completo"
+                    />
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-2">
+                      Correo Electrónico
+                    </label>
+                    <input
+                      type="email"
+                      value={editFormData?.email || ""}
+                      onChange={(e) =>
+                        setEditFormData((prev) => ({
+                          ...prev,
+                          email: e.target.value,
+                        }))
+                      }
+                      className="w-full px-4 py-3 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
+                      placeholder="tu@email.com"
+                    />
+                  </div>
+
+                  {/* Phone */}
+                  <div>
+                    <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-2">
+                      Teléfono
+                    </label>
+                    <input
+                      type="tel"
+                      value={editFormData?.phone || ""}
+                      onChange={(e) =>
+                        setEditFormData((prev) => ({
+                          ...prev,
+                          phone: e.target.value,
+                        }))
+                      }
+                      className="w-full px-4 py-3 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
+                      placeholder="+54 11 1234-5678"
+                    />
+                  </div>
+
+                  {/* Status Message */}
+                  {error && (
+                    <div className="p-3 bg-red-100 border border-red-300 text-red-700 rounded-lg text-sm">
+                      {error}
+                    </div>
+                  )}
+
+                  {/* Save Button */}
+                  <div className="flex gap-3 pt-4 border-t border-gray-2">
+                    <button
+                      onClick={handleCancelEdit}
+                      disabled={isSaving}
+                      className="flex-1 py-2 px-4 border border-gray-2 rounded-lg text-gray-1 hover:bg-gray-3 transition-colors font-semibold disabled:opacity-50"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleSaveProfile}
+                      disabled={isSaving}
+                      className="flex-1 py-2 px-4 bg-blue-2 text-white rounded-lg hover:bg-blue-1 transition-colors font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {isSaving ? (
+                        <>
+                          <ImSpinner2 className="animate-spin h-4 w-4" />
+                          Guardando...
+                        </>
+                      ) : (
+                        "Guardar Cambios"
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                // View Mode
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Name */}
+                  <div>
+                    <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-2">
+                      Nombre Completo
+                    </label>
+                    <div className="px-4 py-3 border border-gray-2 rounded-lg bg-gray-3/50 font-medium text-blue-1">
+                      {userData?.displayName || "No especificado"}
+                    </div>
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-2">
+                      Correo Electrónico
+                    </label>
+                    <div className="px-4 py-3 border border-gray-2 rounded-lg bg-gray-3/50 font-medium text-blue-1">
+                      {userData?.email}
+                    </div>
+                  </div>
+
+                  {/* Phone */}
+                  <div>
+                    <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-2">
+                      Teléfono
+                    </label>
+                    <div className="px-4 py-3 border border-gray-2 rounded-lg bg-gray-3/50 font-medium">
+                      {userData?.phone || "No especificado"}
+                    </div>
+                  </div>
+
+                  {/* Account Status */}
+                  <div>
+                    <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-2">
+                      Estado de Cuenta
+                    </label>
+                    <div
+                      className={`px-4 py-3 border rounded-lg font-medium text-center ${
+                        userData?.accountStatus === "active"
+                          ? "bg-green-100 text-green-700 border-green-300"
+                          : "bg-red-100 text-red-700 border-red-300"
+                      }`}
+                    >
+                      {userData?.accountStatus === "active"
+                        ? "Activa"
+                        : "Suspendida"}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Account Metadata */}
+              {!isEditingProfile && (
+                <div className="mt-6 pt-6 border-t border-gray-2 grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-1 uppercase font-semibold mb-1">
+                      Miembro desde
+                    </p>
+                    <p className="text-sm font-medium text-blue-2">
+                      {formatDate(userData?.createdAt)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-1 uppercase font-semibold mb-1">
+                      Último login
+                    </p>
+                    <p className="text-sm font-medium text-blue-2">
+                      {formatDate(userData?.lastLoginAt || userData?.createdAt)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-1 uppercase font-semibold mb-1">
+                      Verificación
+                    </p>
+                    <p
+                      className={`text-sm font-medium ${
+                        userData?.emailVerified
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {userData?.emailVerified ? "✓ Verificado" : "Pendiente"}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Success Message */}
+              {success && (
+                <div className="mt-4 p-3 bg-green-100 border border-green-300 text-green-700 rounded-lg text-sm">
+                  {success}
+                </div>
+              )}
+            </div>
+
+            {/* Shipping Addresses Card */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-2xl font-bold font-family-comfortaa text-blue-2 mb-6">
+                Direcciones de Envío
+              </h2>
+
+              {isEditingProfile ? (
+                // Edit Mode
+                <div className="space-y-4">
+                  {editFormData?.addresses &&
+                  editFormData.addresses.length > 0 ? (
+                    <>
+                      {editFormData.addresses.map((addr, idx) => (
+                        <AddressForm
+                          key={idx}
+                          addr={addr}
+                          idx={idx}
+                          onChange={handleAddressChange}
+                          onRemove={() => {
+                            setEditFormData((prev) => ({
+                              ...prev,
+                              addresses: prev.addresses.filter(
+                                (_, i) => i !== idx
+                              ),
+                            }));
+                          }}
+                          canRemove={editFormData.addresses.length > 1}
+                        />
+                      ))}
+                    </>
+                  ) : (
+                    <div className="text-center py-8 bg-gray-3/30 rounded-lg">
+                      <p className="text-gray-1 mb-4">
+                        No tienes direcciones de envío registradas
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditFormData((prev) => ({
+                            ...prev,
+                            addresses: [
+                              ...(prev.addresses || []),
+                              {
+                                street: "",
+                                number: "",
+                                apartment: "",
+                                city: "",
+                                region: "",
+                                postalCode: "",
+                                recipientName: "",
+                                recipientPhone: "",
+                                isDefault: false,
+                              },
+                            ],
+                          }));
+                        }}
+                        className="text-blue-2 hover:text-blue-1 font-semibold text-sm transition-colors"
+                      >
+                        + Agregar dirección
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Add Address Button */}
+                  {editFormData?.addresses?.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditFormData((prev) => ({
+                          ...prev,
+                          addresses: [
+                            ...prev.addresses,
+                            {
+                              street: "",
+                              number: "",
+                              apartment: "",
+                              city: "",
+                              region: "",
+                              postalCode: "",
+                              recipientName: "",
+                              recipientPhone: "",
+                              isDefault: false,
+                            },
+                          ],
+                        }));
+                      }}
+                      className="w-full py-2 text-blue-2 border border-blue-2 rounded-lg hover:bg-blue-2 hover:text-white transition-colors font-semibold"
+                    >
+                      + Agregar otra dirección
+                    </button>
+                  )}
+
+                  {/* Save/Cancel Buttons */}
+                  <div className="flex gap-3 pt-4 border-t border-gray-2">
+                    <button
+                      onClick={handleCancelEdit}
+                      disabled={isSaving}
+                      className="flex-1 py-2 px-4 border border-gray-2 rounded-lg text-gray-1 hover:bg-gray-3 transition-colors font-semibold disabled:opacity-50"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleSaveProfile}
+                      disabled={isSaving}
+                      className="flex-1 py-2 px-4 bg-blue-2 text-white rounded-lg hover:bg-blue-1 transition-colors font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {isSaving ? (
+                        <>
+                          <ImSpinner2 className="animate-spin h-4 w-4" />
+                          Guardando...
+                        </>
+                      ) : (
+                        "Guardar Cambios"
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                // View Mode
+                <>
+                  {userData?.addresses && userData.addresses.length > 0 ? (
+                    <div className="space-y-4">
+                      {userData.addresses.map((addr, idx) => (
+                        <div
+                          key={idx}
+                          className={`border-2 rounded-lg p-6 ${
+                            addr.isDefault
+                              ? "border-gold bg-gold/5"
+                              : "border-gray-2 bg-gray-3/30"
+                          }`}
+                        >
+                          <div className="flex justify-between items-start mb-4 pb-4 border-b border-gray-2">
+                            <h3 className="font-semibold text-blue-2 text-lg">
+                              {addr.label || `Dirección ${idx + 1}`}
+                            </h3>
+                            {addr.isDefault && (
+                              <span className="bg-gold text-white text-xs font-bold px-3 py-1 rounded-full">
+                                Predeterminada
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-xs font-semibold text-gray-1 uppercase tracking-wide mb-1">
+                                Destinatario
+                              </p>
+                              <p className="text-sm font-medium text-blue-1">
+                                {addr.recipientName || "-"}
+                              </p>
+                            </div>
+
+                            <div>
+                              <p className="text-xs font-semibold text-gray-1 uppercase tracking-wide mb-1">
+                                Teléfono
+                              </p>
+                              <p className="text-sm font-medium text-gold">
+                                {addr.recipientPhone || "-"}
+                              </p>
+                            </div>
+
+                            <div className="md:col-span-2">
+                              <p className="text-xs font-semibold text-gray-1 uppercase tracking-wide mb-1">
+                                Dirección
+                              </p>
+                              <p className="text-sm font-medium text-blue-1">
+                                {addr.street} {addr.number}
+                                {addr.apartment && ` - Apto. ${addr.apartment}`}
+                              </p>
+                            </div>
+
+                            <div>
+                              <p className="text-xs font-semibold text-gray-1 uppercase tracking-wide mb-1">
+                                Ciudad
+                              </p>
+                              <p className="text-sm font-medium text-blue-1">
+                                {addr.city || "-"}
+                              </p>
+                            </div>
+
+                            <div>
+                              <p className="text-xs font-semibold text-gray-1 uppercase tracking-wide mb-1">
+                                Barrio / Región
+                              </p>
+                              <p className="text-sm font-medium text-blue-1">
+                                {addr.region || "-"}
+                              </p>
+                            </div>
+
+                            <div>
+                              <p className="text-xs font-semibold text-gray-1 uppercase tracking-wide mb-1">
+                                Código Postal
+                              </p>
+                              <p className="text-sm font-medium text-blue-1">
+                                {addr.postalCode || "-"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 bg-gray-3/30 rounded-lg">
+                      <p className="text-gray-1 mb-4">
+                        No tienes direcciones de envío registradas
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
 
-          {/* Order History */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4 font-family-comfortaa">
-                Mis Pedidos
-              </h2>
-              <div className="space-y-4">
-                {[1, 2, 3].map((order) => (
-                  <div key={order} className="border rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="font-medium">Pedido #{order}001</span>
-                      <span className="text-sm text-gold">Entregado</span>
-                    </div>
-                    <p className="text-sm text-gray-1 mb-2">
-                      2 productos - $450
-                    </p>
-                    <p className="text-xs text-gray-1">
-                      Fecha: {new Date().toLocaleDateString()}
-                    </p>
-                  </div>
-                ))}
+          {/* Sidebar - Quick Info & Orders */}
+          <div className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white rounded-lg shadow-md p-4 text-center">
+                <p className="text-2xl font-bold text-blue-2">
+                  {userData.totalOrders || 0}
+                </p>
+                <p className="text-xs text-gray-1 uppercase font-semibold">
+                  Pedidos
+                </p>
+              </div>
+              <div className="bg-white rounded-lg shadow-md p-4 text-center">
+                <p className="text-2xl font-bold text-gold">
+                  ${userData.totalSpent || 0}
+                </p>
+                <p className="text-xs text-gray-1 uppercase font-semibold">
+                  Total gastado
+                </p>
+              </div>
+            </div>
 
-                <button className="w-full text-blue-2 py-2 text-sm hover:underline">
-                  Ver todos los pedidos
+            {/* Recent Orders / Activity */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-lg font-bold font-family-comfortaa text-blue-2 mb-4">
+                Actividad Reciente
+              </h3>
+
+              {userData.totalOrders > 0 ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-1">
+                    Tienes {userData.totalOrders} pedido
+                    {userData.totalOrders > 1 ? "s" : ""} realizado
+                    {userData.totalOrders > 1 ? "s" : ""}
+                  </p>
+                  <button className="w-full bg-blue-2 text-white py-2 px-4 rounded-lg hover:bg-blue-1 transition-colors font-semibold text-sm">
+                    Ver Historial Completo
+                  </button>
+                </div>
+              ) : (
+                <div className="text-center py-6">
+                  <p className="text-gray-1 text-sm mb-3">
+                    Aún no has realizado pedidos
+                  </p>
+                  <button className="w-full bg-gold text-white py-2 px-4 rounded-lg hover:bg-gold/90 transition-colors font-semibold text-sm">
+                    Explorar Productos
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Security Card */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-lg font-bold font-family-comfortaa text-blue-2 mb-4">
+                Seguridad
+              </h3>
+              <div className="space-y-3">
+                <button
+                  onClick={handleResetPassword}
+                  disabled={isResettingPassword}
+                  className="w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-3 transition-all text-blue-2 hover:font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isResettingPassword ? (
+                    <>
+                      <ImSpinner2 className="animate-spin h-4 w-4" />
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <FaKey className="text-base" />
+                      Cambiar contraseña
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={isDeletingAccount}
+                  className="w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-red-50 transition-all text-red-500 hover:font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isDeletingAccount ? (
+                    <>
+                      <ImSpinner2 className="animate-spin h-4 w-4" />
+                      Eliminando...
+                    </>
+                  ) : (
+                    <>
+                      <FaTrash className="text-base" />
+                      Eliminar cuenta
+                    </>
+                  )}
                 </button>
               </div>
             </div>

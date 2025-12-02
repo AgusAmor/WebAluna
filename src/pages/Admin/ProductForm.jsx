@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import { TiUpload } from "react-icons/ti";
 
 /**
  * ProductForm component for creating and editing products.
@@ -26,42 +27,47 @@ const ProductForm = ({
         style={{ maxHeight: "60vh" }}
       >
         {/* Product name input */}
-        <label className="font-bold text-blue-2 mb-1 flex items-center gap-1">
-          Nombre <span className="text-gold">*</span>
-        </label>
-        <input
-          name="name"
-          type="text"
-          placeholder="Nombre"
-          required
-          defaultValue={initialProduct ? initialProduct.name : ""}
-          className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
-        />
+        <div>
+          <label className="font-bold text-blue-2 mb-1 flex items-center gap-1">
+            Nombre <span className="text-gold">*</span>
+          </label>
+          <input
+            name="name"
+            type="text"
+            placeholder="Nombre"
+            required
+            defaultValue={initialProduct ? initialProduct.name : ""}
+            className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
+          />
+        </div>
         {/* Product description input */}
-        <label className="font-bold  text-blue-2 mb-1 flex items-center gap-1 ">
-          Descripción <span className="text-gold">*</span>
-        </label>
-        <textarea
-          name="description"
-          placeholder="Descripción"
-          required
-          defaultValue={initialProduct ? initialProduct.description : ""}
-          className="w-full px-4 py-2 border border-gray-2 rounded-lg resize-none focus:border-gold focus:outline-none"
-          rows={2}
-        />
+        <div>
+          <label className="font-bold  text-blue-2 mb-1 flex items-center gap-1 ">
+            Descripción <span className="text-gold">*</span>
+          </label>
+          <textarea
+            name="description"
+            placeholder="Descripción"
+            required
+            defaultValue={initialProduct ? initialProduct.description : ""}
+            className="w-full px-4 py-2 border border-gray-2 rounded-lg resize-none focus:border-gold focus:outline-none min-h-24"
+          />
+        </div>
         {/* Product family selection */}
-        <label className="font-bold text-blue-2 mb-1 flex items-center gap-1">
-          Familia <span className="text-gold">*</span>
-        </label>
-        <select
-          name="family"
-          className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
-          required
-          defaultValue={initialProduct ? initialProduct.family : "AENOR"}
-        >
-          <option value="AENOR">AENOR</option>
-          <option value="CORE">CORE</option>
-        </select>
+        <div>
+          <label className="font-bold text-blue-2 mb-1 flex items-center gap-1">
+            Familia <span className="text-gold">*</span>
+          </label>
+          <select
+            name="family"
+            className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
+            required
+            defaultValue={initialProduct ? initialProduct.family : "AENOR"}
+          >
+            <option value="AENOR">AENOR</option>
+            <option value="CORE">CORE</option>
+          </select>
+        </div>
         {/* Image upload section: shows preview, allows upload and removal */}
         <div className="flex flex-col gap-2">
           <label className="font-bold text-blue-2 mb-1 flex items-center gap-1">
@@ -100,6 +106,9 @@ const ProductForm = ({
             ) : (
               <>
                 {/* File type info and upload button */}
+
+                <TiUpload size={100} className="text-gray-3 mx-auto " />
+
                 <span className="text-gray-3 text-xs font-semibold">
                   Solo archivos JPG o PNG
                 </span>
@@ -131,10 +140,12 @@ const ProductForm = ({
         </div>
         {/* Price section: normal and small product prices and sizes */}
         <div className="flex flex-col gap-2 mt-6">
-          <label className="font-bold text-blue-2 mb-1">Precios</label>
+          <label className="font-bold text-blue-2 mb-1">
+            Precios <span className="text-gold">*</span>
+          </label>
           <div className="grid grid-cols-2 gap-4">
             {/* Normal product price and size inputs */}
-            <div className="rounded-lg p-4 flex flex-col gap-3 bg-gray-2/40">
+            <div className="rounded-lg p-4 flex flex-col gap-3 border border-gray-2">
               <h3 className="font-semibold text-blue-2 mb-2 text-left text-base flex items-center gap-1">
                 Normal <span className="text-gold">*</span>
               </h3>
@@ -163,7 +174,7 @@ const ProductForm = ({
               />
             </div>
             {/* Small product price and size inputs */}
-            <div className="rounded-lg p-4 flex flex-col gap-3 bg-gray-2/40">
+            <div className="rounded-lg p-4 flex flex-col gap-3 border border-gray-2">
               <h3 className="font-semibold text-blue-2 mb-2 text-left text-base flex items-center gap-1">
                 Small <span className="text-gold">*</span>
               </h3>

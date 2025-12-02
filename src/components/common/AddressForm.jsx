@@ -100,7 +100,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => (
       />
     </div>
     <div className="flex items-center gap-3 mt-2">
-      {/* Custom styled checkbox for 'Dirección favorita' */}
+      {/* Custom styled checkbox for 'Default Address' */}
       <label className="flex items-center cursor-pointer select-none group relative">
         <input
           type="checkbox"

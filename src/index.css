@@ -38,7 +38,7 @@ body {
   font-family: var(--font-family-sora);
 }
 
-/* Aplicar Comfortaa a todos los títulos y encabezados */
+/* Apply Comfortaa font to all titles and headings */
 h1,
 h2,
 h3,
@@ -48,7 +48,7 @@ h6 {
   font-family: var(--font-family-comfortaa);
 }
 
-/* Elementos de botones y navegación también usan Sora */
+/* Button and navigation elements also use Sora font */
 button,
 a,
 input,
