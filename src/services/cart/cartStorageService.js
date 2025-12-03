@@ -3,7 +3,7 @@
  * Handles localStorage operations for the shopping cart
  */
 
-import { STORAGE_KEYS } from "../constants";
+import { STORAGE_KEYS } from "../../constants";
 
 // canonical key to use going forward
 const CANONICAL_CART_KEY = STORAGE_KEYS?.CART_DATA || "aluna_cart_data";

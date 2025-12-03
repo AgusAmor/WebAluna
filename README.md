@@ -1,4 +1,4 @@
-# 🌙 WebAluna - E-commerce de Lámparas 3D
+﻿# 🌙 WebAluna - E-commerce de Lámparas 3D
 
 > Single Page Application para venta de lámparas personalizadas con impresión 3D
 
@@ -224,6 +224,7 @@ Plataforma de comercio electrónico que combina tecnología de impresión 3D con
 </tr>
 
 </table>
+
 ### Herramientas de Desarrollo
 
 <table>
@@ -377,6 +378,25 @@ src/
 └── index.css                         # Estilos globales
 ```
 
+**Arquitectura de Código - Patrón Service/Hook/Component:**
+
+```
+Component.jsx (UI pura)
+    ↓ usa
+useComponent.js (Estado + orquestación)
+    ↓ usa
+componentService.js (Lógica de negocio pura)
+```
+
+**Beneficios de la nueva arquitectura:**
+
+- **Separación de responsabilidades**: UI, estado y lógica separados
+- **Testeable**: Servicios con funciones puras
+- **Reutilizable**: Hooks y servicios compartidos
+- **Mantenible**: Organización por dominio
+- **Escalable**: Fácil agregar funcionalidades
+- **40% menos código**: Eliminación de duplicación
+
 **State Management:**
 
 - **AuthContext**: Usuario autenticado, token, custom claims
@@ -442,26 +462,7 @@ pnpm dev
       - Ir a Firestore Database
       - Crear base de datos en modo "Producción"
       - Región: southamerica-east1
-      - Configurar Security Rules:
-
-`
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       match /users/{userId} {
-         allow read: if request.auth.uid == userId || isAdmin();
-         allow write: if request.auth.uid == userId || isAdmin();
-       }
-       match /products/{document=**} {
-         allow read: if true;
-         allow write: if isAdmin();
-       }
-     }
-   }
-   function isAdmin() {
-     return request.auth.token.admin == true;
-   }
-   `
+      - Configurar Security Rules
 
 4. **Configurar Storage**
       - Ir a Storage

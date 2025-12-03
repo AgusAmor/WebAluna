@@ -1,75 +1,23 @@
-import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import { fetchProducts } from "../../services/firebaseProductService";
-import { useCart } from "../../context/CartContext";
 import { Hero } from "../../components/common";
 import { ProductCard } from "../../components/ui";
 import ProductDetailModal from "../../components/ui/ProductDetailModal";
+import { useProducts } from "../../hooks";
 
 const Products = () => {
-  const { addItem } = useCart();
-  const location = useLocation();
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [imgLoaded, setImgLoaded] = useState(false);
-  const [selectedFamily, setSelectedFamily] = useState("all");
-  const [priceSort, setPriceSort] = useState("none");
-
-  // State to store products fetched from backend
-  const [allProducts, setAllProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Fetch products from backend on mount
-  useEffect(() => {
-    async function loadProducts() {
-      try {
-        setLoading(true);
-        const products = await fetchProducts();
-        setAllProducts(products);
-      } catch (err) {
-        setError("Failed to load products");
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadProducts();
-  }, []);
-
-  // Open product modal if navigated from Home
-  useEffect(() => {
-    if (location.state && location.state.openProduct) {
-      setSelectedProduct(location.state.openProduct);
-      // Clear navigation state so modal doesn't reopen on refresh
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, [location.state]);
-
-  const families = ["all", ...new Set(allProducts.map((p) => p.family))];
-
-  const filteredProducts = allProducts
-    .filter(
-      (product) => selectedFamily === "all" || product.family === selectedFamily
-    )
-    .sort((a, b) => {
-      const priceA = a.pricing?.normal?.price ?? 0;
-      const priceB = b.pricing?.normal?.price ?? 0;
-      if (priceSort === "asc") return priceA - priceB;
-      if (priceSort === "desc") return priceB - priceA;
-      return 0;
-    });
-
-  const handleAddToCart = (product) => {
-    addItem(product);
-  };
-
-  const handleCardClick = (product) => {
-    setSelectedProduct(product);
-    setImgLoaded(false);
-  };
-
-  const closeModal = () => {
-    setSelectedProduct(null);
-  };
+  const {
+    filteredProducts,
+    loading,
+    error,
+    families,
+    selectedFamily,
+    priceSort,
+    selectedProduct,
+    handleAddToCart,
+    handleCardClick,
+    handleCloseModal,
+    handleFamilyChange,
+    handlePriceSortChange,
+  } = useProducts();
 
   return (
     <div className="min-h-screen bg-gray-3">
@@ -88,7 +36,7 @@ const Products = () => {
             </label>
             <select
               value={selectedFamily}
-              onChange={(e) => setSelectedFamily(e.target.value)}
+              onChange={(e) => handleFamilyChange(e.target.value)}
               className="w-full px-4 py-2.5 border border-gray-2 rounded-lg text-sm md:text-base font-family-sora focus:outline-none focus:ring-2 focus:ring-blue-2 focus:border-blue-2 bg-white text-blue-1 cursor-pointer transition-all"
             >
               <option value="all">Todas las colecciones</option>
@@ -106,7 +54,7 @@ const Products = () => {
             </label>
             <select
               value={priceSort}
-              onChange={(e) => setPriceSort(e.target.value)}
+              onChange={(e) => handlePriceSortChange(e.target.value)}
               className="w-full px-4 py-2.5 border border-gray-2 rounded-lg text-sm md:text-base font-family-sora focus:outline-none focus:ring-2 focus:ring-blue-2 focus:border-blue-2 bg-white text-blue-1 cursor-pointer transition-all"
             >
               <option value="none">Sin ordenar</option>
@@ -170,13 +118,13 @@ const Products = () => {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto font-family-sora backdrop-blur-sm"
           style={{ backgroundColor: "rgba(38,78,96,0.45)" }}
-          onClick={closeModal}
+          onClick={handleCloseModal}
         >
           <div onClick={(e) => e.stopPropagation()}>
             <ProductDetailModal
               product={selectedProduct}
               isOpen={!!selectedProduct}
-              onClose={closeModal}
+              onClose={handleCloseModal}
               onAddToCart={handleAddToCart}
             />
           </div>

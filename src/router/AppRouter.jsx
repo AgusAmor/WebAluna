@@ -12,9 +12,11 @@ const Profile = lazy(() => import("../pages/Profile"));
 const Admin = lazy(() => import("../pages/Admin"));
 
 const ProductManagement = lazy(() =>
-  import("../pages/Admin/ProductManagement.jsx")
+  import("../pages/Admin/Products/ProductManagement.jsx")
 );
-const UserManagement = lazy(() => import("../pages/Admin/UserManagement.jsx"));
+const UserManagement = lazy(() =>
+  import("../pages/Admin/Users/UserManagement.jsx")
+);
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">

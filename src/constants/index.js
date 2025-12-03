@@ -1,88 +1,37 @@
-// User Roles
-export const USER_ROLES = {
-  ADMIN: "admin",
-  CLIENT: "client",
-};
+/**
+ * Constants - Centralized Export Point
+ *
+ * All application constants organized by domain:
+ * - auth: Authentication and user roles
+ * - cart: Shopping cart actions
+ * - product: Product categories and order status
+ * - route: Application routes
+ * - ui: UI settings and storage keys
+ * - validation: Form validation rules
+ */
 
-// Order Status
-export const ORDER_STATUS = {
-  PENDING: "pending",
-  PROCESSING: "processing",
-  SHIPPED: "shipped",
-  DELIVERED: "delivered",
-  CANCELLED: "cancelled",
-};
+// Authentication & Authorization
+export * from "./authConstants";
 
-// Product Categories
-export const PRODUCT_CATEGORIES = {
-  TABLE_LAMPS: "table_lamps",
-  PENDANT_LAMPS: "pendant_lamps",
-  FLOOR_LAMPS: "floor_lamps",
-  WALL_LAMPS: "wall_lamps",
-  CEILING_LAMPS: "ceiling_lamps",
-};
+// Cart Operations
+export * from "./cartConstants";
 
-// Cart Actions
-export const CART_ACTIONS = {
-  ADD_ITEM: "ADD_ITEM",
-  UPDATE_QUANTITY: "UPDATE_QUANTITY",
-  REMOVE_ITEM: "REMOVE_ITEM",
-  CLEAR_CART: "CLEAR_CART",
-  LOAD_CART: "LOAD_CART",
-};
+// Product & Orders
+export * from "./productConstants";
 
-// UI Constants
-export const UI_CONSTANTS = {
-  BREAKPOINTS: {
-    SM: 640,
-    MD: 768,
-    LG: 1024,
-    XL: 1280,
-  },
-  PAGINATION: {
-    DEFAULT_PAGE_SIZE: 12,
-    MAX_PAGE_SIZE: 48,
-  },
-  TOAST_DURATION: 3000,
-};
+// Routes
+export * from "./routeConstants";
 
-// Navigation Routes
-export const ROUTES = {
-  HOME: "/",
-  PRODUCTS: "/productos",
-  PRODUCT_DETAIL: "/productos/:id",
-  CART: "/carrito",
-  AUTH: "/auth",
-  PROFILE: "/perfil",
-  ADMIN: "/admin",
-  ADMIN_PRODUCTS: "/admin/productos",
-  ADMIN_ORDERS: "/admin/pedidos",
-  ADMIN_USERS: "/admin/usuarios",
-};
+// UI & Storage
+export * from "./uiConstants";
 
-// Form Validation
-export const VALIDATION = {
-  EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  PASSWORD_MIN_LENGTH: 8,
-  PHONE_REGEX: /^[\+]?[1-9][\d]{0,15}$/,
-};
+// Validation
+export * from "./validationConstants";
 
-// Local Storage Keys
-export const STORAGE_KEYS = {
-  AUTH_TOKEN: "aluna_auth_token",
-  USER_DATA: "aluna_user_data",
-  CART_DATA: "aluna_cart_data",
-  THEME: "aluna_theme",
-  LANGUAGE: "aluna_language",
-};
-
-export default {
-  USER_ROLES,
-  ORDER_STATUS,
-  PRODUCT_CATEGORIES,
-  CART_ACTIONS,
-  UI_CONSTANTS,
-  ROUTES,
-  VALIDATION,
-  STORAGE_KEYS,
-};
+// Re-export for backward compatibility
+export { USER_ROLES } from "./authConstants";
+export { CART_ACTIONS } from "./cartConstants";
+export { PRODUCT_CATEGORIES, ORDER_STATUS } from "./productConstants";
+export { ROUTES } from "./routeConstants";
+export { UI_CONSTANTS, STORAGE_KEYS } from "./uiConstants";
+export { VALIDATION } from "./validationConstants";

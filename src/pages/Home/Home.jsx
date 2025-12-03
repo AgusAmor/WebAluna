@@ -1,85 +1,16 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState, useRef } from "react";
-import { fetchProducts } from "../../services/firebaseProductService";
+import { Link } from "react-router-dom";
+import { useHome } from "../../hooks";
 import "./Carousel.css";
 
 const Home = () => {
-  const navigate = useNavigate();
-  const carouselRef = useRef(null);
-
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  /**
-   * Fetch featured products from Firebase on component mount.
-   * Handles loading and error states for products display.
-   */
-  useEffect(() => {
-    async function loadProducts() {
-      try {
-        setLoading(true);
-        const fetched = await fetchProducts();
-        setProducts(fetched);
-      } catch (err) {
-        setError("No se pudieron cargar los productos");
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadProducts();
-  }, []);
-
-  /**
-   * Infinite carousel effect with continuous horizontal scroll.
-   * Uses requestAnimationFrame for smooth animation without CSS transitions.
-   * Automatically resets scroll position when reaching the end of the product list
-   * to create a seamless infinite loop effect.
-   */
-  useEffect(() => {
-    if (loading || error || products.length === 0) return;
-
-    const carousel = carouselRef.current;
-    if (!carousel) return;
-
-    // Calculate total width of one product item (width + gap)
-    const itemWidth = 320 + 24; // 20rem (320px) + 1.5rem gap (24px)
-    let scrollPos = 0;
-    let animationId = null;
-
-    /**
-     * Scroll animation function using requestAnimationFrame.
-     * Increments scroll position and resets when reaching end of duplicated products.
-     */
-    const scroll = () => {
-      scrollPos += 0.4; // Scroll speed in pixels per frame
-
-      // Reset scroll position when reaching the end of the product set for seamless loop
-      if (scrollPos >= itemWidth * products.length) {
-        scrollPos = 0;
-      }
-
-      carousel.style.transform = `translateX(-${scrollPos}px)`;
-      animationId = requestAnimationFrame(scroll);
-    };
-    /**
-     * Navigate to products catalog and optionally pre-select a specific product.
-     * Used when user clicks on a featured product in the carousel.
-     */
-    const goToCatalog = (product) => {
-      navigate("/productos", { state: { openProduct: product } });
-    };
-    animationId = requestAnimationFrame(scroll);
-
-    // Cleanup: Cancel animation frame on unmount
-    return () => {
-      if (animationId) cancelAnimationFrame(animationId);
-    };
-  }, [products, loading, error]);
-
-  const goToCatalog = (product) => {
-    navigate("/productos", { state: { openProduct: product } });
-  };
+  const {
+    carouselRef,
+    carouselProducts,
+    loading,
+    error,
+    handleProductClick,
+    handleGoToCatalog,
+  } = useHome();
 
   return (
     <main className="min-h-screen">
@@ -96,6 +27,7 @@ const Home = () => {
 
           <Link
             to="/productos"
+            onClick={handleGoToCatalog}
             className="inline-block bg-white text-blue-2 px-6 py-2 md:px-8 md:py-3 text-base md:text-lg rounded-lg font-semibold hover:bg-gold hover:text-white hover:scale-105 transition-all font-family-sora"
           >
             Ver Catálogo
@@ -132,11 +64,11 @@ const Home = () => {
             ) : (
               <>
                 {/* Duplicar productos para efecto infinito sin reinicio */}
-                {[...products, ...products].map((product, index) => (
+                {carouselProducts.map((product, index) => (
                   <div
                     key={index}
                     className="carousel-item"
-                    onClick={() => goToCatalog(product)}
+                    onClick={() => handleProductClick(product)}
                     role="button"
                     tabIndex={0}
                     aria-label={`Ver ${product.name} - Lámpara 3D personalizada`}

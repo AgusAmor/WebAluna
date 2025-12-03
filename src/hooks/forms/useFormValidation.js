@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { isValidEmail, isValidPhone } from "../../utils/validators";
 
 /**
  * Custom Hook for form validation and error handling
@@ -56,16 +57,5 @@ export function useFormValidation(initialValues = {}) {
   };
 }
 
-/**
- * Email validation helper
- */
-export function isValidEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-/**
- * Phone validation helper (basic)
- */
-export function isValidPhone(phone) {
-  return /^[+\d\s\-()]{5,}$/.test(phone);
-}
+// Re-export validators from utils for convenience
+export { isValidEmail, isValidPhone };

@@ -1,150 +1,34 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import { IoIosClose } from "react-icons/io";
-import { useAuth } from "../../context/AuthContext";
-import { GoogleLoginButton } from "../ui";
 import { FiMail, FiLock, FiUser } from "react-icons/fi";
+import { GoogleLoginButton } from "../../ui";
+import { useLoginModal } from "../../../hooks";
+import {
+  getModalTitle,
+  getModalSubtitle,
+} from "../../../services/auth/loginService";
 
 const LoginModal = ({ isOpen, onClose }) => {
-  const [isLogin, setIsLogin] = useState(true);
-  const [showReset, setShowReset] = useState(false);
-  const [resetEmail, setResetEmail] = useState("");
-  const [resetError, setResetError] = useState("");
-  const [resetSuccess, setResetSuccess] = useState("");
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const [errors, setErrors] = useState({});
   const {
-    login,
-    loginWithGoogle,
-    register,
+    isLogin,
+    showReset,
+    resetEmail,
+    resetError,
+    resetSuccess,
+    formData,
+    errors,
     loading,
     error,
-    user,
-    isAuthenticated,
-    requestPasswordReset,
-  } = useAuth();
-  const navigate = useNavigate();
-
-  // Close modal automatically when user logs in successfully
-  useEffect(() => {
-    if (isAuthenticated && user && isOpen) {
-      // Si el usuario tiene rol admin, navega a /admin
-      if (user.role === "admin") {
-        navigate("/admin");
-      }
-      // Cierra el modal y resetea el formulario
-      onClose();
-      setFormData({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-      });
-      setErrors({});
-    }
-  }, [isAuthenticated, user, isOpen, onClose, navigate]);
+    handleChange,
+    handleResetChange,
+    handleResetSubmit,
+    handleSubmit,
+    handleGoogleLogin,
+    handleSwitchMode,
+    handleShowReset,
+    handleBackToLogin,
+  } = useLoginModal(isOpen, onClose);
 
   if (!isOpen) return null;
-
-  // Handles input changes for login/register form
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
-  };
-
-  // Handles input changes for password reset form
-  const handleResetChange = (e) => {
-    setResetEmail(e.target.value);
-    if (resetError) setResetError("");
-    if (resetSuccess) setResetSuccess("");
-  };
-
-  // Handles password reset form submission (visual only)
-  const handleResetSubmit = async (e) => {
-    e.preventDefault();
-    setResetError("");
-    setResetSuccess("");
-    try {
-      await requestPasswordReset(resetEmail);
-      setResetSuccess("Se ha enviado el correo de recuperación");
-    } catch (err) {
-      setResetError(
-        err.message || "No se pudo enviar el correo. Verifica el email."
-      );
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    if (!isLogin && !formData.name.trim()) {
-      newErrors.name = "El nombre es requerido";
-    }
-    if (!formData.email.trim()) {
-      newErrors.email = "El email es requerido";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email inválido";
-    }
-    if (!formData.password) {
-      newErrors.password = "La contraseña es requerida";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "La contraseña debe tener al menos 6 caracteres";
-    }
-    if (!isLogin && formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Las contraseñas no coinciden";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-    try {
-      if (isLogin) {
-        await login(formData.email, formData.password);
-      } else {
-        await register(formData.email, formData.password, formData.name);
-      }
-      // Modal closes automatically via useEffect
-    } catch (err) {
-      // Error is already displayed by the context
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      await loginWithGoogle();
-      // Modal closes automatically via useEffect
-    } catch (err) {
-      // Error is already displayed by the context
-    }
-  };
-
-  const handleSwitchMode = () => {
-    setIsLogin(!isLogin);
-    setFormData({
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    });
-    setErrors({});
-  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto font-family-sora">
@@ -163,18 +47,10 @@ const LoginModal = ({ isOpen, onClose }) => {
           {/* Header */}
           <div className="p-5">
             <h2 className="text-center text-xl font-bold font-family-comfortaa text-blue-1">
-              {showReset
-                ? "Reestablecer contraseña"
-                : isLogin
-                ? "Iniciar Sesión"
-                : "Registrarse"}
+              {getModalTitle(isLogin, showReset)}
             </h2>
             <p className="text-center text-gray-1 mt-2 text-sm">
-              {showReset
-                ? "Ingresa tu email para recibir instrucciones"
-                : isLogin
-                ? "Accede a tu cuenta"
-                : "Crea una nueva cuenta"}
+              {getModalSubtitle(isLogin, showReset)}
             </p>
           </div>
           {/* Content */}
@@ -225,7 +101,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                 <div className="text-center mt-6">
                   <button
                     type="button"
-                    onClick={() => setShowReset(false)}
+                    onClick={handleBackToLogin}
                     className="text-blue-2 hover:text-gold hover:underline transition-colors text-sm"
                   >
                     Volver a iniciar sesión
@@ -376,7 +252,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                   {isLogin && (
                     <button
                       type="button"
-                      onClick={() => setShowReset(true)}
+                      onClick={handleShowReset}
                       className="block w-full text-blue-2 hover:text-gold hover:underline transition-colors text-xs mt-2"
                     >
                       ¿Olvidaste tu contraseña?

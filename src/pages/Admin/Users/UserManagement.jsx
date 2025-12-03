@@ -1,39 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { ImSpinner2 } from "react-icons/im";
-import { Hero } from "../../components/common";
+import { Hero } from "../../../components/common";
 import UserForm from "./UserForm";
-import {
-  fetchUsers,
-  deleteUser,
-  updateUser,
-} from "../../services/firebaseUserService";
-import { useAuth } from "../../context/AuthContext";
+import { useUserManagement } from "../../../hooks";
+import { formatDate, formatDateTime } from "../../../utils/dateFormatter";
+import { formatDefaultAddress } from "../../../services/users/userManagementService";
 
 const UserManagement = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [editUser, setEditUser] = useState(null);
-  const [deletingId, setDeletingId] = useState(null);
-  const { user } = useAuth();
-
-  // Fetch users from backend on component mount
-  useEffect(() => {
-    async function loadUsers() {
-      try {
-        setLoading(true);
-        const data = await fetchUsers();
-        setUsers(data);
-      } catch (err) {
-        setError("Error loading users");
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadUsers();
-  }, []);
+  const {
+    users,
+    loading,
+    error,
+    showModal,
+    saving,
+    editUser,
+    deletingId,
+    currentUser,
+    handleEditUser,
+    handleCloseModal,
+    handleSubmitUser,
+    handleDeleteUser,
+  } = useUserManagement();
 
   return (
     <div className="min-h-screen bg-gray-3 px-4 py-2 pb-20">
@@ -48,8 +35,7 @@ const UserManagement = () => {
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
             onClick={(e) => {
               if (e.target === e.currentTarget) {
-                setShowModal(false);
-                setEditUser(null);
+                handleCloseModal();
               }
             }}
           >
@@ -59,10 +45,7 @@ const UserManagement = () => {
             >
               <button
                 className="absolute top-3 right-3 text-blue-2 hover:text-gold text-xl font-bold"
-                onClick={() => {
-                  setShowModal(false);
-                  setEditUser(null);
-                }}
+                onClick={handleCloseModal}
                 aria-label="Close"
               >
                 ×
@@ -74,30 +57,8 @@ const UserManagement = () => {
                 initialUser={editUser}
                 saving={saving}
                 error={error}
-                onCancel={() => {
-                  setShowModal(false);
-                  setEditUser(null);
-                }}
-                onSubmit={async (formData) => {
-                  setSaving(true);
-                  setError(null);
-                  try {
-                    if (editUser && user) {
-                      // Get Firebase Auth token
-                      const token = await user.getIdToken();
-                      await updateUser(editUser.id, formData, token);
-                      // Refresh user list
-                      const updatedUsers = await fetchUsers();
-                      setUsers(updatedUsers);
-                    }
-                    setShowModal(false);
-                    setEditUser(null);
-                  } catch (e) {
-                    setError(e.message || "Error al guardar usuario");
-                  } finally {
-                    setSaving(false);
-                  }
-                }}
+                onCancel={handleCloseModal}
+                onSubmit={handleSubmitUser}
                 buttonLabel={editUser ? "Guardar cambios" : "Agregar usuario"}
               />
             </div>
@@ -142,23 +103,12 @@ const UserManagement = () => {
               </thead>
               <tbody>
                 {users
-                  .filter((userItem) => !user || userItem.id !== user.uid)
+                  .filter(
+                    (userItem) =>
+                      !currentUser || userItem.id !== currentUser.uid
+                  )
                   .map((userItem) => {
-                    // Format creation date
-                    let createdAt = "-";
-                    if (userItem.createdAt) {
-                      const ts = userItem.createdAt;
-                      const seconds = ts.seconds || ts._seconds;
-                      if (seconds) {
-                        const date = new Date(seconds * 1000);
-                        const pad = (n) => n.toString().padStart(2, "0");
-                        createdAt = `${pad(date.getDate())}/${pad(
-                          date.getMonth() + 1
-                        )}/${date.getFullYear()} · ${pad(
-                          date.getHours()
-                        )}:${pad(date.getMinutes())}`;
-                      }
-                    }
+                    const createdAt = formatDateTime(userItem.createdAt);
                     return (
                       <tr
                         key={userItem.id}
@@ -174,22 +124,7 @@ const UserManagement = () => {
                           {userItem.phone || "-"}
                         </td>
                         <td className="py-2 px-2 text-center">
-                          {Array.isArray(userItem.addresses) &&
-                          userItem.addresses.length > 0
-                            ? (() => {
-                                const fav = userItem.addresses.find(
-                                  (a) => a.isDefault
-                                );
-                                if (!fav) return "-";
-                                return (
-                                  `${fav.street || ""} ${fav.number || ""} · ${
-                                    fav.region || ""
-                                  }`
-                                    .trim()
-                                    .replace(/^\s*•\s*$/, "-") || "-"
-                                );
-                              })()
-                            : "-"}
+                          {formatDefaultAddress(userItem.addresses)}
                         </td>
                         <td className="py-2 px-2 text-center">
                           {userItem.accountStatus || "-"}
@@ -201,10 +136,7 @@ const UserManagement = () => {
                             <button
                               className="bg-blue-2 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-gold transition-colors w-24"
                               type="button"
-                              onClick={() => {
-                                setEditUser(userItem);
-                                setShowModal(true);
-                              }}
+                              onClick={() => handleEditUser(userItem)}
                             >
                               Editar
                             </button>
@@ -223,40 +155,7 @@ const UserManagement = () => {
                                   ? "No se puede eliminar un usuario admin"
                                   : "Eliminar usuario"
                               }
-                              onClick={async () => {
-                                if (deletingId || userItem.admin) return;
-                                setDeletingId(userItem.id);
-                                setError(null);
-                                let token = "";
-                                if (user && user.getIdToken) {
-                                  token = await user.getIdToken(true);
-                                } else if (
-                                  user &&
-                                  user.stsTokenManager &&
-                                  user.stsTokenManager.accessToken
-                                ) {
-                                  token = user.stsTokenManager.accessToken;
-                                }
-                                if (!token) {
-                                  setError(
-                                    "User token not found. Please log in again."
-                                  );
-                                  setDeletingId(null);
-                                  return;
-                                }
-                                try {
-                                  await deleteUser(userItem.id, token);
-                                  setUsers((prev) =>
-                                    prev.filter((u) => u.id !== userItem.id)
-                                  );
-                                } catch (err) {
-                                  setError(
-                                    err.message || "Error deleting user"
-                                  );
-                                } finally {
-                                  setDeletingId(null);
-                                }
-                              }}
+                              onClick={() => handleDeleteUser(userItem)}
                             >
                               {deletingId === userItem.id ? (
                                 <span className="flex items-center justify-center w-full h-full">

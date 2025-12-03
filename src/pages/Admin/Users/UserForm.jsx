@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { FiPlus } from "react-icons/fi";
-import AddressForm from "../../components/common/AddressForm";
+import { AddressForm } from "../../../components/common";
+import { useUserForm } from "../../../hooks";
 
 /**
  * UserForm component for creating and editing users.
@@ -15,172 +16,20 @@ const UserForm = ({
   onSubmit,
   buttonLabel = "Guardar",
 }) => {
-  // Template for an empty address object
-  const emptyAddress = {
-    id: `addr-${Date.now()}`,
-    street: "",
-    apartment: "",
-    city: "",
-    region: "",
-    postalCode: "",
-    isDefault: false,
-    recipientName: "",
-    recipientPhone: "",
-  };
+  const {
+    form,
+    handleChange,
+    handleAddressChange,
+    handleAddAddress,
+    handleRemoveAddress,
+    getFormData,
+  } = useUserForm(initialUser);
 
-  // Main form state for user fields
-  const [form, setForm] = useState({
-    displayName: "",
-    email: "",
-    phone: "",
-    phoneCountry: "+549",
-    phoneLocal: "",
-    accountStatus: "active",
-    role: "user",
-    admin: false,
-    addresses: [], // Start empty, will be populated if editing existing user
-  });
-
-  // Populate form state with initialUser data or reset to empty if not present
-  useEffect(() => {
-    if (initialUser) {
-      // Split phone number from E.164
-      let phoneCountry = "+549";
-      let phoneLocal = "";
-      if (initialUser.phone && /^\+\d{8,15}$/.test(initialUser.phone)) {
-        const match = initialUser.phone.match(/^(\+\d{1,3})(\d{6,12})$/);
-        if (match) {
-          phoneCountry = match[1];
-          phoneLocal = match[2];
-        }
-      }
-      setForm({
-        displayName: initialUser.displayName || "",
-        email: initialUser.email || "",
-        phone: initialUser.phone || "",
-        phoneCountry,
-        phoneLocal,
-        accountStatus: initialUser.accountStatus || "active",
-        role: initialUser.role || "user",
-        admin: !!initialUser.admin,
-        // Load existing addresses if they exist, otherwise empty array
-        addresses:
-          Array.isArray(initialUser.addresses) &&
-          initialUser.addresses.length > 0
-            ? initialUser.addresses.map((a, i) => ({
-                ...emptyAddress,
-                ...a,
-                id: a.id || `addr-${i + 1}`,
-              }))
-            : [], // Empty if no addresses
-      });
-    } else {
-      setForm({
-        displayName: "",
-        email: "",
-        phone: "",
-        phoneCountry: "+549",
-        phoneLocal: "",
-        accountStatus: "active",
-        role: "user",
-        admin: false,
-        addresses: [], // Empty for new users
-      });
-    }
-    // eslint-disable-next-line
-  }, [initialUser]);
-  // Handle changes for main user fields
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    if (name === "role") {
-      setForm((prev) => ({
-        ...prev,
-        role: value,
-        admin: value === "admin",
-      }));
-    } else {
-      setForm((prev) => ({
-        ...prev,
-        [name]: type === "checkbox" ? checked : value,
-      }));
-    }
-  };
-
-  // Handle changes for address fields, including setting default address
-  const handleAddressChange = (idx, e) => {
-    const { name, value, type, checked } = e.target;
-    setForm((prev) => {
-      let addresses = prev.addresses.map((addr, i) =>
-        i === idx
-          ? { ...addr, [name]: type === "checkbox" ? checked : value }
-          : addr
-      );
-      // If isDefault is checked, unset isDefault for all other addresses
-      if (name === "isDefault" && checked) {
-        addresses = addresses.map((addr, i) => ({
-          ...addr,
-          isDefault: i === idx,
-        }));
-      }
-      // If after change none is default, and only one address, set it as default
-      if (addresses.length === 1 && !addresses[0].isDefault) {
-        addresses[0].isDefault = true;
-      }
-      return { ...prev, addresses };
-    });
-  };
-
-  // Add a new empty address to the addresses array
-  const addAddress = () => {
-    setForm((prev) => {
-      const isFirst =
-        !prev.addresses ||
-        prev.addresses.length === 0 ||
-        (prev.addresses.length === 1 &&
-          Object.values(prev.addresses[0]).every(
-            (v) => v === "" || v === false || v === null
-          ));
-      const newAddress = {
-        ...emptyAddress,
-        id: `addr-${Date.now()}`,
-        isDefault: isFirst,
-      };
-      let addresses = [];
-      if (isFirst) {
-        addresses = [newAddress];
-      } else {
-        addresses = [...prev.addresses, newAddress];
-      }
-      return {
-        ...prev,
-        addresses,
-      };
-    });
-  };
-
-  // Remove an address from the addresses array, ensuring at least one remains
-  const removeAddress = (idx) => {
-    setForm((prev) => {
-      const addresses = prev.addresses.filter((_, i) => i !== idx);
-      return {
-        ...prev,
-        addresses: addresses.length ? addresses : [emptyAddress],
-      };
-    });
-  };
-
-  // Handle form submission and pass form data to parent
+  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Join phoneCountry and phoneLocal into E.164 phone
-    let phone = "";
-    if (form.phoneCountry && form.phoneLocal) {
-      phone = `${form.phoneCountry}${form.phoneLocal}`;
-    }
-    onSubmit({
-      ...form,
-      phone,
-    });
+    const formData = getFormData();
+    onSubmit(formData);
   };
 
   return (
@@ -287,7 +136,7 @@ const UserForm = ({
                   addr={addr}
                   idx={idx}
                   onChange={handleAddressChange}
-                  onRemove={removeAddress}
+                  onRemove={handleRemoveAddress}
                   canRemove={form.addresses.length > 1}
                 />
               ))}
@@ -297,7 +146,7 @@ const UserForm = ({
             <button
               type="button"
               className="flex items-center gap-2 px-3 py-2 rounded-full bg-blue-2 text-white text-xs font-bold shadow-md hover:bg-gold transition-colors mt-0 mb-2 w-fit"
-              onClick={addAddress}
+              onClick={handleAddAddress}
             >
               <FiPlus className="h-5 w-5" />
               Agregar dirección

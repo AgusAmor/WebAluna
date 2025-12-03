@@ -1,6 +1,12 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
 import { CART_ACTIONS } from "../constants";
-import { cartStorageService } from "../services/cartStorageService";
+import { cartStorageService } from "../services/cart/cartStorageService";
+import {
+  addItemToCart,
+  updateItemQuantity,
+  removeItemFromCart,
+  prepareCartState,
+} from "../services/cart/cartService";
 
 const initialState = {
   items: [],
@@ -21,112 +27,26 @@ const cartReducer = (state, action) => {
       };
 
     case CART_ACTIONS.ADD_ITEM: {
-      // Use id + selectedType to distinguish items of different sizes
-      const itemKey = `${action.payload.id}_${
-        action.payload.selectedType || "normal"
-      }`;
-      const existingItem = state.items.find(
-        (item) => `${item.id}_${item.selectedType || "normal"}` === itemKey
-      );
-      let updatedItems;
-
-      if (existingItem) {
-        updatedItems = state.items.map((item) =>
-          `${item.id}_${item.selectedType || "normal"}` === itemKey
-            ? {
-                ...item,
-                quantity: item.quantity + (action.payload.quantity || 1),
-              }
-            : item
-        );
-      } else {
-        updatedItems = [
-          ...state.items,
-          {
-            ...action.payload,
-            price: action.payload.selectedPrice, // store selected price
-            size: action.payload.selectedSize, // store selected size
-            type: action.payload.selectedType, // store selected type
-            quantity: action.payload.quantity || 1,
-          },
-        ];
-      }
-
-      const newTotal = updatedItems.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0
-      );
-      const newItemCount = updatedItems.reduce(
-        (sum, item) => sum + item.quantity,
-        0
-      );
-
-      return {
-        ...state,
-        items: updatedItems,
-        total: newTotal,
-        itemCount: newItemCount,
-      };
+      const updatedItems = addItemToCart(state.items, action.payload);
+      return { ...state, ...prepareCartState(updatedItems) };
     }
 
     case CART_ACTIONS.UPDATE_QUANTITY: {
-      // Support composite key (id_type) for cart items
-      const updatedItems = state.items
-        .map((item) => {
-          const itemKey = `${item.id}_${item.type || "normal"}`;
-          return itemKey === action.payload.id
-            ? { ...item, quantity: Math.max(0, action.payload.quantity) }
-            : item;
-        })
-        .filter((item) => item.quantity > 0);
-
-      const newTotal = updatedItems.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0
+      const updatedItems = updateItemQuantity(
+        state.items,
+        action.payload.id,
+        action.payload.quantity
       );
-      const newItemCount = updatedItems.reduce(
-        (sum, item) => sum + item.quantity,
-        0
-      );
-
-      return {
-        ...state,
-        items: updatedItems,
-        total: newTotal,
-        itemCount: newItemCount,
-      };
+      return { ...state, ...prepareCartState(updatedItems) };
     }
 
     case CART_ACTIONS.REMOVE_ITEM: {
-      // Support composite key (id_type) for cart items
-      const updatedItems = state.items.filter((item) => {
-        const itemKey = `${item.id}_${item.type || "normal"}`;
-        return itemKey !== action.payload.id;
-      });
-      const newTotal = updatedItems.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0
-      );
-      const newItemCount = updatedItems.reduce(
-        (sum, item) => sum + item.quantity,
-        0
-      );
-
-      return {
-        ...state,
-        items: updatedItems,
-        total: newTotal,
-        itemCount: newItemCount,
-      };
+      const updatedItems = removeItemFromCart(state.items, action.payload.id);
+      return { ...state, ...prepareCartState(updatedItems) };
     }
 
     case CART_ACTIONS.CLEAR_CART:
-      return {
-        ...state,
-        items: [],
-        total: 0,
-        itemCount: 0,
-      };
+      return { ...state, ...prepareCartState([]) };
 
     default:
       return state;

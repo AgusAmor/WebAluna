@@ -1,12 +1,11 @@
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 /**
  * Hook to check if current user is admin
  * @returns {boolean} True if user is admin, false otherwise
  */
 export function useIsAdmin() {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
   return user?.role === "admin";
 }
 
@@ -15,7 +14,7 @@ export function useIsAdmin() {
  * @returns {Object|null} Current user object or null
  */
 export function useUser() {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
   return user;
 }
 

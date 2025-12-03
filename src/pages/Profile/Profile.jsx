@@ -1,245 +1,50 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { MdEdit } from "react-icons/md";
 import { FaTrash, FaKey } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { useNavigate } from "react-router-dom";
-import { updateProfile } from "firebase/auth";
-import { useAuth } from "../../context/AuthContext";
-import { fetchUserById, updateUser } from "../../services/firebaseUserService";
-import {
-  deleteCurrentAccount,
-  requestPasswordReset as requestPasswordResetService,
-} from "../../services/accountService";
-import { ConfirmationModal } from "../../components/common";
+import { ConfirmationModal, AddressForm } from "../../components/common";
 import { IoIosWarning } from "react-icons/io";
-import AddressForm from "../../components/common/AddressForm";
+import { useProfile } from "../../hooks";
+import { formatDate } from "../../utils/dateFormatter";
 
 const Profile = () => {
-  const { user, logout, updateUserProfile, refreshUser } = useAuth();
   const navigate = useNavigate();
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
-  const [editFormData, setEditFormData] = useState(null);
-  const [isResettingPassword, setIsResettingPassword] = useState(false);
-  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
-  const [showResetPasswordConfirm, setShowResetPasswordConfirm] =
-    useState(false);
-  const [showDeleteAccountConfirm, setShowDeleteAccountConfirm] =
-    useState(false);
+  const {
+    userData,
+    loading,
+    isEditingProfile,
+    isSaving,
+    error,
+    success,
+    editFormData,
+    isResettingPassword,
+    isDeletingAccount,
+    showResetPasswordConfirm,
+    showDeleteAccountConfirm,
+    handleAddressChange,
+    handleAddAddress,
+    handleRemoveAddress,
+    handleSaveProfile,
+    handleCancelEdit,
+    handleStartEdit,
+    handleResetPassword,
+    handleDeleteAccount,
+    updateEditField,
+    setShowResetPasswordConfirm,
+    setShowDeleteAccountConfirm,
+  } = useProfile();
 
   /**
-   * Fetches user data from Firestore when component mounts or user changes
-   */
-  useEffect(() => {
-    const fetchData = async () => {
-      if (user && user.uid) {
-        try {
-          const data = await fetchUserById(user.uid);
-          // Ensure addresses is always an array
-          const userData = {
-            ...data,
-            addresses: data.addresses || [],
-          };
-          setUserData(userData);
-
-          // Split phone number into country code and local number
-          let phoneCountry = "+549";
-          let phoneLocal = "";
-          if (data.phone && /^\+\d{8,15}$/.test(data.phone)) {
-            const match = data.phone.match(/^(\+\d{1,3})(\d{6,12})$/);
-            if (match) {
-              phoneCountry = match[1];
-              phoneLocal = match[2];
-            }
-          }
-
-          setEditFormData({
-            ...userData,
-            phoneCountry,
-            phoneLocal,
-          });
-        } catch (e) {
-          console.error("Error fetching user profile:", e);
-          setUserData(null);
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [user]);
-
-  /**
-   * Handles address field changes in edit mode
-   */
-  const handleAddressChange = (idx, e) => {
-    const { name, value, type, checked } = e.target;
-    setEditFormData((prev) => {
-      const newAddresses = [...(prev.addresses || [])];
-      newAddresses[idx] = {
-        ...newAddresses[idx],
-        [name]: type === "checkbox" ? checked : value,
-      };
-
-      if (type === "checkbox" && checked) {
-        newAddresses.forEach((addr, i) => {
-          if (i !== idx) addr.isDefault = false;
-        });
-      }
-
-      return { ...prev, addresses: newAddresses };
-    });
-  };
-
-  /**
-   * Saves profile changes to Firestore
-   */
-  const handleSaveProfile = async () => {
-    setError(null);
-    setSuccess(null);
-    setIsSaving(true);
-
-    try {
-      if (!user) throw new Error("Usuario no autenticado");
-
-      const token = await user.getIdToken();
-      const updateData = {
-        displayName: editFormData.displayName,
-        email: editFormData.email,
-        phone: `${editFormData.phoneCountry}${editFormData.phoneLocal}`,
-        addresses: editFormData.addresses || [],
-      };
-
-      await updateUser(user.uid, updateData, token);
-
-      // Update Firebase Auth displayName so subsequent operations don't fail
-      await updateProfile(user, {
-        displayName: editFormData.displayName,
-      });
-
-      // Reload user data from server after successful update
-      const updatedData = await fetchUserById(user.uid);
-      // Ensure addresses is always an array
-      const userDataWithAddresses = {
-        ...updatedData,
-        addresses: updatedData.addresses || [],
-      };
-      setUserData(userDataWithAddresses);
-
-      // Split phone number into country code and local number for display
-      let phoneCountry = "+549";
-      let phoneLocal = "";
-      if (updatedData.phone && /^\+\d{8,15}$/.test(updatedData.phone)) {
-        const match = updatedData.phone.match(/^(\+\d{1,3})(\d{6,12})$/);
-        if (match) {
-          phoneCountry = match[1];
-          phoneLocal = match[2];
-        }
-      }
-
-      setEditFormData({
-        ...userDataWithAddresses,
-        phoneCountry,
-        phoneLocal,
-      });
-
-      // Update user profile in AuthContext so header and other components reflect changes
-      updateUserProfile({
-        displayName: updatedData.displayName,
-        email: updatedData.email,
-        phone: updatedData.phone,
-        addresses: updatedData.addresses,
-      });
-
-      // Refresh the complete user object to ensure clean state for next edit
-      await refreshUser();
-
-      setIsEditingProfile(false);
-      setSuccess("✓ Cambios guardados exitosamente");
-      setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
-      console.error("Error saving profile:", err);
-      // Show generic error message without specific details
-      setError("Error al guardar los cambios. Intenta nuevamente.");
-      setTimeout(() => setError(null), 4000);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  /**
-   * Cancels edit mode and reverts changes
-   */
-  const handleCancelEdit = () => {
-    setEditFormData(userData);
-    setIsEditingProfile(false);
-    setError(null);
-  };
-
-  /**
-   * Handles password reset request - opens confirmation modal
-   */
-  const handleResetPasswordClick = () => {
-    setShowResetPasswordConfirm(true);
-  };
-
-  /**
-   * Confirms password reset after modal confirmation
-   */
-  const confirmResetPassword = async () => {
-    setShowResetPasswordConfirm(false);
-    setIsResettingPassword(true);
-    try {
-      await requestPasswordResetService(userData?.email);
-      setSuccess(
-        "Email de recuperación enviado. Revisa tu bandeja de entrada (también el correo no deseado o SPAM)."
-      );
-      setTimeout(() => setSuccess(null), 4000);
-    } catch (err) {
-      console.error("Error resetting password:", err);
-      // Show generic error message without specific details
-      setError("Error al enviar el email. Intenta nuevamente.");
-      setTimeout(() => setError(null), 4000);
-    } finally {
-      setIsResettingPassword(false);
-    }
-  };
-
-  /**
-   * Handles account deletion request - opens confirmation modal
-   */
-  const handleDeleteAccountClick = () => {
-    setShowDeleteAccountConfirm(true);
-  };
-
-  /**
-   * Confirms account deletion after modal confirmation
+   * Handle account deletion confirmation
    */
   const confirmDeleteAccount = async () => {
-    setShowDeleteAccountConfirm(false);
-    setIsDeletingAccount(true);
-    try {
-      // Call account service to handle deletion logic
-      // This deletes from both Firestore and Firebase Auth, and signs out
-      await deleteCurrentAccount(user);
-
-      // Show success message and redirect immediately
-      // Don't use setState after redirect since component will unmount
+    const success = await handleDeleteAccount();
+    if (success) {
       navigate("/", { replace: true });
-    } catch (err) {
-      console.error("Error deleting account:", err);
-      // Show generic error message without specific details
-      setError("Error al eliminar la cuenta. Intenta nuevamente.");
-      setIsDeletingAccount(false);
-      setTimeout(() => setError(null), 4000);
     }
   };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-3">
@@ -266,46 +71,6 @@ const Profile = () => {
     );
   }
 
-  /**
-   * Formats dates as dd/MM/yyyy HH:mm
-   */
-  const formatDate = (dateStr) => {
-    if (!dateStr) return "-";
-
-    try {
-      let date;
-
-      if (dateStr && typeof dateStr === "object" && "seconds" in dateStr) {
-        date = new Date(dateStr.seconds * 1000);
-      } else if (
-        dateStr &&
-        typeof dateStr === "object" &&
-        "_seconds" in dateStr
-      ) {
-        date = new Date(dateStr._seconds * 1000);
-      } else if (typeof dateStr === "string") {
-        date = new Date(dateStr);
-      } else if (dateStr instanceof Date) {
-        date = dateStr;
-      } else {
-        return "-";
-      }
-
-      if (isNaN(date.getTime())) {
-        return "-";
-      }
-
-      return date.toLocaleDateString("es-AR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-    } catch (err) {
-      console.error("Error formatting date:", err);
-      return "-";
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-3">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -329,13 +94,9 @@ const Profile = () => {
                   Información Personal
                 </h2>
                 <button
-                  onClick={() => {
-                    if (isEditingProfile) {
-                      handleCancelEdit();
-                    } else {
-                      setIsEditingProfile(true);
-                    }
-                  }}
+                  onClick={
+                    isEditingProfile ? handleCancelEdit : handleStartEdit
+                  }
                   className="text-blue-2 hover:text-blue-1 font-semibold text-sm transition-colors"
                   title={
                     isEditingProfile ? "Cancelar edición" : "Editar perfil"
@@ -365,10 +126,7 @@ const Profile = () => {
                       type="text"
                       value={editFormData?.displayName || ""}
                       onChange={(e) =>
-                        setEditFormData((prev) => ({
-                          ...prev,
-                          displayName: e.target.value,
-                        }))
+                        updateEditField("displayName", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
                       placeholder="Tu nombre completo"
@@ -383,12 +141,7 @@ const Profile = () => {
                     <input
                       type="email"
                       value={editFormData?.email || ""}
-                      onChange={(e) =>
-                        setEditFormData((prev) => ({
-                          ...prev,
-                          email: e.target.value,
-                        }))
-                      }
+                      onChange={(e) => updateEditField("email", e.target.value)}
                       className="w-full px-4 py-3 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
                       placeholder="tu@email.com"
                     />
@@ -406,10 +159,7 @@ const Profile = () => {
                         type="text"
                         value={editFormData?.phoneCountry || "+549"}
                         onChange={(e) =>
-                          setEditFormData((prev) => ({
-                            ...prev,
-                            phoneCountry: e.target.value,
-                          }))
+                          updateEditField("phoneCountry", e.target.value)
                         }
                         className="w-24 px-3 py-3 border border-gray-2 rounded-lg focus:border-gold focus:outline-none text-sm"
                         pattern="^\+\d{1,4}$"
@@ -424,10 +174,7 @@ const Profile = () => {
                         type="text"
                         value={editFormData?.phoneLocal || ""}
                         onChange={(e) =>
-                          setEditFormData((prev) => ({
-                            ...prev,
-                            phoneLocal: e.target.value,
-                          }))
+                          updateEditField("phoneLocal", e.target.value)
                         }
                         className="flex-1 px-4 py-3 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
                         pattern="^\d{6,12}$"
@@ -586,14 +333,7 @@ const Profile = () => {
                           addr={addr}
                           idx={idx}
                           onChange={handleAddressChange}
-                          onRemove={() => {
-                            setEditFormData((prev) => ({
-                              ...prev,
-                              addresses: prev.addresses.filter(
-                                (_, i) => i !== idx
-                              ),
-                            }));
-                          }}
+                          onRemove={() => handleRemoveAddress(idx)}
                           canRemove={editFormData.addresses.length > 1}
                         />
                       ))}
@@ -605,25 +345,7 @@ const Profile = () => {
                       </p>
                       <button
                         type="button"
-                        onClick={() => {
-                          setEditFormData((prev) => ({
-                            ...prev,
-                            addresses: [
-                              ...(prev.addresses || []),
-                              {
-                                street: "",
-                                number: "",
-                                apartment: "",
-                                city: "",
-                                region: "",
-                                postalCode: "",
-                                recipientName: "",
-                                recipientPhone: "",
-                                isDefault: false,
-                              },
-                            ],
-                          }));
-                        }}
+                        onClick={handleAddAddress}
                         className="text-blue-2 hover:text-blue-1 font-semibold text-sm transition-colors"
                       >
                         + Agregar dirección
@@ -635,25 +357,7 @@ const Profile = () => {
                   {editFormData?.addresses?.length > 0 && (
                     <button
                       type="button"
-                      onClick={() => {
-                        setEditFormData((prev) => ({
-                          ...prev,
-                          addresses: [
-                            ...(prev.addresses || []),
-                            {
-                              street: "",
-                              number: "",
-                              apartment: "",
-                              city: "",
-                              region: "",
-                              postalCode: "",
-                              recipientName: "",
-                              recipientPhone: "",
-                              isDefault: false,
-                            },
-                          ],
-                        }));
-                      }}
+                      onClick={handleAddAddress}
                       className="w-full py-2 text-blue-2 border border-blue-2 rounded-lg hover:bg-blue-2 hover:text-white transition-colors font-semibold"
                     >
                       + Agregar otra dirección
@@ -842,7 +546,7 @@ const Profile = () => {
               </h3>
               <div className="space-y-3">
                 <button
-                  onClick={handleResetPasswordClick}
+                  onClick={() => setShowResetPasswordConfirm(true)}
                   disabled={isResettingPassword}
                   className="w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-3 transition-all text-blue-2 hover:font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -859,7 +563,7 @@ const Profile = () => {
                   )}
                 </button>
                 <button
-                  onClick={handleDeleteAccountClick}
+                  onClick={() => setShowDeleteAccountConfirm(true)}
                   disabled={isDeletingAccount}
                   className="w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-red-50 transition-all text-red-500 hover:font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -890,7 +594,7 @@ const Profile = () => {
         confirmText="Enviar Email"
         cancelText="Cancelar"
         isLoading={isResettingPassword}
-        onConfirm={confirmResetPassword}
+        onConfirm={handleResetPassword}
         onCancel={() => setShowResetPasswordConfirm(false)}
         variant="default"
       />

@@ -1,7 +1,15 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { useAutoLogout } from "../hooks/useAutoLogout.js";
+import { useAutoLogout } from "../hooks";
 import PropTypes from "prop-types";
-import authService from "../services/firebaseAuthService";
+import authService from "../services/firebase/firebaseAuthService";
+import {
+  validateResetEmail,
+  handleAuthAction,
+  isAuthenticated,
+  isAdmin,
+  refreshUserToken,
+  mergeUserProfile,
+} from "../services/auth/authHelpers";
 
 const AuthContext = createContext(null);
 
@@ -37,60 +45,38 @@ export const AuthProvider = ({ children }) => {
 
   /**
    * Logs in a user using email and password credentials
-   * Updates user state and handles errors
    */
   const login = async (email, password) => {
-    try {
-      setError(null);
-      setLoading(true);
-      const user = await authService.login(email, password);
-      setUser(user);
-      return user;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+    return handleAuthAction(
+      () => authService.login(email, password),
+      setError,
+      setLoading,
+      setUser
+    );
   };
 
   /**
    * Logs in a user using Google authentication popup
-   * AuthService handles creating user document in Firestore if it's a new user
-   * Updates user state and handles errors
    */
   const loginWithGoogle = async () => {
-    try {
-      setError(null);
-      setLoading(true);
-      const user = await authService.loginWithGoogle();
-      setUser(user);
-      return user;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+    return handleAuthAction(
+      () => authService.loginWithGoogle(),
+      setError,
+      setLoading,
+      setUser
+    );
   };
 
   /**
    * Registers a new user with email, password, and name
-   * Updates user state and handles errors
    */
   const register = async (email, password, name) => {
-    try {
-      setError(null);
-      setLoading(true);
-      const user = await authService.register({ email, password, name });
-      setUser(user);
-      return user;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+    return handleAuthAction(
+      () => authService.register({ email, password, name }),
+      setError,
+      setLoading,
+      setUser
+    );
   };
 
   /**
@@ -109,14 +95,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
-   * Handles password reset request: verifies if the email exists and sends a reset email if valid
-   * Returns a message or throws an error for UI display
+   * Handles password reset request
    */
   const requestPasswordReset = async (email) => {
     setError(null);
-    if (!email || !/\S+@\S+\.\S+/.test(email)) {
-      throw new Error("Please enter a valid email address.");
-    }
+    validateResetEmail(email);
     const exists = await authService.verifyEmailExists(email);
     if (!exists) {
       throw new Error("Email is not registered.");
@@ -125,32 +108,24 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
-   * Updates the user profile in the context (e.g., after saving profile changes)
-   * Merges new data with existing user object to ensure all properties are preserved
+   * Updates the user profile in the context
    */
   const updateUserProfile = (updatedData) => {
     if (user) {
-      setUser((prevUser) => ({
-        ...prevUser,
-        ...updatedData,
-      }));
+      setUser((prevUser) => mergeUserProfile(prevUser, updatedData));
     }
   };
 
   /**
    * Refreshes the current user object from Firebase Auth
-   * Forces a complete reload to sync any profile changes
-   * Used after profile updates to ensure consistent state
    */
   const refreshUser = async () => {
     const currentUser = authService.auth.currentUser;
     if (currentUser) {
-      // Refresh the ID token to get updated claims
-      await currentUser.getIdToken(true);
-      // Reload user profile from Firebase
-      await currentUser.reload();
-      // Verify admin role and update context
-      const userWithRole = await authService.adminVerify(currentUser);
+      const userWithRole = await refreshUserToken(
+        currentUser,
+        authService.adminVerify
+      );
       setUser(userWithRole);
     }
   };
@@ -166,8 +141,8 @@ export const AuthProvider = ({ children }) => {
     requestPasswordReset,
     updateUserProfile,
     refreshUser,
-    isAuthenticated: !!user,
-    isAdmin: user?.role === "admin",
+    isAuthenticated: isAuthenticated(user),
+    isAdmin: isAdmin(user),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

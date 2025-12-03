@@ -1,6 +1,6 @@
-import authService from "./firebaseAuthService";
+import authService from "../firebase/firebaseAuthService";
 import { signOut } from "firebase/auth";
-import { auth } from "./firebase";
+import { auth } from "../firebase/firebase";
 
 /**
  * Account Service
