@@ -120,20 +120,83 @@ exports.getUserById = async (req, res) => {
 };
 
 /**
+ * Updates the lastLoginAt timestamp for a user.
+ * POST /updateLastLogin
+ * Body: { uid: string }
+ * Only authenticated users can update their own lastLoginAt.
+ */
+exports.updateLastLogin = async (req, res) => {
+  try {
+    const body = parseBody(req.body);
+    const decoded = await verifyToken(req.headers.authorization);
+
+    const { uid } = body;
+    validateId(uid, "uid");
+
+    // Ensure user can only update their own lastLoginAt
+    if (decoded.uid !== uid) {
+      throw {
+        status: 403,
+        message: "Cannot update another user's last login timestamp",
+      };
+    }
+
+    // Update lastLoginAt in Firestore
+    await admin.firestore().collection("users").doc(uid).update({
+      lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    sendSuccess(res, { success: true });
+  } catch (error) {
+    handleError(res, error);
+  }
+};
+
+/**
  * Deletes a user document and Firebase Auth user.
  * POST /deleteUser
  * Body: { id: string }
- * Only admin users can delete users.
+ * Users can delete their own account, admins can delete any user.
  */
 exports.deleteUser = async (req, res) => {
   try {
     const body = parseBody(req.body);
-    const decoded = await requireAdmin(req);
+    const decoded = await verifyToken(req.headers.authorization);
     validateId(body.id, "user id");
+
+    // Check authorization: user can delete their own account or admin can delete any account
+    const userIsAdmin = isAdmin(decoded);
+    if (!userIsAdmin && decoded.uid !== body.id) {
+      throw {
+        status: 403,
+        message: "You can only delete your own account",
+      };
+    }
 
     // Delete from Firestore and Auth
     await admin.firestore().collection("users").doc(body.id).delete();
     await admin.auth().deleteUser(body.id);
+
+    sendSuccess(res, { success: true });
+  } catch (error) {
+    handleError(res, error);
+  }
+};
+
+/**
+ * Deletes the current user's own document from Firestore using Admin SDK.
+ * POST /deleteSelfUser
+ * Body: { uid: string }
+ * Used internally when user is already deleted from Firebase Auth.
+ * Does NOT require authentication since it's called after Auth deletion.
+ */
+exports.deleteSelfUser = async (req, res) => {
+  try {
+    const body = parseBody(req.body);
+    validateId(body.uid, "uid");
+
+    // Delete from Firestore only (user already deleted from Auth by client)
+    await admin.firestore().collection("users").doc(body.uid).delete();
 
     sendSuccess(res, { success: true });
   } catch (error) {
@@ -163,31 +226,38 @@ exports.updateUserDoc = async (req, res) => {
       };
     }
 
-    const {
-      displayName = "",
-      email = "",
-      role = "user",
-      accountStatus = "active",
-      phone = "",
-      admin: requestedAdmin = false,
-      addresses = [],
-    } = body;
+    const { displayName, email, phone, addresses } = body;
 
-    // Validate required fields
-    validateRequiredFields({ displayName, email, role, accountStatus }, [
-      "displayName",
-      "email",
-      "role",
-      "accountStatus",
-    ]);
+    // Build update object with ONLY the fields that were provided
+    const updateData = {};
+    if (displayName !== undefined) updateData.displayName = displayName;
+    if (email !== undefined) updateData.email = email;
+    if (phone !== undefined) updateData.phone = phone;
+    if (addresses !== undefined) updateData.addresses = addresses;
 
-    // Update Firebase Auth first
+    // At least one field must be provided
+    if (Object.keys(updateData).length === 0) {
+      throw {
+        status: 400,
+        message: "At least one field must be provided for update",
+      };
+    }
+
+    // Validate email if it's being updated
+    if (email !== undefined) {
+      validateEmail(email);
+    }
+
+    // Update Firebase Auth first (only if email or displayName provided)
     try {
-      await admin.auth().updateUser(id, {
-        displayName,
-        email,
-        phoneNumber: phone,
-      });
+      const authUpdate = {};
+      if (displayName !== undefined) authUpdate.displayName = displayName;
+      if (email !== undefined) authUpdate.email = email;
+      if (phone !== undefined) authUpdate.phoneNumber = phone;
+
+      if (Object.keys(authUpdate).length > 0) {
+        await admin.auth().updateUser(id, authUpdate);
+      }
     } catch (authError) {
       throw {
         status: 400,
@@ -197,24 +267,9 @@ exports.updateUserDoc = async (req, res) => {
 
     // Prepare Firestore update
     const firestoreUpdate = {
-      displayName,
-      email,
-      role,
-      accountStatus,
-      phone,
-      addresses,
+      ...updateData,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
-
-    // Only admins can modify admin field
-    if (userIsAdmin) {
-      firestoreUpdate.admin = requestedAdmin;
-
-      // Sync custom claims
-      if (requestedAdmin !== userIsAdmin) {
-        await admin.auth().setCustomUserClaims(id, { admin: requestedAdmin });
-      }
-    }
 
     // Update Firestore
     await admin.firestore().collection("users").doc(id).update(firestoreUpdate);

@@ -3,16 +3,19 @@ import { MdEdit } from "react-icons/md";
 import { FaTrash, FaKey } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { useNavigate } from "react-router-dom";
+import { updateProfile } from "firebase/auth";
 import { useAuth } from "../../context/AuthContext";
+import { fetchUserById, updateUser } from "../../services/firebaseUserService";
 import {
-  fetchUserById,
-  updateUser,
-  deleteUser,
-} from "../../services/firebaseUserService";
+  deleteCurrentAccount,
+  requestPasswordReset as requestPasswordResetService,
+} from "../../services/accountService";
+import { ConfirmationModal } from "../../components/common";
+import { IoIosWarning } from "react-icons/io";
 import AddressForm from "../../components/common/AddressForm";
 
 const Profile = () => {
-  const { user, logout, resetPassword } = useAuth();
+  const { user, logout, updateUserProfile, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,6 +26,10 @@ const Profile = () => {
   const [editFormData, setEditFormData] = useState(null);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [showResetPasswordConfirm, setShowResetPasswordConfirm] =
+    useState(false);
+  const [showDeleteAccountConfirm, setShowDeleteAccountConfirm] =
+    useState(false);
 
   /**
    * Fetches user data from Firestore when component mounts or user changes
@@ -32,8 +39,29 @@ const Profile = () => {
       if (user && user.uid) {
         try {
           const data = await fetchUserById(user.uid);
-          setUserData(data);
-          setEditFormData(data);
+          // Ensure addresses is always an array
+          const userData = {
+            ...data,
+            addresses: data.addresses || [],
+          };
+          setUserData(userData);
+
+          // Split phone number into country code and local number
+          let phoneCountry = "+549";
+          let phoneLocal = "";
+          if (data.phone && /^\+\d{8,15}$/.test(data.phone)) {
+            const match = data.phone.match(/^(\+\d{1,3})(\d{6,12})$/);
+            if (match) {
+              phoneCountry = match[1];
+              phoneLocal = match[2];
+            }
+          }
+
+          setEditFormData({
+            ...userData,
+            phoneCountry,
+            phoneLocal,
+          });
         } catch (e) {
           console.error("Error fetching user profile:", e);
           setUserData(null);
@@ -53,7 +81,7 @@ const Profile = () => {
   const handleAddressChange = (idx, e) => {
     const { name, value, type, checked } = e.target;
     setEditFormData((prev) => {
-      const newAddresses = [...prev.addresses];
+      const newAddresses = [...(prev.addresses || [])];
       newAddresses[idx] = {
         ...newAddresses[idx],
         [name]: type === "checkbox" ? checked : value,
@@ -84,18 +112,62 @@ const Profile = () => {
       const updateData = {
         displayName: editFormData.displayName,
         email: editFormData.email,
-        phone: editFormData.phone,
+        phone: `${editFormData.phoneCountry}${editFormData.phoneLocal}`,
         addresses: editFormData.addresses || [],
       };
 
       await updateUser(user.uid, updateData, token);
-      setUserData(editFormData);
+
+      // Update Firebase Auth displayName so subsequent operations don't fail
+      await updateProfile(user, {
+        displayName: editFormData.displayName,
+      });
+
+      // Reload user data from server after successful update
+      const updatedData = await fetchUserById(user.uid);
+      // Ensure addresses is always an array
+      const userDataWithAddresses = {
+        ...updatedData,
+        addresses: updatedData.addresses || [],
+      };
+      setUserData(userDataWithAddresses);
+
+      // Split phone number into country code and local number for display
+      let phoneCountry = "+549";
+      let phoneLocal = "";
+      if (updatedData.phone && /^\+\d{8,15}$/.test(updatedData.phone)) {
+        const match = updatedData.phone.match(/^(\+\d{1,3})(\d{6,12})$/);
+        if (match) {
+          phoneCountry = match[1];
+          phoneLocal = match[2];
+        }
+      }
+
+      setEditFormData({
+        ...userDataWithAddresses,
+        phoneCountry,
+        phoneLocal,
+      });
+
+      // Update user profile in AuthContext so header and other components reflect changes
+      updateUserProfile({
+        displayName: updatedData.displayName,
+        email: updatedData.email,
+        phone: updatedData.phone,
+        addresses: updatedData.addresses,
+      });
+
+      // Refresh the complete user object to ensure clean state for next edit
+      await refreshUser();
+
       setIsEditingProfile(false);
       setSuccess("✓ Cambios guardados exitosamente");
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error("Error saving profile:", err);
-      setError(err.message || "Error al guardar cambios");
+      // Show generic error message without specific details
+      setError("Error al guardar los cambios. Intenta nuevamente.");
+      setTimeout(() => setError(null), 4000);
     } finally {
       setIsSaving(false);
     }
@@ -111,25 +183,28 @@ const Profile = () => {
   };
 
   /**
-   * Handles password reset request
+   * Handles password reset request - opens confirmation modal
    */
-  const handleResetPassword = async () => {
-    if (
-      !window.confirm("¿Deseas recibir un email para resetear tu contraseña?")
-    ) {
-      return;
-    }
+  const handleResetPasswordClick = () => {
+    setShowResetPasswordConfirm(true);
+  };
 
+  /**
+   * Confirms password reset after modal confirmation
+   */
+  const confirmResetPassword = async () => {
+    setShowResetPasswordConfirm(false);
     setIsResettingPassword(true);
     try {
-      await resetPassword(userData?.email);
+      await requestPasswordResetService(userData?.email);
       setSuccess(
-        "Email de recuperación enviado. Revisa tu bandeja de entrada."
+        "Email de recuperación enviado. Revisa tu bandeja de entrada (también el correo no deseado o SPAM)."
       );
       setTimeout(() => setSuccess(null), 4000);
     } catch (err) {
       console.error("Error resetting password:", err);
-      setError(err.message || "Error al enviar email de recuperación");
+      // Show generic error message without specific details
+      setError("Error al enviar el email. Intenta nuevamente.");
       setTimeout(() => setError(null), 4000);
     } finally {
       setIsResettingPassword(false);
@@ -137,42 +212,34 @@ const Profile = () => {
   };
 
   /**
-   * Handles account deletion
+   * Handles account deletion request - opens confirmation modal
    */
-  const handleDeleteAccount = async () => {
-    if (
-      !window.confirm(
-        "⚠️ ¿Estás seguro? Esta acción eliminará tu cuenta permanentemente."
-      )
-    ) {
-      return;
-    }
+  const handleDeleteAccountClick = () => {
+    setShowDeleteAccountConfirm(true);
+  };
 
-    if (
-      !window.confirm(
-        "Esta es tu última oportunidad. ¿Deseas continuar con la eliminación?"
-      )
-    ) {
-      return;
-    }
-
+  /**
+   * Confirms account deletion after modal confirmation
+   */
+  const confirmDeleteAccount = async () => {
+    setShowDeleteAccountConfirm(false);
     setIsDeletingAccount(true);
     try {
-      const token = await user.getIdToken();
-      await deleteUser(user.uid, token);
-      setSuccess("Cuenta eliminada. Redirigiendo...");
-      setTimeout(() => {
-        logout();
-        navigate("/");
-      }, 2000);
+      // Call account service to handle deletion logic
+      // This deletes from both Firestore and Firebase Auth, and signs out
+      await deleteCurrentAccount(user);
+
+      // Show success message and redirect immediately
+      // Don't use setState after redirect since component will unmount
+      navigate("/", { replace: true });
     } catch (err) {
       console.error("Error deleting account:", err);
-      setError(err.message || "Error al eliminar la cuenta");
+      // Show generic error message without specific details
+      setError("Error al eliminar la cuenta. Intenta nuevamente.");
       setIsDeletingAccount(false);
       setTimeout(() => setError(null), 4000);
     }
   };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-3">
@@ -332,18 +399,44 @@ const Profile = () => {
                     <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-2">
                       Teléfono
                     </label>
-                    <input
-                      type="tel"
-                      value={editFormData?.phone || ""}
-                      onChange={(e) =>
-                        setEditFormData((prev) => ({
-                          ...prev,
-                          phone: e.target.value,
-                        }))
-                      }
-                      className="w-full px-4 py-3 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
-                      placeholder="+54 11 1234-5678"
-                    />
+                    <div className="flex gap-2">
+                      {/* Country Code */}
+                      <input
+                        name="phoneCountry"
+                        type="text"
+                        value={editFormData?.phoneCountry || "+549"}
+                        onChange={(e) =>
+                          setEditFormData((prev) => ({
+                            ...prev,
+                            phoneCountry: e.target.value,
+                          }))
+                        }
+                        className="w-24 px-3 py-3 border border-gray-2 rounded-lg focus:border-gold focus:outline-none text-sm"
+                        pattern="^\+\d{1,4}$"
+                        maxLength={5}
+                        minLength={2}
+                        placeholder="+549"
+                        title="Código de país en formato internacional."
+                      />
+                      {/* Local Number */}
+                      <input
+                        name="phoneLocal"
+                        type="text"
+                        value={editFormData?.phoneLocal || ""}
+                        onChange={(e) =>
+                          setEditFormData((prev) => ({
+                            ...prev,
+                            phoneLocal: e.target.value,
+                          }))
+                        }
+                        className="flex-1 px-4 py-3 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
+                        pattern="^\d{6,12}$"
+                        maxLength={12}
+                        minLength={6}
+                        placeholder="Ej: 1123456789"
+                        title="Número local internacional, entre 6 y 12 dígitos, sin código de país."
+                      />
+                    </div>
                   </div>
 
                   {/* Status Message */}
@@ -461,7 +554,7 @@ const Profile = () => {
                           : "text-red-600"
                       }`}
                     >
-                      {userData?.emailVerified ? "✓ Verificado" : "Pendiente"}
+                      {userData?.emailVerified ? "Verificado" : "Pendiente"}
                     </p>
                   </div>
                 </div>
@@ -546,7 +639,7 @@ const Profile = () => {
                         setEditFormData((prev) => ({
                           ...prev,
                           addresses: [
-                            ...prev.addresses,
+                            ...(prev.addresses || []),
                             {
                               street: "",
                               number: "",
@@ -732,7 +825,10 @@ const Profile = () => {
                   <p className="text-gray-1 text-sm mb-3">
                     Aún no has realizado pedidos
                   </p>
-                  <button className="w-full bg-gold text-white py-2 px-4 rounded-lg hover:bg-gold/90 transition-colors font-semibold text-sm">
+                  <button
+                    onClick={() => navigate("/productos")}
+                    className="w-full bg-gold text-white py-2 px-4 rounded-lg hover:bg-gold/90 transition-colors font-semibold text-sm"
+                  >
                     Explorar Productos
                   </button>
                 </div>
@@ -746,7 +842,7 @@ const Profile = () => {
               </h3>
               <div className="space-y-3">
                 <button
-                  onClick={handleResetPassword}
+                  onClick={handleResetPasswordClick}
                   disabled={isResettingPassword}
                   className="w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-3 transition-all text-blue-2 hover:font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -763,7 +859,7 @@ const Profile = () => {
                   )}
                 </button>
                 <button
-                  onClick={handleDeleteAccount}
+                  onClick={handleDeleteAccountClick}
                   disabled={isDeletingAccount}
                   className="w-full flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-red-50 transition-all text-red-500 hover:font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -784,6 +880,44 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      {/* Reset Password Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showResetPasswordConfirm}
+        title="Reestablecer Contraseña"
+        message="¿Deseas recibir un email para resetear tu contraseña?"
+        description="Te enviaremos un enlace de recuperación a tu correo registrado. No olvides revisar la carpeta de correo no deseado."
+        confirmText="Enviar Email"
+        cancelText="Cancelar"
+        isLoading={isResettingPassword}
+        onConfirm={confirmResetPassword}
+        onCancel={() => setShowResetPasswordConfirm(false)}
+        variant="default"
+      />
+
+      {/* Delete Account Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteAccountConfirm}
+        title="Eliminar Cuenta"
+        message={
+          <div className="flex flex-col items-center justify-center gap-3">
+            <IoIosWarning size={100} className="" />
+            <span>
+              ¿Estás seguro? <br />
+              <span className="text-red-500">
+                Esta acción es permanente y no se puede deshacer.
+              </span>
+            </span>
+          </div>
+        }
+        description="Tu cuenta será eliminada junto con todos tus datos."
+        confirmText="Eliminar mi cuenta"
+        cancelText="Cancelar"
+        isLoading={isDeletingAccount}
+        onConfirm={confirmDeleteAccount}
+        onCancel={() => setShowDeleteAccountConfirm(false)}
+        variant="danger"
+      />
     </div>
   );
 };

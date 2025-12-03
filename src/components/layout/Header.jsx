@@ -112,12 +112,35 @@ const Header = () => {
                           {user?.role === "admin" ? "Administrador" : "Usuario"}
                         </p>
                       </div>
-                      <button
-                        onClick={handleProfileClick}
-                        className="w-full text-left px-4 py-2 text-sm text-blue-1 hover:bg-gray-3 transition-colors"
-                      >
-                        {user?.role === "admin" ? "Panel Admin" : "Mi Perfil"}
-                      </button>
+                      {user?.role === "admin" ? (
+                        <>
+                          <button
+                            onClick={() => {
+                              setShowUserMenu(false);
+                              navigate("/admin");
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm text-blue-1 hover:bg-gray-3 transition-colors"
+                          >
+                            Panel Admin
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowUserMenu(false);
+                              navigate("/profile");
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm text-blue-1 hover:bg-gray-3 transition-colors"
+                          >
+                            Mi Perfil
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={handleProfileClick}
+                          className="w-full text-left px-4 py-2 text-sm text-blue-1 hover:bg-gray-3 transition-colors"
+                        >
+                          Mi Perfil
+                        </button>
+                      )}
                       <button
                         onClick={handleLogout}
                         className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-3 transition-colors flex items-center gap-2"
@@ -242,12 +265,35 @@ const Header = () => {
                               : "Usuario"}
                           </p>
                         </div>
-                        <button
-                          onClick={handleProfileClick}
-                          className="w-full text-left px-4 py-2 text-sm text-blue-1 hover:bg-gray-3 transition-colors"
-                        >
-                          {user?.role === "admin" ? "Panel Admin" : "Mi Perfil"}
-                        </button>
+                        {user?.role === "admin" ? (
+                          <>
+                            <button
+                              onClick={() => {
+                                setShowUserMenu(false);
+                                navigate("/admin");
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-blue-1 hover:bg-gray-3 transition-colors"
+                            >
+                              Panel Admin
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowUserMenu(false);
+                                navigate("/profile");
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-blue-1 hover:bg-gray-3 transition-colors"
+                            >
+                              Mi Perfil
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={handleProfileClick}
+                            className="w-full text-left px-4 py-2 text-sm text-blue-1 hover:bg-gray-3 transition-colors"
+                          >
+                            Mi Perfil
+                          </button>
+                        )}
                         <button
                           onClick={handleLogout}
                           className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-3 transition-colors flex items-center gap-2"
@@ -361,12 +407,35 @@ const Header = () => {
                               : "Usuario"}
                           </p>
                         </div>
-                        <button
-                          onClick={handleProfileClick}
-                          className="w-full text-left px-4 py-2 text-sm text-blue-1 hover:bg-gray-3 transition-colors"
-                        >
-                          {user?.role === "admin" ? "Panel Admin" : "Mi Perfil"}
-                        </button>
+                        {user?.role === "admin" ? (
+                          <>
+                            <button
+                              onClick={() => {
+                                setShowUserMenu(false);
+                                navigate("/admin");
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-blue-1 hover:bg-gray-3 transition-colors"
+                            >
+                              Panel Admin
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowUserMenu(false);
+                                navigate("/profile");
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-blue-1 hover:bg-gray-3 transition-colors"
+                            >
+                              Mi Perfil
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={handleProfileClick}
+                            className="w-full text-left px-4 py-2 text-sm text-blue-1 hover:bg-gray-3 transition-colors"
+                          >
+                            Mi Perfil
+                          </button>
+                        )}
                         <button
                           onClick={handleLogout}
                           className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-3 transition-colors flex items-center gap-2"

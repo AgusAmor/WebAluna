@@ -6,6 +6,7 @@
   updateProfile,
   GoogleAuthProvider,
   signInWithPopup,
+  deleteUser,
 } from "firebase/auth";
 import { auth } from "./firebase";
 
@@ -75,7 +76,6 @@ class AuthService {
       emailVerified: user.emailVerified,
       createdAt: user.metadata?.creationTime || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      lastLoginAt: user.metadata?.lastSignInTime || new Date().toISOString(),
       accountStatus: "active",
       addresses: [],
       totalOrders: 0,
@@ -109,6 +109,22 @@ class AuthService {
       password
     );
     const user = userCredential.user;
+
+    // Update lastLoginAt for email/password login
+    try {
+      const token = await user.getIdToken();
+      await fetch(`${BASE_URL}/updateLastLogin`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ uid: user.uid }),
+      });
+    } catch (err) {
+      console.error("Error updating last login timestamp:", err);
+    }
+
     return this.adminVerify(user);
   }
 
@@ -144,8 +160,6 @@ class AuthService {
           emailVerified: user.emailVerified,
           createdAt: user.metadata?.creationTime || new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          lastLoginAt:
-            user.metadata?.lastSignInTime || new Date().toISOString(),
           accountStatus: "active",
           addresses: [],
           totalOrders: 0,
@@ -160,6 +174,16 @@ class AuthService {
           body: JSON.stringify(userDataForStorage),
         });
       }
+
+      // Update lastLoginAt for all logins (new or existing)
+      await fetch(`${BASE_URL}/updateLastLogin`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ uid: user.uid }),
+      });
     } catch (err) {
       // Log error but don't fail - user authentication succeeded
       console.error("Error checking/creating user in Firestore:", err);
@@ -192,6 +216,52 @@ class AuthService {
       }
       throw error;
     }
+  }
+
+  /**
+   * Deletes the currently authenticated user from Firebase Auth.
+   * This uses the Client SDK deleteUser which allows users to delete their own account.
+   * Also calls backend to delete user document from Firestore.
+   * @param {string} uid - User ID to delete
+   * @returns {object} message indicating success
+   */
+  async deleteCurrentUserAccount(uid) {
+    const currentUser = this.auth.currentUser;
+    if (!currentUser) {
+      throw new Error("No user is currently authenticated");
+    }
+
+    try {
+      // Delete user from Firebase Auth FIRST using Client SDK
+      // This invalidates the token immediately, so must be done before backend call
+      await deleteUser(currentUser);
+    } catch (error) {
+      console.error("Error deleting user from Firebase Auth:", error);
+      throw new Error(
+        "No se pudo eliminar la cuenta de Firebase Auth. Intenta de nuevo."
+      );
+    }
+
+    // Delete user document from Firestore AFTER Auth deletion
+    // We do this as best-effort since token is already invalid
+    // The backend should use Admin SDK for this
+    try {
+      await fetch(`${BASE_URL}/deleteSelfUser`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ uid }),
+      });
+    } catch (err) {
+      console.error(
+        "Warning: User deleted from Auth but failed to delete from Firestore:",
+        err
+      );
+      // Don't throw - user is already deleted from Auth
+    }
+
+    return { message: "User account deleted successfully" };
   }
 
   /**

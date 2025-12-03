@@ -124,6 +124,37 @@ export const AuthProvider = ({ children }) => {
     return await authService.resetPassword(email);
   };
 
+  /**
+   * Updates the user profile in the context (e.g., after saving profile changes)
+   * Merges new data with existing user object to ensure all properties are preserved
+   */
+  const updateUserProfile = (updatedData) => {
+    if (user) {
+      setUser((prevUser) => ({
+        ...prevUser,
+        ...updatedData,
+      }));
+    }
+  };
+
+  /**
+   * Refreshes the current user object from Firebase Auth
+   * Forces a complete reload to sync any profile changes
+   * Used after profile updates to ensure consistent state
+   */
+  const refreshUser = async () => {
+    const currentUser = authService.auth.currentUser;
+    if (currentUser) {
+      // Refresh the ID token to get updated claims
+      await currentUser.getIdToken(true);
+      // Reload user profile from Firebase
+      await currentUser.reload();
+      // Verify admin role and update context
+      const userWithRole = await authService.adminVerify(currentUser);
+      setUser(userWithRole);
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -133,6 +164,8 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     requestPasswordReset,
+    updateUserProfile,
+    refreshUser,
     isAuthenticated: !!user,
     isAdmin: user?.role === "admin",
   };

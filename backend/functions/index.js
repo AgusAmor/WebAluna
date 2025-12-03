@@ -7,7 +7,9 @@ const {
   verifyUserEmail,
   getUsers,
   getUserById,
+  updateLastLogin,
   deleteUser,
+  deleteSelfUser,
   updateUserDoc,
   setAdminRole,
 } = require("./users.js");
@@ -48,8 +50,10 @@ exports.getUsers = createCloudFunction(getUsers);
 exports.getUserById = createCloudFunction(getUserById);
 exports.createUserDoc = createCloudFunction(createUserDoc);
 exports.verifyUserEmail = createCloudFunction(verifyUserEmail);
+exports.updateLastLogin = createCloudFunction(updateLastLogin);
 exports.updateUserDoc = createCloudFunction(updateUserDoc);
 exports.deleteUser = createCloudFunction(deleteUser);
+exports.deleteSelfUser = createCloudFunction(deleteSelfUser);
 exports.setAdminRole = createCloudFunction(setAdminRole);
 
 // ============================================
