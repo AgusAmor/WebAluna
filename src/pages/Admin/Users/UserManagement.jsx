@@ -40,7 +40,7 @@ const UserManagement = () => {
             }}
           >
             <div
-              className="bg-white rounded-xl shadow-lg p-8 w-full max-w-3xl min-w-[350px] relative flex flex-col"
+              className="bg-white rounded-xl shadow-lg p-8 w-full max-w-3xl min-w-[350px] relative flex flex-col animate-fadeInScale"
               onClick={(e) => e.stopPropagation()}
             >
               <button

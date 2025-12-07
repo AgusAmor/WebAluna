@@ -41,7 +41,7 @@ const LoginModal = ({ isOpen, onClose }) => {
       {/* Modal */}
       <div className="flex min-h-screen items-center justify-center p-4">
         <div
-          className="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden"
+          className="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden animate-fadeInScale"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}

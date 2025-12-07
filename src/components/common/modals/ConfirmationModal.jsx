@@ -53,7 +53,7 @@ const ConfirmationModal = ({
       {/* Modal */}
       <div className="flex min-h-screen items-center justify-center p-4">
         <div
-          className="relative bg-white rounded-lg shadow-xl max-w-md w-full"
+          className="relative bg-white rounded-lg shadow-xl max-w-md w-full animate-fadeInScale"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close Button */}
