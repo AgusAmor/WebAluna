@@ -6,15 +6,18 @@
 
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { toast } from "react-toastify";
 import { useCart } from "../../context/CartContext";
+import { useAuth } from "../../context/AuthContext";
 import {
   loadProducts,
   extractFamilies,
   filterAndSortProducts,
 } from "../../services/products/productsService";
 
-export function useProducts() {
+export function useProducts(onLoginRequired) {
   const { addItem } = useCart();
+  const { user } = useAuth();
   const location = useLocation();
 
   // Product data state
@@ -65,12 +68,28 @@ export function useProducts() {
 
   // Extract unique families for filter dropdown
   const families = extractFamilies(allProducts);
-
   /**
    * Adds product to cart
+   * Validates user is logged in before adding to cart
    * @param {Object} product - Product to add to cart
    */
   const handleAddToCart = (product) => {
+    if (!user) {
+      // User not logged in - show toast and trigger login modal
+      toast.info("Debes iniciar sesión para agregar productos al carrito.", {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      if (onLoginRequired) {
+        onLoginRequired();
+      }
+      return;
+    }
+    // User is logged in - add to cart
     addItem(product);
   };
 

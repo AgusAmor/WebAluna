@@ -44,11 +44,27 @@ export function formatSubtotal(price, quantity) {
 
 /**
  * Gets image source for product
- * @param {string} imageBase64 - Base64 image data
+ * Accepts either base64 encoded image data or URL
+ * @param {string} imageData - Base64 image data OR image URL
  * @returns {string|null} - Image source or null
  */
-export function getImageSource(imageBase64) {
-  return imageBase64 ? `data:image/jpeg;base64,${imageBase64}` : null;
+export function getImageSource(imageData) {
+  if (!imageData) return null;
+
+  // If it's a URL (starts with http or https)
+  if (
+    typeof imageData === "string" &&
+    (imageData.startsWith("http://") || imageData.startsWith("https://"))
+  ) {
+    return imageData;
+  }
+
+  // If it's base64 data
+  if (typeof imageData === "string") {
+    return `data:image/jpeg;base64,${imageData}`;
+  }
+
+  return null;
 }
 
 /**

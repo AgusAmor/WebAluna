@@ -63,7 +63,10 @@ const CartModal = ({ isOpen, onClose }) => {
               <ul className="space-y-4">
                 {items.map((item) => {
                   const itemKey = getCartItemKey(item.id, item.type);
-                  const imageSrc = getImageSource(item.imageBase64);
+                  // Support both imageUrl (from Firestore) and imageBase64 (legacy)
+                  const imageSrc = getImageSource(
+                    item.imageUrl || item.imageBase64
+                  );
 
                   return (
                     <li
