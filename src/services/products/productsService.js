@@ -1,13 +1,14 @@
 /**
- * productsService.js
+ * productCatalogService.js
  * Business logic for the product catalog page.
- * Contains pure functions for filtering, sorting, and product data management.
+ * Contains pure functions for filtering, sorting, and loading products.
+ * Used by: useProducts hook for displaying product listings.
  */
 
 import { fetchProducts } from "../firebase/firebaseProductService";
 
 /**
- * Loads all products from the backend
+ * Loads all products from Firestore
  * @returns {Promise<Array>} - Array of product objects
  */
 export async function loadProducts() {

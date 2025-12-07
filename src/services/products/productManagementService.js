@@ -9,8 +9,10 @@ import {
 } from "../firebase/firebaseProductService";
 
 /**
- * Product Management Service - Business logic for admin product management
- * Separates business logic from UI components
+ * productManagementService.js
+ * Business logic for admin product management.
+ * Handles: CRUD operations, form processing, image management.
+ * Used by: useProductManagement hook for admin product panel.
  */
 
 /**
@@ -42,7 +44,6 @@ export const buildProductObject = (formData, imageUrl) => {
     name: formData.name,
     description: formData.description,
     family: formData.family,
-    price: Number(formData.normalPrice),
     imageUrl,
     pricing: {
       normal: {

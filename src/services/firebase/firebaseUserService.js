@@ -1,24 +1,54 @@
-import { apiGet, apiPost, apiPostAuth } from "./apiClient";
+import { db } from "./firebase";
+import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import { apiPost, apiPostAuth } from "./apiClient";
 
 /**
- * Fetches all users from Firestore.
- * @returns {Promise<Array>} Array of user objects
+ * Fetches all users directly from Firestore.
+ * Provides faster load times by bypassing Cloud Functions.
+ * @returns {Promise<Array>} Array of user objects with IDs
+ * @throws {Error} If Firestore read fails
  */
 export async function fetchUsers() {
-  const data = await apiGet("/getUsers");
-  return data.users;
+  try {
+    const usersCollection = collection(db, "users");
+    const snapshot = await getDocs(usersCollection);
+    const users = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    return users;
+  } catch (error) {
+    console.error("Error fetching users from Firestore:", error);
+    throw new Error("Failed to fetch users from Firestore");
+  }
 }
 
 /**
- * Fetches a single user by ID.
+ * Fetches a single user by ID directly from Firestore.
  * @param {string} id - User ID
- * @returns {Promise<Object>} User object
+ * @returns {Promise<Object>} User object with id property
+ * @throws {Error} If user not found
  */
 export async function fetchUserById(id) {
   if (!id || typeof id !== "string") {
     throw new Error("Valid user ID is required");
   }
-  return apiGet("/getUserById", { query: { id } });
+  try {
+    const userDoc = doc(db, "users", id);
+    const snapshot = await getDoc(userDoc);
+
+    if (!snapshot.exists()) {
+      throw new Error("User not found");
+    }
+
+    return {
+      id: snapshot.id,
+      ...snapshot.data(),
+    };
+  } catch (error) {
+    console.error("Error fetching user by ID from Firestore:", error);
+    throw error;
+  }
 }
 
 /**

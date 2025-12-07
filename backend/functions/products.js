@@ -12,12 +12,22 @@ const { sendSuccess, handleError } = require("./utils/responseHandler.js");
 exports.updateProduct = async (req, res) => {
   try {
     const body = parseBody(req.body);
-    await requireAdmin(req);
+    const decoded = await requireAdmin(req);
 
     const { id, ...productData } = body;
     validateId(id, "Product id");
 
-    await admin.firestore().collection("products").doc(id).update(productData);
+    // Add updatedAt timestamp
+    const dataWithMetadata = {
+      ...productData,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    await admin
+      .firestore()
+      .collection("products")
+      .doc(id)
+      .update(dataWithMetadata);
 
     sendSuccess(res, { success: true });
   } catch (error) {
@@ -55,52 +65,22 @@ exports.deleteProduct = async (req, res) => {
 exports.createProduct = async (req, res) => {
   try {
     const productData = parseBody(req.body);
-    await requireAdmin(req);
+    const decoded = await requireAdmin(req);
+
+    // Add metadata: createdAt, updatedAt, createdBy
+    const productWithMetadata = {
+      ...productData,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdBy: decoded.uid,
+    };
 
     const docRef = await admin
       .firestore()
       .collection("products")
-      .add(productData);
+      .add(productWithMetadata);
 
     sendSuccess(res, { success: true, id: docRef.id });
-  } catch (error) {
-    handleError(res, error);
-  }
-};
-
-/**
- * Returns all products from Firestore 'products' collection.
- * GET /products
- * No authentication required.
- */
-exports.getProducts = async (req, res) => {
-  try {
-    const snapshot = await admin.firestore().collection("products").get();
-    const products = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    sendSuccess(res, { products });
-  } catch (error) {
-    handleError(res, error);
-  }
-};
-
-/**
- * Returns a single product by ID from Firestore.
- * GET /products/:id
- * No authentication required.
- */
-exports.getProductById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    validateId(id, "Product id");
-
-    const doc = await admin.firestore().collection("products").doc(id).get();
-    if (!doc.exists) {
-      throw { status: 404, message: "Product not found" };
-    }
-    sendSuccess(res, { id: doc.id, ...doc.data() });
   } catch (error) {
     handleError(res, error);
   }

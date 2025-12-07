@@ -1,10 +1,11 @@
-import { storage } from "./firebase";
+import { storage, db } from "./firebase";
 import {
   ref,
   uploadBytes,
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
+import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { apiPost, apiGet, apiPostAuth } from "./apiClient";
 
 /**
@@ -84,19 +85,47 @@ export async function updateProduct(id, productData, token) {
 }
 
 /**
- * Fetches all products.
- * @returns {Promise<Array>} Array of products
+ * Fetches all products directly from Firestore.
+ * Provides faster load times by bypassing Cloud Functions.
+ * @returns {Promise<Array>} Array of products with IDs
+ * @throws {Error} If Firestore read fails
  */
 export async function fetchProducts() {
-  const data = await apiGet("/getProducts");
-  return data.products;
+  try {
+    const productsCollection = collection(db, "products");
+    const snapshot = await getDocs(productsCollection);
+    const products = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    return products;
+  } catch (error) {
+    console.error("Error fetching products from Firestore:", error);
+    throw new Error("Failed to fetch products from Firestore");
+  }
 }
 
 /**
- * Fetches a single product by ID.
+ * Fetches a single product by ID directly from Firestore.
  * @param {string} id - Product ID
- * @returns {Promise<Object>} Product object
+ * @returns {Promise<Object>} Product object with id property
+ * @throws {Error} If product not found
  */
 export async function fetchProductById(id) {
-  return apiGet("/getProductById", { query: { id } });
+  try {
+    const productDoc = doc(db, "products", id);
+    const snapshot = await getDoc(productDoc);
+
+    if (!snapshot.exists()) {
+      throw new Error("Product not found");
+    }
+
+    return {
+      id: snapshot.id,
+      ...snapshot.data(),
+    };
+  } catch (error) {
+    console.error("Error fetching product by ID from Firestore:", error);
+    throw error;
+  }
 }

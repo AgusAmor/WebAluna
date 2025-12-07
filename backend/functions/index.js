@@ -5,8 +5,6 @@ const handleCors = require("./middlewares/corsMiddleware.js");
 const {
   createUserDoc,
   verifyUserEmail,
-  getUsers,
-  getUserById,
   updateLastLogin,
   deleteUser,
   deleteSelfUser,
@@ -15,8 +13,6 @@ const {
 } = require("./users.js");
 
 const {
-  getProducts,
-  getProductById,
   deleteProduct,
   updateProduct,
   createProduct,
@@ -46,8 +42,6 @@ const createCloudFunction = (handler) =>
 // USER FUNCTIONS
 // ============================================
 
-exports.getUsers = createCloudFunction(getUsers);
-exports.getUserById = createCloudFunction(getUserById);
 exports.createUserDoc = createCloudFunction(createUserDoc);
 exports.verifyUserEmail = createCloudFunction(verifyUserEmail);
 exports.updateLastLogin = createCloudFunction(updateLastLogin);
@@ -60,8 +54,6 @@ exports.setAdminRole = createCloudFunction(setAdminRole);
 // PRODUCT FUNCTIONS
 // ============================================
 
-exports.getProducts = createCloudFunction(getProducts);
-exports.getProductById = createCloudFunction(getProductById);
 exports.createProduct = createCloudFunction(createProduct);
 exports.updateProduct = createCloudFunction(updateProduct);
 exports.deleteProduct = createCloudFunction(deleteProduct);

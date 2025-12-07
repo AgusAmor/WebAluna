@@ -11,15 +11,25 @@ const { sendSuccess, handleError } = require("./utils/responseHandler.js");
 /**
  * Creates a user document in Firestore.
  * POST /createUserDoc
- * Body: { uid, email, displayName, ...rest }
- * New users always have admin: false
+ * Body: { uid, email, displayName, phone, emailVerified, addresses, accountStatus, totalOrders, totalSpent }
+ * Ensures complete user profile structure with all required fields and metadata.
  */
 exports.createUserDoc = async (req, res) => {
   try {
     const body = parseBody(req.body);
     const decoded = await verifyToken(req.headers.authorization);
 
-    const { email, displayName, uid, lastLoginAt, ...rest } = body;
+    const {
+      uid,
+      email,
+      displayName,
+      phone,
+      emailVerified,
+      addresses,
+      accountStatus,
+      totalOrders,
+      totalSpent,
+    } = body;
 
     // Validate required fields
     if (!uid || !email) {
@@ -35,22 +45,27 @@ exports.createUserDoc = async (req, res) => {
       };
     }
 
-    // Create user document with admin: false
-    await admin
-      .firestore()
-      .collection("users")
-      .doc(uid)
-      .set({
-        email,
-        displayName: displayName || "",
-        ...rest,
-        admin: false,
-        lastLoginAt: lastLoginAt
-          ? admin.firestore.Timestamp.fromDate(new Date(lastLoginAt))
-          : admin.firestore.FieldValue.serverTimestamp(),
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
+    // Build complete user document with all required fields
+    const userDocument = {
+      // Description fields
+      email,
+      displayName: displayName || "",
+      phone: phone || "",
+      addresses: Array.isArray(addresses) ? addresses : [],
+      role: "user", // New users always get "user" role (not admin)
+      emailVerified: Boolean(emailVerified) || false,
+      accountStatus: accountStatus || "active",
+
+      // Metadata fields
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
+      totalOrders: Number(totalOrders) || 0,
+      totalSpent: Number(totalSpent) || 0,
+    };
+
+    // Create user document
+    await admin.firestore().collection("users").doc(uid).set(userDocument);
 
     sendSuccess(res, { success: true });
   } catch (error) {
@@ -78,42 +93,6 @@ exports.verifyUserEmail = async (req, res) => {
         throw error;
       }
     }
-  } catch (error) {
-    handleError(res, error);
-  }
-};
-
-/**
- * Retrieves all user documents from Firestore.
- * GET /users
- */
-exports.getUsers = async (req, res) => {
-  try {
-    const snapshot = await admin.firestore().collection("users").get();
-    const users = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    sendSuccess(res, { users });
-  } catch (error) {
-    handleError(res, error);
-  }
-};
-
-/**
- * Retrieves a user document by ID from Firestore.
- * GET /getUserById?id=userId
- */
-exports.getUserById = async (req, res) => {
-  try {
-    const id = req.query.id;
-    validateId(id, "User ID");
-
-    const doc = await admin.firestore().collection("users").doc(id).get();
-    if (!doc.exists) {
-      throw { status: 404, message: "User not found" };
-    }
-    sendSuccess(res, { id: doc.id, ...doc.data() });
   } catch (error) {
     handleError(res, error);
   }
@@ -285,6 +264,7 @@ exports.updateUserDoc = async (req, res) => {
  * POST /setAdminRole
  * Body: { userId: string, isAdmin: boolean }
  * Only admin users can call this function.
+ * Updates both Firebase Auth custom claims and Firestore role field.
  */
 exports.setAdminRole = async (req, res) => {
   try {
@@ -306,10 +286,14 @@ exports.setAdminRole = async (req, res) => {
       };
     }
 
-    // Update both Auth and Firestore
+    // Update both Auth (custom claim) and Firestore (role field)
+    // Custom claim is used by Firestore rules and frontend
+    // Role field mirrors the custom claim in Firestore
+    const newRole = shouldBeAdmin ? "admin" : "user";
+
     await admin.auth().setCustomUserClaims(userId, { admin: shouldBeAdmin });
     await admin.firestore().collection("users").doc(userId).update({
-      admin: shouldBeAdmin,
+      role: newRole,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 

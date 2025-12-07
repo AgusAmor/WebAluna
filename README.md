@@ -73,7 +73,7 @@ Plataforma de comercio electrónico que combina tecnología de impresión 3D con
 ## 🔮 Próximas Funcionalidades
 
 - [x] Catálogo dinámico con filtros avanzados
-- [x] Búsqueda de productos
+- [x] Filtro de productos
 - [ ] Pasarela de pago (Mercado Pago)
 - [ ] Perfil de usuario con historial de compras
 - [ ] Seguimiento de pedidos en tiempo real
