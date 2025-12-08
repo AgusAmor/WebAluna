@@ -4,6 +4,8 @@
  * Contains pure functions with no React dependencies.
  */
 
+import { isUserAdmin } from "../../middlewares/adminMiddleware";
+
 /**
  * Calculates logo size based on scroll state and viewport
  * @param {boolean} isScrolled - Whether page is scrolled
@@ -46,7 +48,7 @@ export function getUserDisplayName(user, shortVersion = false) {
  */
 export function getUserRoleLabel(user) {
   if (!user) return "Usuario";
-  return user.role === "admin" ? "Administrador" : "Usuario";
+  return isUserAdmin(user) ? "Administrador" : "Usuario";
 }
 
 /**

@@ -3,15 +3,7 @@
  * Business logic for cart modal operations.
  */
 
-/**
- * Generates unique cart item key for rendering
- * @param {string} id - Product ID
- * @param {string} type - Product type
- * @returns {string} - Unique key
- */
-export function getCartItemKey(id, type = "normal") {
-  return `${id}_${type || "normal"}`;
-}
+import { getCartItemKey } from "../../utils/cartItemUtils";
 
 /**
  * Formats price for display

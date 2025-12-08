@@ -109,7 +109,7 @@ export const useProfile = () => {
       setUserData(updatedData);
       setEditFormData(prepareUserDataForEdit(updatedData));
       setIsEditingProfile(false);
-      setSuccess("✓ Cambios guardados exitosamente");
+      setSuccess("Cambios guardados exitosamente");
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error("Error saving profile:", err);

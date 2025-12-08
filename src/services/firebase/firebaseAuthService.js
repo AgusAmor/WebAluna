@@ -9,6 +9,8 @@
   deleteUser,
 } from "firebase/auth";
 import { auth } from "./firebase";
+import { db } from "./firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 /**
  * Firebase Authentication Service
@@ -53,10 +55,29 @@ class AuthService {
   }
 
   /**
+   * Verifies that a user document exists in Firestore.
+   * Used to ensure user was successfully created in Firestore after Auth registration.
+   * @param {string} uid - User ID
+   * @returns {boolean} true if user document exists in Firestore
+   */
+  async checkUserDocExists(uid) {
+    try {
+      const userRef = doc(db, "users", uid);
+      const userSnap = await getDoc(userRef);
+      return userSnap.exists();
+    } catch (error) {
+      console.error("Error checking user document:", error);
+      return false;
+    }
+  }
+
+  /**
    * Registers a new user with email, password, and name.
-   * Updates user profile and sends user data to backend API.
+   * Creates user in Firebase Auth, then validates and creates Firestore document.
+   * If Firestore creation fails, deletes the user from Auth to keep systems in sync.
    * @param {object} param0 - { email, password, name }
    * @returns {object} user with role property
+   * @throws {Error} If user creation fails
    */
   async register({ email, password, name }) {
     const userCredential = await createUserWithEmailAndPassword(
@@ -65,35 +86,55 @@ class AuthService {
       password
     );
     const user = userCredential.user;
-    await updateProfile(user, { displayName: name });
 
-    // Build user data object for backend
-    const userDataForStorage = {
-      uid: user.uid,
-      email: user.email,
-      displayName: name,
-      phone: user.phoneNumber || "",
-      emailVerified: user.emailVerified,
-      createdAt: user.metadata?.creationTime || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      accountStatus: "active",
-      addresses: [],
-      totalOrders: 0,
-      totalSpent: 0,
-    };
+    try {
+      await updateProfile(user, { displayName: name });
 
-    // Send user data to backend
-    const token = await user.getIdToken();
-    await fetch(`${BASE_URL}/createUserDoc`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(userDataForStorage),
-    });
+      // Build user data object for backend
+      const userDataForStorage = {
+        uid: user.uid,
+        email: user.email,
+        displayName: name,
+        phone: user.phoneNumber || "",
+        emailVerified: user.emailVerified,
+        createdAt: user.metadata?.creationTime || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        accountStatus: "active",
+        addresses: [],
+        totalOrders: 0,
+        totalSpent: 0,
+      };
 
-    return this.adminVerify(user);
+      // Send user data to backend
+      const token = await user.getIdToken();
+      const createUserResponse = await fetch(`${BASE_URL}/createUserDoc`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(userDataForStorage),
+      });
+
+      if (!createUserResponse.ok) {
+        const errorData = await createUserResponse.json();
+        throw new Error(errorData.message || "Failed to create user document");
+      }
+
+      return this.adminVerify(user);
+    } catch (error) {
+      // If Firestore document creation fails, delete the user from Firebase Auth
+      // to keep both systems in sync
+      try {
+        await user.delete();
+      } catch (deleteError) {
+        console.error(
+          "Failed to clean up user after registration error:",
+          deleteError
+        );
+      }
+      throw error;
+    }
   }
 
   /**
@@ -165,7 +206,7 @@ class AuthService {
           totalOrders: 0,
           totalSpent: 0,
         };
-        await fetch(`${BASE_URL}/createUserDoc`, {
+        const createUserResponse = await fetch(`${BASE_URL}/createUserDoc`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -173,6 +214,13 @@ class AuthService {
           },
           body: JSON.stringify(userDataForStorage),
         });
+
+        if (!createUserResponse.ok) {
+          const errorData = await createUserResponse.json();
+          throw new Error(
+            errorData.message || "Failed to create user document"
+          );
+        }
       }
 
       // Update lastLoginAt for all logins (new or existing)

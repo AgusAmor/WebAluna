@@ -3,6 +3,7 @@ const { verifyToken, isAdmin, requireAdmin } = require("./utils/authUtils.js");
 const {
   parseBody,
   validateEmail,
+  validateEmailDomain,
   validateId,
   validateRequiredFields,
 } = require("./utils/validation.js");
@@ -13,6 +14,7 @@ const { sendSuccess, handleError } = require("./utils/responseHandler.js");
  * POST /createUserDoc
  * Body: { uid, email, displayName, phone, emailVerified, addresses, accountStatus, totalOrders, totalSpent }
  * Ensures complete user profile structure with all required fields and metadata.
+ * Validates that the email domain exists and has valid mail server records.
  */
 exports.createUserDoc = async (req, res) => {
   try {
@@ -36,6 +38,9 @@ exports.createUserDoc = async (req, res) => {
       throw { status: 400, message: "uid and email are required" };
     }
     validateEmail(email);
+
+    // Validate email domain has valid MX records
+    await validateEmailDomain(email);
 
     // Ensure uid matches authenticated user
     if (uid !== decoded.uid) {

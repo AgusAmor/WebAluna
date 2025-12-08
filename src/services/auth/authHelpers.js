@@ -48,12 +48,12 @@ export async function handleAuthAction(
 }
 
 /**
- * Gets user role from custom claims
- * @param {Object} user - Firebase user object
- * @returns {string|null} - User role or null
+ * Gets user role information
+ * @param {Object} user - User object
+ * @returns {string} - "admin" or "client"
  */
 export function getUserRole(user) {
-  return user?.role || null;
+  return user?.role === "admin" ? "admin" : "client";
 }
 
 /**

@@ -23,10 +23,28 @@ export const AuthProvider = ({ children }) => {
     const unsubscribe = authService.auth.onAuthStateChanged(
       async (currentUser) => {
         if (currentUser) {
-          // Force token refresh to get updated custom claims
-          await currentUser.getIdToken(true);
-          const userWithRole = await authService.adminVerify(currentUser);
-          setUser(userWithRole);
+          try {
+            // Force token refresh to get updated custom claims
+            await currentUser.getIdToken(true);
+
+            // Verify that user document exists in Firestore before setting user
+            // This prevents showing user as logged in if registration failed
+            const userDocExists = await authService.checkUserDocExists(
+              currentUser.uid
+            );
+
+            if (userDocExists) {
+              const userWithRole = await authService.adminVerify(currentUser);
+              setUser(userWithRole);
+            } else {
+              // User exists in Auth but not in Firestore - sign them out
+              await authService.logout();
+              setUser(null);
+            }
+          } catch (err) {
+            console.error("Error verifying user:", err);
+            setUser(null);
+          }
         } else {
           setUser(null);
         }

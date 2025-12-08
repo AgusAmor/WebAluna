@@ -7,6 +7,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { isUserAdmin } from "../../middlewares/adminMiddleware";
 import {
   validateLoginForm,
   validateRegisterForm,
@@ -35,11 +36,11 @@ export function useLoginModal(isOpen, onClose) {
 
   const navigate = useNavigate();
 
-  // Close modal automatically when user logs in successfully
+  // Close modal automatically when user logs in successfully (no error)
   useEffect(() => {
-    if (isAuthenticated && user && isOpen) {
+    if (isAuthenticated && user && isOpen && !error && !loading) {
       // Navigate to admin panel if user is admin
-      if (user.role === "admin") {
+      if (isUserAdmin(user)) {
         navigate("/admin");
       }
       // Close modal and reset form
@@ -47,7 +48,7 @@ export function useLoginModal(isOpen, onClose) {
       setFormData(createEmptyFormData());
       setErrors({});
     }
-  }, [isAuthenticated, user, isOpen, onClose, navigate]);
+  }, [isAuthenticated, user, isOpen, onClose, navigate, error, loading]);
 
   /**
    * Handles input changes for login/register form

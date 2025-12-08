@@ -1,5 +1,7 @@
 import PropTypes from "prop-types";
+import { useEffect } from "react";
 import { FiMail, FiLock, FiUser } from "react-icons/fi";
+import { toast } from "react-toastify";
 import { GoogleLoginButton } from "../../ui";
 import { useLoginModal } from "../../../hooks";
 import {
@@ -28,6 +30,27 @@ const LoginModal = ({ isOpen, onClose }) => {
     handleBackToLogin,
   } = useLoginModal(isOpen, onClose);
 
+  // Show error toast when registration/login fails
+  useEffect(() => {
+    if (error && !isLogin && !showReset) {
+      let errorMessage = error;
+      // Provide user-friendly error message for email domain validation
+      if (
+        error.includes(
+          "Email domain does not have valid mail server records"
+        ) ||
+        error.includes("Email domain could not be verified") ||
+        error.includes("Failed to create user document")
+      ) {
+        errorMessage = "La dirección de correo no existe o no es válida";
+      }
+      toast.error(errorMessage, {
+        position: "bottom-right",
+        autoClose: 4000,
+      });
+    }
+  }, [error, isLogin, showReset]);
+
   if (!isOpen) return null;
 
   return (
@@ -55,12 +78,6 @@ const LoginModal = ({ isOpen, onClose }) => {
           </div>
           {/* Content */}
           <div className="flex-1 overflow-y-auto px-5 pb-5 max-h-[60vh]">
-            {/* Error message */}
-            {!showReset && error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
             {/* Password Recovery Form */}
             {showReset ? (
               <form onSubmit={handleResetSubmit} className="space-y-4">

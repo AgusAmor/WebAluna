@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { BsFillShieldLockFill } from "react-icons/bs";
 import { ImSpinner2 } from "react-icons/im";
 import { useAuth } from "../../context/AuthContext";
+import { verifyAdminAccess } from "../../middlewares/adminMiddleware";
 
 /**
  * Protected Route Component
@@ -28,7 +29,7 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 
-  if (requireAdmin && user?.role !== "admin") {
+  if (!verifyAdminAccess(user, requireAdmin)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-3 p-4">
         <div className="text-center bg-white rounded-lg shadow-lg p-8 max-w-md">

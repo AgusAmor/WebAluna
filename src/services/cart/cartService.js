@@ -4,15 +4,7 @@
  * Contains pure functions with no React dependencies.
  */
 
-/**
- * Generates unique cart item key
- * @param {string} id - Product ID
- * @param {string} type - Product type/size (e.g., "normal", "small")
- * @returns {string} - Unique key for cart item
- */
-export function getCartItemKey(id, type = "normal") {
-  return `${id}_${type}`;
-}
+import { getCartItemKey } from "../../utils/cartItemUtils";
 
 /**
  * Calculates total price for cart items

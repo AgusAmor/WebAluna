@@ -9,6 +9,7 @@ import {
   getUserDisplayName,
   getUserRoleLabel,
 } from "../../../services/ui/headerService";
+import { isUserAdmin } from "../../../middlewares/adminMiddleware";
 
 const UserMenuDropdown = ({
   user,
@@ -17,7 +18,7 @@ const UserMenuDropdown = ({
   onLogout,
   onClose,
 }) => {
-  const isAdmin = user?.role === "admin";
+  const isAdmin = isUserAdmin(user);
 
   return (
     <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-50">

@@ -7,6 +7,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { isUserAdmin } from "../../middlewares/adminMiddleware";
 
 export function useHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -73,7 +74,7 @@ export function useHeader() {
    */
   const handleProfileClick = () => {
     setShowUserMenu(false);
-    if (user?.role === "admin") {
+    if (isUserAdmin(user)) {
       navigate("/admin");
     } else {
       navigate("/profile");

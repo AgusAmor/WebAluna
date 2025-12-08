@@ -1,8 +1,8 @@
 import PropTypes from "prop-types";
 import { FaMinus, FaPlus, FaTrash } from "react-icons/fa";
 import { useCartModal } from "../../hooks";
+import { getCartItemKey } from "../../utils/cartItemUtils";
 import {
-  getCartItemKey,
   formatPrice,
   formatSubtotal,
   getImageSource,

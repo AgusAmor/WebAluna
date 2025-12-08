@@ -1,4 +1,5 @@
 import { useAuth } from "../../context/AuthContext";
+import { isUserAdmin } from "../../middlewares/adminMiddleware";
 
 /**
  * Hook to check if current user is admin
@@ -6,7 +7,7 @@ import { useAuth } from "../../context/AuthContext";
  */
 export function useIsAdmin() {
   const { user } = useAuth();
-  return user?.role === "admin";
+  return isUserAdmin(user);
 }
 
 /**

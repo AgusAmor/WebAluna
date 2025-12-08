@@ -1,10 +1,11 @@
 ﻿import { useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
+import { isAdminRoute } from "../../middlewares/adminMiddleware";
 
 const Hero = ({ title, subtitle }) => {
   const location = useLocation();
 
-  const isAdminPage = location.pathname.startsWith("/admin");
+  const isAdminPage = isAdminRoute(location.pathname);
 
   return (
     <div

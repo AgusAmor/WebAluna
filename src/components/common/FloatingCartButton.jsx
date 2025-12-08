@@ -3,13 +3,14 @@ import { useLocation } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import CartModal from "../ecommerce/CartModal";
 import { FaShoppingCart } from "react-icons/fa";
+import { isAdminRoute } from "../../middlewares/adminMiddleware";
 
 const FloatingCartButton = () => {
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const { itemCount } = useCart();
   const location = useLocation();
 
-  const isAdminPage = location.pathname.startsWith("/admin");
+  const isAdminPage = isAdminRoute(location.pathname);
 
   return (
     <>
