@@ -1,6 +1,9 @@
 const admin = require("./config/firebaseAdmin.js");
-const { verifyToken } = require("./utils/authUtils.js");
-const { requireAdmin, requireTokenAndAuth } = require("./middlewares/authMiddleware.js");
+const { verifyToken, isAdmin } = require("./utils/authUtils.js");
+const {
+  requireAdmin,
+  requireTokenAndAuth,
+} = require("./middlewares/authMiddleware.js");
 const {
   parseBody,
   validateEmail,

@@ -95,13 +95,42 @@ const validateId = (id, fieldName = "ID") => {
 };
 
 /**
- * Validates required string fields
+ * Validates required fields
+ * Checks that fields exist and are not empty/null/undefined
+ * For strings: also checks that trimmed value is not empty
+ * For arrays/objects: checks that they exist and are not empty
  * @param {object} data - Object containing fields
  * @param {string[]} requiredFields - Array of field names that are required
  * @throws {object} Error object with status and message
  */
 const validateRequiredFields = (data, requiredFields) => {
-  const missing = requiredFields.filter((field) => !data[field]?.trim());
+  const missing = requiredFields.filter((field) => {
+    const value = data[field];
+
+    // Check if field exists
+    if (value === null || value === undefined) {
+      return true;
+    }
+
+    // For strings: check trim is not empty
+    if (typeof value === "string") {
+      return value.trim().length === 0;
+    }
+
+    // For arrays: check length > 0
+    if (Array.isArray(value)) {
+      return value.length === 0;
+    }
+
+    // For objects: check if not empty (has properties)
+    if (typeof value === "object") {
+      return Object.keys(value).length === 0;
+    }
+
+    // If it's any other truthy value, it's valid
+    return !value;
+  });
+
   if (missing.length > 0) {
     throw {
       status: 400,

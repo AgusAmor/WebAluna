@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import { FaMinus, FaPlus, FaTrash } from "react-icons/fa";
 import { useCartModal } from "../../hooks";
+import { AddressRequiredModal } from "../common/modals";
 import { getCartItemKey } from "../../utils/cartItemUtils";
 import {
   formatPrice,
@@ -19,6 +20,10 @@ const CartModal = ({ isOpen, onClose }) => {
     handleIncreaseQuantity,
     handleDecreaseQuantity,
     handleClearCart,
+    checkoutLoading,
+    showAddressModal,
+    setShowAddressModal,
+    handleAddAddressAndContinue,
   } = useCartModal(onClose);
 
   if (!isOpen) return null;
@@ -154,20 +159,23 @@ const CartModal = ({ isOpen, onClose }) => {
                 <div className="flex justify-center gap-4">
                   <button
                     onClick={handleClearCart}
-                    className="bg-blue-2 text-white px-6 py-2 rounded-lg font-family-sora hover:bg-gold hover:scale-105 transition-all duration-300"
+                    disabled={checkoutLoading}
+                    className="bg-blue-2 text-white px-6 py-2 rounded-lg font-family-sora hover:bg-gold hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Vaciar Carrito
                   </button>
                   <button
                     onClick={handleCheckout}
-                    className="bg-blue-2 text-white px-6 py-2 rounded-lg font-family-sora hover:bg-gold hover:scale-105 transition-all duration-300"
+                    disabled={checkoutLoading}
+                    className="bg-blue-2 text-white px-6 py-2 rounded-lg font-family-sora hover:bg-gold hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Finalizar Compra
+                    {checkoutLoading ? "Procesando..." : "Finalizar Compra"}
                   </button>
                 </div>
                 <button
                   onClick={handleGoToCatalog}
-                  className="bg-white text-blue-2 border-2 border-blue-2 px-6 py-2 rounded-lg font-family-sora hover:bg-blue-2 hover:text-white transition-all duration-300"
+                  disabled={checkoutLoading}
+                  className="bg-white text-blue-2 border-2 border-blue-2 px-6 py-2 rounded-lg font-family-sora hover:bg-blue-2 hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Continuar Comprando
                 </button>
@@ -176,6 +184,14 @@ const CartModal = ({ isOpen, onClose }) => {
           )}
         </div>
       </div>
+
+      {/* Address Required Modal */}
+      <AddressRequiredModal
+        isOpen={showAddressModal}
+        onClose={() => setShowAddressModal(false)}
+        onAddressAdded={handleAddAddressAndContinue}
+        isLoading={checkoutLoading}
+      />
     </div>
   );
 };

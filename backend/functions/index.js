@@ -18,16 +18,43 @@ const {
   createProduct,
 } = require("./products.js");
 
+const {
+  createOrder,
+  getOrder,
+  getUserOrders,
+  getAllOrders,
+  updateOrderStatus,
+  getOrdersByStatus,
+  deleteOrder,
+} = require("./orders.js");
+
 const REGION = "southamerica-east1";
 
 /**
  * Wraps an async handler with CORS support
+ * Ensures CORS headers are set before and after the handler executes
  * @param {Function} handler - Async handler function
  * @returns {Function} Express middleware
  */
 const withCors = (handler) => async (req, res) => {
-  if (handleCors(req, res)) return;
-  await handler(req, res);
+  // Handle CORS preflight and set headers
+  if (handleCors(req, res)) {
+    return; // Preflight request handled
+  }
+
+  // Ensure CORS headers are still present for actual request
+  res.setHeader("Access-Control-Allow-Origin", "*");
+
+  try {
+    await handler(req, res);
+  } catch (error) {
+    console.error("Unhandled error in Cloud Function:", error);
+    // Make sure CORS headers are still present in error response
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
 };
 
 /**
@@ -57,3 +84,15 @@ exports.setAdminRole = createCloudFunction(setAdminRole);
 exports.createProduct = createCloudFunction(createProduct);
 exports.updateProduct = createCloudFunction(updateProduct);
 exports.deleteProduct = createCloudFunction(deleteProduct);
+
+// ============================================
+// ORDER FUNCTIONS
+// ============================================
+
+exports.createOrder = createCloudFunction(createOrder);
+exports.getOrder = createCloudFunction(getOrder);
+exports.getUserOrders = createCloudFunction(getUserOrders);
+exports.getAllOrders = createCloudFunction(getAllOrders);
+exports.updateOrderStatus = createCloudFunction(updateOrderStatus);
+exports.getOrdersByStatus = createCloudFunction(getOrdersByStatus);
+exports.deleteOrder = createCloudFunction(deleteOrder);
