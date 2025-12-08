@@ -1,6 +1,6 @@
 ﻿import { useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
-import { isAdminRoute } from "../../middlewares/adminMiddleware";
+import { isAdminRoute } from "../../utils/adminUtils";
 
 const Hero = ({ title, subtitle }) => {
   const location = useLocation();

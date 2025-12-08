@@ -1,5 +1,5 @@
 import { useAuth } from "../../context/AuthContext";
-import { isUserAdmin } from "../../middlewares/adminMiddleware";
+import { isUserAdmin } from "../../utils/adminUtils";
 
 /**
  * Hook to check if current user is admin

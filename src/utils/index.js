@@ -7,6 +7,7 @@
  * - Phone number utilities
  * - Address utilities
  * - Cart item utilities
+ * - Admin utilities
  */
 
 // Date utilities
@@ -23,3 +24,6 @@ export * from "./addressUtils.js";
 
 // Cart item utilities
 export * from "./cartItemUtils.js";
+
+// Admin utilities
+export * from "./adminUtils.js";

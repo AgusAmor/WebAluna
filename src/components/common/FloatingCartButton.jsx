@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import CartModal from "../ecommerce/CartModal";
 import { FaShoppingCart } from "react-icons/fa";
-import { isAdminRoute } from "../../middlewares/adminMiddleware";
+import { isAdminRoute } from "../../utils/adminUtils";
 
 const FloatingCartButton = () => {
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);

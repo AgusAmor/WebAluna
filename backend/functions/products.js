@@ -1,5 +1,6 @@
 const admin = require("./config/firebaseAdmin.js");
-const { requireAdmin, verifyToken } = require("./utils/authUtils.js");
+const { verifyToken } = require("./utils/authUtils.js");
+const { requireAdmin } = require("./middlewares/authMiddleware.js");
 const { parseBody, validateId } = require("./utils/validation.js");
 const { sendSuccess, handleError } = require("./utils/responseHandler.js");
 

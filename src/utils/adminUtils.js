@@ -1,5 +1,5 @@
 /**
- * adminMiddleware.js
+ * adminUtils.js
  * Centralized admin role verification logic
  */
 

@@ -4,7 +4,7 @@
  * Contains pure functions with no React dependencies.
  */
 
-import { isUserAdmin } from "../../middlewares/adminMiddleware";
+import { isUserAdmin } from "../../utils/adminUtils";
 
 /**
  * Calculates logo size based on scroll state and viewport

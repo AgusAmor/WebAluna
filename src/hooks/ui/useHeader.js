@@ -7,7 +7,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { isUserAdmin } from "../../middlewares/adminMiddleware";
+import { isUserAdmin } from "../../utils/adminUtils";
 
 export function useHeader() {
   const [isScrolled, setIsScrolled] = useState(false);

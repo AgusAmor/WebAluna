@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { BsFillShieldLockFill } from "react-icons/bs";
 import { ImSpinner2 } from "react-icons/im";
 import { useAuth } from "../../context/AuthContext";
-import { verifyAdminAccess } from "../../middlewares/adminMiddleware";
+import { verifyAdminAccess } from "../../utils/adminUtils";
 
 /**
  * Protected Route Component

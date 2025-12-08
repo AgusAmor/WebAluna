@@ -9,7 +9,7 @@ import {
   getUserDisplayName,
   getUserRoleLabel,
 } from "../../../services/ui/headerService";
-import { isUserAdmin } from "../../../middlewares/adminMiddleware";
+import { isUserAdmin } from "../../../utils/adminUtils";
 
 const UserMenuDropdown = ({
   user,
