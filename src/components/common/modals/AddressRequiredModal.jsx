@@ -116,8 +116,9 @@ const AddressRequiredModal = ({
             {/* Message */}
             <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
               <p className="text-blue-2 text-sm">
-                Necesitas tener al menos una dirección cargada como favorita para poder realizar la compra. 
-                Por favor completa los siguientes datos:
+                Necesitas tener al menos una dirección cargada como favorita
+                para poder realizar la compra. Por favor completa los siguientes
+                datos:
               </p>
             </div>
 

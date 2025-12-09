@@ -8,6 +8,7 @@ import { FloatingCartButton, ProtectedRoute } from "../components/common";
 const Home = lazy(() => import("../pages/Home"));
 const Products = lazy(() => import("../pages/Products"));
 const Profile = lazy(() => import("../pages/Profile"));
+const Checkout = lazy(() => import("../pages/Checkout/Checkout.jsx"));
 const Admin = lazy(() => import("../pages/Admin"));
 
 const ProductManagement = lazy(() =>
@@ -49,6 +50,14 @@ const AppRouter = () => {
               <Route
                 path="/pedidos"
                 element={<div className="p-8">Mis Pedidos en construcción</div>}
+              />
+              <Route
+                path="/checkout"
+                element={
+                  <ProtectedRoute>
+                    <Checkout />
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/perfil"

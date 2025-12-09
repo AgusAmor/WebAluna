@@ -151,7 +151,7 @@ export function useCheckout() {
       !hasDefaultAddress(userProfile)
     ) {
       toast.error(
-        "Por favor agrega una dirección antes de proceder con el envío"
+        "Por favor agrega una dirección antes de finalizar el pedido"
       );
       setShowAddressModal(true);
       return;
@@ -161,7 +161,7 @@ export function useCheckout() {
     try {
       // Validate that user is authenticated
       if (!user || !user.uid) {
-        throw new Error("Debes estar autenticado para completar la compra");
+        throw new Error("Debes estar autenticado para completar el pedido");
       }
 
       // Get Firebase Auth token
@@ -223,7 +223,7 @@ export function useCheckout() {
       const createdOrder = await createOrderViaCloudFunction(orderData, token);
 
       toast.success(
-        `¡Compra completada! Número de pedido: ${createdOrder.orderNumber}`,
+        `Orden ${createdOrder.orderNumber} realizada con éxito, pronto seras notificado por mail sobre el estado de tu pedido..`,
         {
           position: "bottom-right",
           autoClose: 5000,
@@ -235,7 +235,7 @@ export function useCheckout() {
 
       return createdOrder;
     } catch (err) {
-      const errorMessage = err.message || "Error al procesar la compra";
+      const errorMessage = err.message || "Error al procesar el pedido";
       setError(errorMessage);
       toast.error(errorMessage, {
         position: "bottom-right",
