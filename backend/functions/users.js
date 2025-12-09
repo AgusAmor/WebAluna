@@ -108,6 +108,26 @@ exports.verifyUserEmail = async (req, res) => {
 };
 
 /**
+ * Validates if an email domain has valid MX records.
+ * POST /validateEmailDomain
+ * Body: { email: string }
+ * No authentication required - used for pre-registration validation.
+ */
+exports.validateEmailDomain = async (req, res) => {
+  try {
+    const body = parseBody(req.body);
+    const { email } = body;
+
+    validateEmail(email);
+    await validateEmailDomain(email);
+
+    sendSuccess(res, { valid: true });
+  } catch (error) {
+    handleError(res, error);
+  }
+};
+
+/**
  * Updates the lastLoginAt timestamp for a user.
  * POST /updateLastLogin
  * Body: { uid: string }

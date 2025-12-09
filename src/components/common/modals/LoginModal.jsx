@@ -30,26 +30,97 @@ const LoginModal = ({ isOpen, onClose }) => {
     handleBackToLogin,
   } = useLoginModal(isOpen, onClose);
 
-  // Show error toast when registration/login fails
-  useEffect(() => {
-    if (error && !isLogin && !showReset) {
-      let errorMessage = error;
-      // Provide user-friendly error message for email domain validation
-      if (
-        error.includes(
-          "Email domain does not have valid mail server records"
-        ) ||
-        error.includes("Email domain could not be verified") ||
-        error.includes("Failed to create user document")
-      ) {
-        errorMessage = "La dirección de correo no existe o no es válida";
-      }
-      toast.error(errorMessage, {
-        position: "bottom-right",
-        autoClose: 4000,
-      });
+  // Format error message for better UX
+  const getErrorMessage = (error) => {
+    if (!error) return "";
+
+    const errorStr = error.toLowerCase();
+
+    // Helper function to check multiple conditions
+    const includes = (...terms) =>
+      terms.some((term) => errorStr.includes(term));
+
+    // Email domain validation
+    if (
+      includes(
+        "email domain",
+        "mail server",
+        "domain could not be verified",
+        "failed to create user document"
+      )
+    ) {
+      return "La dirección de correo no existe o no es válida.";
     }
-  }, [error, isLogin, showReset]);
+
+    // Firebase auth errors
+    if (includes("auth/email-already-in-use", "email-already-in-use")) {
+      return "Este correo ya está registrado. Intenta iniciar sesión.";
+    }
+    if (includes("auth/invalid-email", "invalid-email")) {
+      return "El formato del correo electrónico no es válido.";
+    }
+    if (
+      includes(
+        "auth/user-not-found",
+        "user-not-found",
+        "email is not registered"
+      )
+    ) {
+      return "No existe una cuenta con este correo.";
+    }
+    if (includes("auth/wrong-password", "wrong-password")) {
+      return "La contraseña es incorrecta.";
+    }
+    if (includes("auth/invalid-credential", "invalid-credential")) {
+      return "Correo o contraseña incorrectos.";
+    }
+    if (includes("auth/too-many-requests", "too-many-requests")) {
+      return "Demasiados intentos fallidos. Por favor, espera unos minutos.";
+    }
+    if (includes("auth/weak-password", "weak-password")) {
+      return "La contraseña debe tener al menos 6 caracteres.";
+    }
+    if (includes("auth/network-request-failed", "network")) {
+      return "Error de conexión. Verifica tu internet.";
+    }
+    if (
+      includes(
+        "auth/popup-closed-by-user",
+        "auth/cancelled-popup-request",
+        "popup-closed",
+        "cancelled"
+      )
+    ) {
+      return "Inicio de sesión cancelado.";
+    }
+    if (includes("auth/popup-blocked", "popup-blocked")) {
+      return "Ventana emergente bloqueada. Por favor, habilita las ventanas emergentes.";
+    }
+    if (includes("auth/operation-not-allowed", "operation-not-allowed")) {
+      return "Este método de inicio de sesión no está disponible.";
+    }
+    if (includes("auth/account-exists-with-different-credential")) {
+      return "Ya existe una cuenta con este correo usando otro método de inicio de sesión.";
+    }
+    if (includes("auth/requires-recent-login", "requires-recent-login")) {
+      return "Por seguridad, debes volver a iniciar sesión.";
+    }
+    if (includes("auth/user-disabled", "user-disabled")) {
+      return "Esta cuenta ha sido deshabilitada.";
+    }
+    if (errorStr.includes("password") && errorStr.includes("reset")) {
+      return "Hubo un problema al enviar el correo de recuperación.";
+    }
+    if (includes("login")) {
+      return "Error al iniciar sesión. Por favor, intenta nuevamente.";
+    }
+    if (includes("register", "registration")) {
+      return "Error al crear la cuenta. Por favor, intenta nuevamente.";
+    }
+
+    // Default friendly message
+    return "Ocurrió un error. Por favor, verifica tus datos e intenta nuevamente.";
+  };
 
   if (!isOpen) return null;
 
@@ -78,6 +149,15 @@ const LoginModal = ({ isOpen, onClose }) => {
           </div>
           {/* Content */}
           <div className="flex-1 overflow-y-auto px-5 pb-5 max-h-[60vh]">
+            {/* Global Error Message */}
+            {error && !showReset && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg animate-shake">
+                <p className="text-red-600 text-sm font-family-sora">
+                  {getErrorMessage(error)}
+                </p>
+              </div>
+            )}
+
             {/* Password Recovery Form */}
             {showReset ? (
               <form onSubmit={handleResetSubmit} className="space-y-4">

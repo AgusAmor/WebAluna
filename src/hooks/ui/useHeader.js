@@ -6,6 +6,7 @@
 
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { useAuth } from "../../context/AuthContext";
 import { isUserAdmin } from "../../utils/adminUtils";
 
@@ -64,8 +65,16 @@ export function useHeader() {
       await logout();
       setShowUserMenu(false);
       navigate("/");
+      toast.success("Sesión cerrada correctamente", {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
     } catch (error) {
       console.error("Logout error:", error);
+      toast.error("Error al cerrar sesión", {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
     }
   };
 

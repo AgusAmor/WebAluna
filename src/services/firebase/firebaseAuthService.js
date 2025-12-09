@@ -72,6 +72,38 @@ class AuthService {
   }
 
   /**
+   * Validates email domain by checking MX records
+   * @param {string} email - Email to validate
+   * @throws {Error} If domain is invalid
+   */
+  async validateEmailDomain(email) {
+    const domain = email.split("@")[1];
+    if (!domain) {
+      throw new Error("La dirección de correo no es válida");
+    }
+
+    // Call backend to validate email domain
+    try {
+      const response = await fetch(`${BASE_URL}/validateEmailDomain`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || "La dirección de correo no existe o no es válida"
+        );
+      }
+
+      return true;
+    } catch (error) {
+      throw new Error("La dirección de correo no existe o no es válida");
+    }
+  }
+
+  /**
    * Registers a new user with email, password, and name.
    * Creates user in Firebase Auth, then validates and creates Firestore document.
    * If Firestore creation fails, deletes the user from Auth to keep systems in sync.
@@ -80,6 +112,9 @@ class AuthService {
    * @throws {Error} If user creation fails
    */
   async register({ email, password, name }) {
+    // Validate email domain BEFORE creating Firebase Auth account
+    await this.validateEmailDomain(email);
+
     const userCredential = await createUserWithEmailAndPassword(
       this.auth,
       email,
@@ -172,25 +207,21 @@ class AuthService {
   /**
    * Logs in a user using Google authentication popup.
    * If it's a new user, creates a user document in Firestore.
+   * Uses checkUserDocExists to verify if user document exists locally.
    * @returns {object} user with role property
    */
   async loginWithGoogle() {
-    const result = await signInWithPopup(this.auth, this.googleProvider);
-    const user = result.user;
-
-    // Check if user document exists in Firestore
-    const token = await user.getIdToken();
-    let userExists = false;
     try {
-      const response = await fetch(`${BASE_URL}/getUserById?id=${user.uid}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
+      const result = await signInWithPopup(this.auth, this.googleProvider);
+      const user = result.user;
 
-      // User exists if response is successful
-      userExists = response.ok;
+      // Get authentication token
+      const token = await user.getIdToken();
 
-      // If user doesn't exist (404 or error), create document in Firestore
+      // Check if user document exists in Firestore using local method
+      const userExists = await this.checkUserDocExists(user.uid);
+
+      // If user doesn't exist, create document in Firestore
       if (!userExists) {
         const userDataForStorage = {
           uid: user.uid,
@@ -206,6 +237,7 @@ class AuthService {
           totalOrders: 0,
           totalSpent: 0,
         };
+
         const createUserResponse = await fetch(`${BASE_URL}/createUserDoc`, {
           method: "POST",
           headers: {
@@ -217,6 +249,7 @@ class AuthService {
 
         if (!createUserResponse.ok) {
           const errorData = await createUserResponse.json();
+          console.error("Error creating user document:", errorData);
           throw new Error(
             errorData.message || "Failed to create user document"
           );
@@ -224,20 +257,35 @@ class AuthService {
       }
 
       // Update lastLoginAt for all logins (new or existing)
-      await fetch(`${BASE_URL}/updateLastLogin`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ uid: user.uid }),
-      });
-    } catch (err) {
-      // Log error but don't fail - user authentication succeeded
-      console.error("Error checking/creating user in Firestore:", err);
-    }
+      try {
+        await fetch(`${BASE_URL}/updateLastLogin`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ uid: user.uid }),
+        });
+      } catch (loginError) {
+        console.error("Error updating last login:", loginError);
+        // Non-critical error, continue
+      }
 
-    return this.adminVerify(user);
+      return this.adminVerify(user);
+    } catch (error) {
+      console.error("Google login error:", error);
+      // Re-throw with user-friendly message
+      if (error.code === "auth/popup-closed-by-user") {
+        throw new Error("Login cancelado");
+      }
+      if (error.code === "auth/cancelled-popup-request") {
+        throw new Error("Login cancelado");
+      }
+      if (error.code === "auth/popup-blocked") {
+        throw new Error("Popup bloqueado. Habilita las ventanas emergentes.");
+      }
+      throw error;
+    }
   }
 
   /**

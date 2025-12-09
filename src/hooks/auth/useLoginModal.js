@@ -6,6 +6,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { useAuth } from "../../context/AuthContext";
 import { isUserAdmin } from "../../utils/adminUtils";
 import {
@@ -39,6 +40,17 @@ export function useLoginModal(isOpen, onClose) {
   // Close modal automatically when user logs in successfully (no error)
   useEffect(() => {
     if (isAuthenticated && user && isOpen && !error && !loading) {
+      // Show success toast
+      toast.success(
+        `¡Bienvenido${
+          user.displayName ? " " + user.displayName.split(" ")[0] : ""
+        }!`,
+        {
+          position: "bottom-right",
+          autoClose: 3000,
+        }
+      );
+
       // Navigate to admin panel if user is admin
       if (isUserAdmin(user)) {
         navigate("/admin");
@@ -87,6 +99,17 @@ export function useLoginModal(isOpen, onClose) {
     try {
       await requestPasswordReset(resetEmail);
       setResetSuccess("Se ha enviado el correo de recuperación");
+      toast.success(
+        "Correo de recuperación enviado. Revisa tu bandeja de entrada.",
+        {
+          position: "bottom-right",
+          autoClose: 4000,
+        }
+      );
+      // Reset form after short delay
+      setTimeout(() => {
+        handleBackToLogin();
+      }, 2000);
     } catch (err) {
       setResetError(
         err.message || "No se pudo enviar el correo. Verifica el email."

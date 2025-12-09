@@ -5,6 +5,7 @@ const handleCors = require("./middlewares/corsMiddleware.js");
 const {
   createUserDoc,
   verifyUserEmail,
+  validateEmailDomain,
   updateLastLogin,
   deleteUser,
   deleteSelfUser,
@@ -71,6 +72,7 @@ const createCloudFunction = (handler) =>
 
 exports.createUserDoc = createCloudFunction(createUserDoc);
 exports.verifyUserEmail = createCloudFunction(verifyUserEmail);
+exports.validateEmailDomain = createCloudFunction(validateEmailDomain);
 exports.updateLastLogin = createCloudFunction(updateLastLogin);
 exports.updateUserDoc = createCloudFunction(updateUserDoc);
 exports.deleteUser = createCloudFunction(deleteUser);
