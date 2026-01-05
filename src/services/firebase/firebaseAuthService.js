@@ -327,10 +327,18 @@ class AuthService {
       throw new Error("No user is currently authenticated");
     }
 
+    console.log(
+      `[deleteCurrentUserAccount] Starting account deletion for user: ${uid}`
+    );
+
     try {
       // Delete user from Firebase Auth FIRST using Client SDK
       // This invalidates the token immediately, so must be done before backend call
+      console.log(`[deleteCurrentUserAccount] Deleting from Firebase Auth...`);
       await deleteUser(currentUser);
+      console.log(
+        `[deleteCurrentUserAccount] User successfully deleted from Firebase Auth`
+      );
     } catch (error) {
       console.error("Error deleting user from Firebase Auth:", error);
       throw new Error(
@@ -342,13 +350,33 @@ class AuthService {
     // We do this as best-effort since token is already invalid
     // The backend should use Admin SDK for this
     try {
-      await fetch(`${BASE_URL}/deleteSelfUser`, {
+      console.log(
+        `[deleteCurrentUserAccount] Deleting from Firestore via backend...`
+      );
+      const response = await fetch(`${BASE_URL}/deleteSelfUser`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ uid }),
       });
+
+      console.log(
+        `[deleteCurrentUserAccount] Backend response status: ${response.status}`
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error(
+          "Warning: User deleted from Auth but failed to delete from Firestore:",
+          errorData
+        );
+        // Don't throw - user is already deleted from Auth
+      } else {
+        console.log(
+          `[deleteCurrentUserAccount] User successfully deleted from Firestore`
+        );
+      }
     } catch (err) {
       console.error(
         "Warning: User deleted from Auth but failed to delete from Firestore:",
@@ -357,6 +385,9 @@ class AuthService {
       // Don't throw - user is already deleted from Auth
     }
 
+    console.log(
+      `[deleteCurrentUserAccount] Account deletion process completed`
+    );
     return { message: "User account deleted successfully" };
   }
 

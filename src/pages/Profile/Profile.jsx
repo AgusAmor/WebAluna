@@ -3,6 +3,7 @@ import { MdEdit } from "react-icons/md";
 import { FaTrash, FaKey } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { ConfirmationModal, AddressForm } from "../../components/common";
 import { IoIosWarning } from "react-icons/io";
 import { useProfile } from "../../hooks";
@@ -10,6 +11,8 @@ import { formatDate } from "../../utils/dateFormatter";
 
 const Profile = () => {
   const navigate = useNavigate();
+  const [showFinalDeleteConfirm, setShowFinalDeleteConfirm] =
+    React.useState(false);
   const {
     userData,
     loading,
@@ -22,6 +25,9 @@ const Profile = () => {
     isDeletingAccount,
     showResetPasswordConfirm,
     showDeleteAccountConfirm,
+    showReauthModal,
+    reauthPassword,
+    isReauthenticating,
     handleAddressChange,
     handleAddAddress,
     handleRemoveAddress,
@@ -30,18 +36,37 @@ const Profile = () => {
     handleStartEdit,
     handleResetPassword,
     handleDeleteAccount,
+    handleReauthenticate,
     updateEditField,
     setShowResetPasswordConfirm,
     setShowDeleteAccountConfirm,
+    setShowReauthModal,
+    setReauthPassword,
   } = useProfile();
 
   /**
-   * Handle account deletion confirmation
+   * Handle account deletion confirmation - shows second modal
    */
-  const confirmDeleteAccount = async () => {
+  const confirmDeleteAccount = () => {
+    setShowDeleteAccountConfirm(false);
+    setShowFinalDeleteConfirm(true);
+  };
+
+  /**
+   * Execute account deletion after final confirmation
+   */
+  const executeFinalDeleteAccount = async () => {
     const success = await handleDeleteAccount();
     if (success) {
-      navigate("/", { replace: true });
+      setShowFinalDeleteConfirm(false);
+      toast.success("Tu cuenta ha sido eliminada exitosamente", {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
+      // Delay navigation to allow toast to display
+      setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 500);
     }
   };
 
@@ -622,6 +647,108 @@ const Profile = () => {
         onCancel={() => setShowDeleteAccountConfirm(false)}
         variant="danger"
       />
+
+      {/* Final Delete Account Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showFinalDeleteConfirm}
+        title="Última Confirmación"
+        message={
+          <div className="flex flex-col items-center justify-center gap-3">
+            <IoIosWarning size={100} className="text-red-500" />
+            <span>
+              Esta es tu última oportunidad. <br />
+              <span className="text-red-600 font-bold">
+                ¿Realmente deseas eliminar tu cuenta?
+              </span>
+            </span>
+          </div>
+        }
+        description="Una vez eliminada, no hay vuelta atrás. Se borrarán todos tus datos, direcciones y pedidos."
+        confirmText="Sí, eliminar definitivamente"
+        cancelText="Cancelar"
+        isLoading={isDeletingAccount}
+        onConfirm={executeFinalDeleteAccount}
+        onCancel={() => setShowFinalDeleteConfirm(false)}
+        variant="danger"
+      />
+
+      {/* Re-authentication Modal */}
+      {showReauthModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto font-family-sora">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 backdrop-blur-sm"
+            style={{ backgroundColor: "rgba(38,78,96,0.45)" }}
+            onClick={() => setShowReauthModal(false)}
+          ></div>
+
+          {/* Modal */}
+          <div className="flex min-h-screen items-center justify-center p-4">
+            <div
+              className="relative bg-white rounded-lg shadow-xl max-w-md w-full animate-fadeInScale"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="p-6 border-b border-gray-2">
+                <h2 className="text-xl font-bold font-family-comfortaa text-blue-2">
+                  Confirmar Identidad
+                </h2>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <p className="text-gray-1 text-sm mb-4">
+                  Por razones de seguridad, necesitamos que confirmes tu
+                  contraseña antes de eliminar tu cuenta.
+                </p>
+                <input
+                  type="password"
+                  placeholder="Tu contraseña"
+                  value={reauthPassword}
+                  onChange={(e) => setReauthPassword(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter" && !isReauthenticating) {
+                      handleReauthWithFeedback();
+                    }
+                  }}
+                  disabled={isReauthenticating}
+                  className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:outline-none focus:border-blue-2 focus:ring-2 focus:ring-blue-2/20 disabled:bg-gray-3 disabled:cursor-not-allowed"
+                />
+                {error && (
+                  <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-600 text-sm">{error}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="flex gap-3 p-6 border-t border-gray-2 bg-gray-3/30">
+                <button
+                  onClick={() => setShowReauthModal(false)}
+                  disabled={isReauthenticating}
+                  className="flex-1 py-2 px-4 border border-gray-2 rounded-lg text-gray-1 hover:bg-gray-3 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleReauthWithFeedback}
+                  disabled={isReauthenticating || !reauthPassword}
+                  className="flex-1 py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isReauthenticating ? (
+                    <>
+                      <ImSpinner2 className="animate-spin h-4 w-4" />
+                      Verificando...
+                    </>
+                  ) : (
+                    "Confirmar"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

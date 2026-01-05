@@ -203,11 +203,17 @@ exports.deleteSelfUser = async (req, res) => {
     const body = parseBody(req.body);
     validateId(body.uid, "uid");
 
+    console.log(
+      `[deleteSelfUser] Attempting to delete user document: ${body.uid}`
+    );
+
     // Delete from Firestore only (user already deleted from Auth by client)
     await admin.firestore().collection("users").doc(body.uid).delete();
 
+    console.log(`[deleteSelfUser] Successfully deleted user: ${body.uid}`);
     sendSuccess(res, { success: true });
   } catch (error) {
+    console.error(`[deleteSelfUser] Error deleting user:`, error);
     handleError(res, error);
   }
 };

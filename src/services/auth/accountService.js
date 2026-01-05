@@ -1,11 +1,42 @@
 import authService from "../firebase/firebaseAuthService";
-import { signOut } from "firebase/auth";
+import {
+  signOut,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+} from "firebase/auth";
 import { auth } from "../firebase/firebase";
 
 /**
  * Account Service
  * Handles all account-related business logic (deletion, password reset, etc.)
  */
+
+/**
+ * Re-authenticates the current user for sensitive operations
+ * @param {string} email - User email
+ * @param {string} password - User password
+ * @returns {Promise<void>}
+ */
+export const reauthenticateUser = async (email, password) => {
+  if (!auth.currentUser) {
+    throw new Error("No user is currently authenticated");
+  }
+
+  const credential = EmailAuthProvider.credential(email, password);
+  try {
+    await reauthenticateWithCredential(auth.currentUser, credential);
+    console.log("[reauthenticateUser] User re-authenticated successfully");
+  } catch (error) {
+    console.error("[reauthenticateUser] Error:", error);
+    if (error.code === "auth/wrong-password") {
+      throw new Error("La contraseña es incorrecta");
+    } else if (error.code === "auth/user-not-found") {
+      throw new Error("Usuario no encontrado");
+    } else {
+      throw new Error("Error al re-autenticar. Intenta de nuevo.");
+    }
+  }
+};
 
 /**
  * Deletes the current user account from both Firestore and Firebase Auth
@@ -49,5 +80,6 @@ export const requestPasswordReset = async (email) => {
 
 export default {
   deleteCurrentAccount,
+  reauthenticateUser,
   requestPasswordReset,
 };

@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { IoIosClose } from "react-icons/io";
+import { ImSpinner2 } from "react-icons/im";
 
 /**
  * Reusable confirmation modal component
@@ -97,9 +98,16 @@ const ConfirmationModal = ({
             <button
               onClick={onConfirm}
               disabled={isLoading}
-              className={`flex-1 py-2 px-4 rounded-lg text-white transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed ${getButtonColors()}`}
+              className={`flex-1 py-2 px-4 rounded-lg text-white transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${getButtonColors()}`}
             >
-              {confirmText}
+              {isLoading ? (
+                <>
+                  <ImSpinner2 className="animate-spin h-4 w-4" />
+                  <span>Procesando...</span>
+                </>
+              ) : (
+                confirmText
+              )}
             </button>
           </div>
         </div>
