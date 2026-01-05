@@ -78,7 +78,7 @@ export function useCheckout() {
    * @param {Object} address - Address object to add
    * @returns {Promise<void>}
    */
-  const handleAddAddressAndContinue = async (address) => {
+  const handleAddressAdded = async (address) => {
     try {
       setLoading(true);
       setError(null);
@@ -264,7 +264,7 @@ export function useCheckout() {
     // Address modal
     showAddressModal,
     setShowAddressModal,
-    handleAddAddressAndContinue,
+    handleAddressAdded,
     // Checkout
     handlePayClick,
     loading,
