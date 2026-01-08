@@ -10,7 +10,6 @@ import {
 } from "../../services/users/profileService";
 import {
   deleteCurrentAccount,
-  reauthenticateUser,
   requestPasswordReset as requestPasswordResetService,
 } from "../../services/auth/accountService";
 
@@ -33,31 +32,51 @@ export const useProfile = () => {
     useState(false);
   const [showDeleteAccountConfirm, setShowDeleteAccountConfirm] =
     useState(false);
-  const [showReauthModal, setShowReauthModal] = useState(false);
-  const [reauthPassword, setReauthPassword] = useState("");
-  const [isReauthenticating, setIsReauthenticating] = useState(false);
 
   /**
    * Load user profile data on mount or when user changes
+   * Includes retry logic for race conditions when profile is just created
    */
   useEffect(() => {
     const fetchData = async () => {
       if (user && user.uid) {
-        try {
-          const { userData: loadedUserData, editFormData: loadedEditFormData } =
-            await loadUserProfile(user.uid);
-          setUserData(loadedUserData);
-          setEditFormData(loadedEditFormData);
-        } catch (e) {
-          console.error("Error fetching user profile:", e);
-          setUserData(null);
-        } finally {
-          setLoading(false);
+        let retries = 3;
+        let lastError = null;
+
+        while (retries > 0) {
+          try {
+            const {
+              userData: loadedUserData,
+              editFormData: loadedEditFormData,
+            } = await loadUserProfile(user.uid);
+            setUserData(loadedUserData);
+            setEditFormData(loadedEditFormData);
+            setLoading(false);
+            return; // Success, exit the function
+          } catch (e) {
+            lastError = e;
+            // console.warn(
+            //   `Error fetching user profile (attempt ${4 - retries}/3):`,
+            //   e
+            // );
+            retries--;
+
+            // If there are retries left, wait before trying again
+            if (retries > 0) {
+              await new Promise((resolve) => setTimeout(resolve, 1000));
+            }
+          }
         }
+
+        // All retries failed
+        // console.error("Error fetching user profile after retries:", lastError);
+        setUserData(null);
+        setLoading(false);
       } else {
         setLoading(false);
       }
     };
+
     fetchData();
   }, [user]);
 
@@ -116,7 +135,7 @@ export const useProfile = () => {
       setSuccess("Cambios guardados exitosamente");
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error("Error saving profile:", err);
+      // console.error("Error saving profile:", err);
       setError("Error al guardar los cambios. Intenta nuevamente.");
       setTimeout(() => setError(null), 4000);
     } finally {
@@ -153,7 +172,7 @@ export const useProfile = () => {
       );
       setTimeout(() => setSuccess(null), 4000);
     } catch (err) {
-      console.error("Error resetting password:", err);
+      // console.error("Error resetting password:", err);
       setError("Error al enviar el email. Intenta nuevamente.");
       setTimeout(() => setError(null), 4000);
     } finally {
@@ -172,58 +191,19 @@ export const useProfile = () => {
       setIsDeletingAccount(false);
       return true; // Signal successful deletion for navigation
     } catch (err) {
-      console.error("Error deleting account:", err);
+      // console.error("Error deleting account:", err);
       // Check if the error is due to requiring recent login
       if (
         err.code === "auth/requires-recent-login" ||
         err.message.includes("requires-recent-login")
       ) {
-        setError(null);
-        setIsDeletingAccount(false);
-        setShowReauthModal(true);
-        return false;
-      }
-      setError("Error al eliminar la cuenta. Intenta nuevamente.");
-      setIsDeletingAccount(false);
-      setTimeout(() => setError(null), 4000);
-      return false;
-    }
-  };
-
-  /**
-   * Handle re-authentication for account deletion
-   */
-  const handleReauthenticate = async () => {
-    if (!reauthPassword) {
-      setError("Por favor ingresa tu contraseña");
-      return;
-    }
-
-    setIsReauthenticating(true);
-    try {
-      await reauthenticateUser(userData?.email, reauthPassword);
-      setShowReauthModal(false);
-      setReauthPassword("");
-      setError(null);
-      setIsReauthenticating(false);
-
-      // Now proceed with deletion after successful re-authentication
-      setIsDeletingAccount(true);
-      setShowFinalDeleteConfirm(true);
-      try {
-        await deleteCurrentAccount(user);
-        return true;
-      } catch (err) {
-        console.error("Error deleting account after re-auth:", err);
-        setError("Error al eliminar la cuenta. Intenta nuevamente.");
+        setError("Se requiere re-autenticación. Por favor intenta de nuevo.");
         setIsDeletingAccount(false);
         setTimeout(() => setError(null), 4000);
         return false;
       }
-    } catch (err) {
-      console.error("Re-authentication error:", err);
-      setError(err.message || "Error al re-autenticar. Intenta nuevamente.");
-      setIsReauthenticating(false);
+      setError("Error al eliminar la cuenta. Intenta nuevamente.");
+      setIsDeletingAccount(false);
       setTimeout(() => setError(null), 4000);
       return false;
     }
@@ -252,9 +232,6 @@ export const useProfile = () => {
     isDeletingAccount,
     showResetPasswordConfirm,
     showDeleteAccountConfirm,
-    showReauthModal,
-    reauthPassword,
-    isReauthenticating,
 
     // Actions
     handleAddressChange,
@@ -265,11 +242,8 @@ export const useProfile = () => {
     handleStartEdit,
     handleResetPassword,
     handleDeleteAccount,
-    handleReauthenticate,
     updateEditField,
     setShowResetPasswordConfirm,
     setShowDeleteAccountConfirm,
-    setShowReauthModal,
-    setReauthPassword,
   };
 };

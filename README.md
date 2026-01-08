@@ -41,7 +41,7 @@ Plataforma de comercio electrónico que combina tecnología de impresión 3D con
 - Botón flotante con contador dinámico en tiempo real
 - Modal interactivo
 - CRUD completo (agregar, eliminar, actualizar cantidad)
-- Persistencia en localStorage
+- Persistencia en sessionStorage (se mantiene al recargar, se limpia al cerrar la pestaña)
 - Cálculo automático de totales y subtotales
 
 ### 📱 Navegación y UX Optimizada
@@ -400,9 +400,8 @@ componentService.js (Lógica de negocio pura)
 **State Management:**
 
 - **AuthContext**: Usuario autenticado, token, custom claims
-- **CartContext**: Items del carrito, totales
+- **CartContext**: Items del carrito, totales, persistencia en sessionStorage
 - **Props**: Paso de datos en componentes
-- **localStorage**: Persistencia del carrito
 
 ## 🚀 Instalación y Configuración
 
@@ -447,32 +446,15 @@ pnpm dev
 
 #### En Firebase Console:
 
-1. **Crear Proyecto**
-      - Ve a [Firebase Console](https://console.firebase.google.com)
-      - Click en "Nuevo Proyecto"
-      - Nombre: WebAluna
-      - Región: Sudamérica
+1. **Crear Proyecto**    - Ve a [Firebase Console](https://console.firebase.google.com)    - Click en "Nuevo Proyecto"    - Nombre: WebAluna    - Región: Sudamérica
 
-2. **Habilitar Authentication**
-      - Ir a Authentication → Métodos de inicio de sesión
-      - Habilitar Email/Password
-      - Habilitar Google OAuth
+2. **Habilitar Authentication**    - Ir a Authentication → Métodos de inicio de sesión    - Habilitar Email/Password    - Habilitar Google OAuth
 
-3. **Crear Firestore**
-      - Ir a Firestore Database
-      - Crear base de datos en modo "Producción"
-      - Región: southamerica-east1
-      - Configurar Security Rules
+3. **Crear Firestore**    - Ir a Firestore Database    - Crear base de datos en modo "Producción"    - Región: southamerica-east1    - Configurar Security Rules
 
-4. **Configurar Storage**
-      - Ir a Storage
-      - Crear bucket
-      - Configurar rules de acceso
+4. **Configurar Storage**    - Ir a Storage    - Crear bucket    - Configurar rules de acceso
 
-5. **Descargar Credenciales**
-      - Project Settings → Service Accounts
-      - Click "Generate new private key"
-      - Guardar en `backend/functions/config/serviceAccountKey.json`
+5. **Descargar Credenciales**    - Project Settings → Service Accounts    - Click "Generate new private key"    - Guardar en `backend/functions/config/serviceAccountKey.json`
 
 #### Configurar Admin CLI:
 
@@ -777,6 +759,4 @@ Este proyecto es privado y protegido. No está permitido:
 
 ---
 
-**💡 Última actualización**: Diciembre 2025  
-**👤 Propietario**: [AgusAmor](https://github.com/AgusAmor)  
-**📧 Soporte**: Issues en GitHub
+**💡 Última actualización**: Diciembre 2025   **👤 Propietario**: [AgusAmor](https://github.com/AgusAmor)   **📧 Soporte**: Issues en GitHub

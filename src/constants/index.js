@@ -22,9 +22,6 @@ export * from "./productConstants";
 // Routes
 export * from "./routeConstants";
 
-// UI & Storage
-export * from "./uiConstants";
-
 // Validation
 export * from "./validationConstants";
 
@@ -33,5 +30,4 @@ export { USER_ROLES } from "./authConstants";
 export { CART_ACTIONS } from "./cartConstants";
 export { PRODUCT_CATEGORIES, ORDER_STATUS } from "./productConstants";
 export { ROUTES } from "./routeConstants";
-export { UI_CONSTANTS, STORAGE_KEYS } from "./uiConstants";
 export { VALIDATION } from "./validationConstants";

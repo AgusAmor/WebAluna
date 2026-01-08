@@ -25,9 +25,6 @@ const Profile = () => {
     isDeletingAccount,
     showResetPasswordConfirm,
     showDeleteAccountConfirm,
-    showReauthModal,
-    reauthPassword,
-    isReauthenticating,
     handleAddressChange,
     handleAddAddress,
     handleRemoveAddress,
@@ -36,12 +33,9 @@ const Profile = () => {
     handleStartEdit,
     handleResetPassword,
     handleDeleteAccount,
-    handleReauthenticate,
     updateEditField,
     setShowResetPasswordConfirm,
     setShowDeleteAccountConfirm,
-    setShowReauthModal,
-    setReauthPassword,
   } = useProfile();
 
   /**
@@ -57,16 +51,15 @@ const Profile = () => {
    */
   const executeFinalDeleteAccount = async () => {
     const success = await handleDeleteAccount();
+
     if (success) {
       setShowFinalDeleteConfirm(false);
       toast.success("Tu cuenta ha sido eliminada exitosamente", {
         position: "bottom-right",
         autoClose: 3000,
       });
-      // Delay navigation to allow toast to display
-      setTimeout(() => {
-        navigate("/", { replace: true });
-      }, 500);
+      // Navigate immediately to show toast on home page
+      navigate("/", { replace: true });
     }
   };
 
@@ -671,84 +664,6 @@ const Profile = () => {
         onCancel={() => setShowFinalDeleteConfirm(false)}
         variant="danger"
       />
-
-      {/* Re-authentication Modal */}
-      {showReauthModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto font-family-sora">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 backdrop-blur-sm"
-            style={{ backgroundColor: "rgba(38,78,96,0.45)" }}
-            onClick={() => setShowReauthModal(false)}
-          ></div>
-
-          {/* Modal */}
-          <div className="flex min-h-screen items-center justify-center p-4">
-            <div
-              className="relative bg-white rounded-lg shadow-xl max-w-md w-full animate-fadeInScale"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header */}
-              <div className="p-6 border-b border-gray-2">
-                <h2 className="text-xl font-bold font-family-comfortaa text-blue-2">
-                  Confirmar Identidad
-                </h2>
-              </div>
-
-              {/* Content */}
-              <div className="p-6">
-                <p className="text-gray-1 text-sm mb-4">
-                  Por razones de seguridad, necesitamos que confirmes tu
-                  contraseña antes de eliminar tu cuenta.
-                </p>
-                <input
-                  type="password"
-                  placeholder="Tu contraseña"
-                  value={reauthPassword}
-                  onChange={(e) => setReauthPassword(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === "Enter" && !isReauthenticating) {
-                      handleReauthWithFeedback();
-                    }
-                  }}
-                  disabled={isReauthenticating}
-                  className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:outline-none focus:border-blue-2 focus:ring-2 focus:ring-blue-2/20 disabled:bg-gray-3 disabled:cursor-not-allowed"
-                />
-                {error && (
-                  <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-red-600 text-sm">{error}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Footer */}
-              <div className="flex gap-3 p-6 border-t border-gray-2 bg-gray-3/30">
-                <button
-                  onClick={() => setShowReauthModal(false)}
-                  disabled={isReauthenticating}
-                  className="flex-1 py-2 px-4 border border-gray-2 rounded-lg text-gray-1 hover:bg-gray-3 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleReauthWithFeedback}
-                  disabled={isReauthenticating || !reauthPassword}
-                  className="flex-1 py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {isReauthenticating ? (
-                    <>
-                      <ImSpinner2 className="animate-spin h-4 w-4" />
-                      Verificando...
-                    </>
-                  ) : (
-                    "Confirmar"
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

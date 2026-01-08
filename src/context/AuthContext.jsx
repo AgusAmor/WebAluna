@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import { useAutoLogout } from "../hooks";
 import PropTypes from "prop-types";
 import authService from "../services/firebase/firebaseAuthService";
+import { cartStorageService } from "../services/cart/cartStorageService";
 import {
   validateResetEmail,
   handleAuthAction,
@@ -48,6 +49,8 @@ export const AuthProvider = ({ children }) => {
           }
         } else {
           setUser(null);
+          // Clear cart when user logs out
+          cartStorageService.clearCart();
         }
         setLoading(false);
       }
@@ -104,11 +107,14 @@ export const AuthProvider = ({ children }) => {
 
   /**
    * Logs out the current user and clears user state
+   * Also clears the shopping cart for security
    * Handles errors during logout
    */
   const logout = async () => {
     try {
       setError(null);
+      // Clear cart before logout
+      cartStorageService.clearCart();
       await authService.logout();
       setUser(null);
       return true; // Return success

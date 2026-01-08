@@ -1,4 +1,10 @@
-import { createContext, useContext, useReducer, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useRef,
+} from "react";
 import { CART_ACTIONS } from "../constants";
 import { cartStorageService } from "../services/cart/cartStorageService";
 import {
@@ -57,16 +63,40 @@ const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
+  const cartLoadedRef = useRef(false);
 
+  // Load cart from sessionStorage on mount
   useEffect(() => {
     const savedCart = cartStorageService.loadCart();
     if (savedCart) {
       dispatch({ type: CART_ACTIONS.LOAD_CART, payload: savedCart });
     }
+    cartLoadedRef.current = true;
   }, []);
 
+  // Save cart to sessionStorage whenever it changes (but skip initial load)
   useEffect(() => {
-    cartStorageService.saveCart(state);
+    if (cartLoadedRef.current) {
+      cartStorageService.saveCart(state);
+    }
+  }, [state.items, state.total, state.itemCount]);
+
+  // Listen for 'cartCleared' event (dispatched when user logs out)
+  useEffect(() => {
+    const handleCartCleared = () => {
+      dispatch({ type: CART_ACTIONS.CLEAR_CART });
+      cartLoadedRef.current = false;
+    };
+
+    window.addEventListener("cartCleared", handleCartCleared);
+    return () => window.removeEventListener("cartCleared", handleCartCleared);
+  }, []);
+
+  // Save cart to localStorage whenever it changes (but skip initial load)
+  useEffect(() => {
+    if (cartLoadedRef.current) {
+      cartStorageService.saveCart(state);
+    }
   }, [state.items, state.total, state.itemCount]);
 
   const addItem = (product, quantity = 1) => {
