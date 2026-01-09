@@ -3,7 +3,7 @@ import { ImSpinner2 } from "react-icons/im";
 import { Hero } from "../../../components/common";
 import UserForm from "./UserForm";
 import { useUserManagement } from "../../../hooks";
-import { formatDate, formatDateTime } from "../../../utils/dateFormatter";
+import { formatDateTime } from "../../../utils/dateFormatter";
 import { formatDefaultAddress } from "../../../services/users/userManagementService";
 
 const UserManagement = () => {

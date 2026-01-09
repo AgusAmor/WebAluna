@@ -108,6 +108,9 @@ const LoginModal = ({ isOpen, onClose }) => {
     if (includes("auth/user-disabled", "user-disabled")) {
       return "Esta cuenta ha sido deshabilitada.";
     }
+    if (includes("suspendida", "suspended")) {
+      return "Tu cuenta ha sido suspendida. Contacta con el administrador.";
+    }
     if (errorStr.includes("password") && errorStr.includes("reset")) {
       return "Hubo un problema al enviar el correo de recuperación.";
     }

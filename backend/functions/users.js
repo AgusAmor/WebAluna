@@ -240,7 +240,7 @@ exports.updateUserDoc = async (req, res) => {
       };
     }
 
-    const { displayName, email, phone, addresses } = body;
+    const { displayName, email, phone, addresses, accountStatus, role } = body;
 
     // Build update object with ONLY the fields that were provided
     const updateData = {};
@@ -248,6 +248,14 @@ exports.updateUserDoc = async (req, res) => {
     if (email !== undefined) updateData.email = email;
     if (phone !== undefined) updateData.phone = phone;
     if (addresses !== undefined) updateData.addresses = addresses;
+    if (accountStatus !== undefined) {
+      updateData.accountStatus = accountStatus;
+    }
+    if (role !== undefined && (role === "user" || role === "admin")) {
+      updateData.role = role;
+    }
+
+    console.log(`[updateUserDoc] Final updateData:`, updateData);
 
     // At least one field must be provided
     if (Object.keys(updateData).length === 0) {

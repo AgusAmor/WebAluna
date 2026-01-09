@@ -167,8 +167,15 @@ export function removeAddressAtIndex(addresses, idx) {
 export function prepareUserFormData(formData) {
   const phone = combinePhoneNumber(formData.phoneCountry, formData.phoneLocal);
 
+  // Clean addresses by removing the temporary 'id' field
+  const cleanAddresses = formData.addresses.map(({ id, ...addr }) => addr);
+
   return {
-    ...formData,
+    displayName: formData.displayName,
+    email: formData.email,
     phone,
+    addresses: cleanAddresses,
+    accountStatus: formData.accountStatus,
+    role: formData.role,
   };
 }

@@ -11,6 +11,7 @@
 import { auth } from "./firebase";
 import { db } from "./firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { fetchUserById } from "./firebaseUserService";
 
 /**
  * Firebase Authentication Service
@@ -186,22 +187,60 @@ class AuthService {
     );
     const user = userCredential.user;
 
-    // Update lastLoginAt for email/password login
     try {
-      const token = await user.getIdToken();
-      await fetch(`${BASE_URL}/updateLastLogin`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ uid: user.uid }),
-      });
-    } catch (err) {
-      console.error("Error updating last login timestamp:", err);
+      // Check if user account is suspended
+      const userDoc = await fetchUserById(user.uid);
+      if (userDoc.accountStatus === "suspended") {
+        await signOut(this.auth);
+        throw new Error(
+          "Tu cuenta ha sido suspendida. Contacta con el administrador."
+        );
+      }
+
+      // Update lastLoginAt for email/password login
+      try {
+        const token = await user.getIdToken();
+        await fetch(`${BASE_URL}/updateLastLogin`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ uid: user.uid }),
+        });
+      } catch (err) {
+        console.error("Error updating last login timestamp:", err);
+      }
+
+      return this.adminVerify(user);
+    } catch (error) {
+      // If checking account status failed, sign out
+      try {
+        await signOut(this.auth);
+      } catch (e) {
+        // Ignore logout error
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Checks if a user account is suspended
+   * @param {string} uid - User ID
+   * @returns {object} User document data
+   */
+  async checkUserAccountStatus(uid) {
+    const response = await fetch(`${BASE_URL}/getUserDoc?id=${uid}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) {
+      throw new Error("No se pudo verificar el estado de la cuenta");
     }
 
-    return this.adminVerify(user);
+    const data = await response.json();
+    return data;
   }
 
   /**
@@ -269,6 +308,15 @@ class AuthService {
       } catch (loginError) {
         console.error("Error updating last login:", loginError);
         // Non-critical error, continue
+      }
+
+      // Check if user account is suspended
+      const userDoc = await fetchUserById(user.uid);
+      if (userDoc.accountStatus === "suspended") {
+        await signOut(this.auth);
+        throw new Error(
+          "Tu cuenta ha sido suspendida. Contacta con el administrador."
+        );
       }
 
       return this.adminVerify(user);

@@ -84,14 +84,19 @@ export const formatDateTime = (dateStr) => {
       return "-";
     }
 
-    return date.toLocaleString("es-AR", {
+    const datePart = date.toLocaleString("es-AR", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
+    });
+
+    const timePart = date.toLocaleString("es-AR", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
     });
+
+    return `${datePart} · ${timePart}`;
   } catch (err) {
     console.error("Error formatting date time:", err);
     return "-";
