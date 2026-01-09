@@ -85,21 +85,3 @@ export async function updateUser(id, userData, token) {
   }
   return response.json();
 }
-
-/**
- * Sets a user as admin or removes admin privileges.
- * Only admin users can call this function.
- * @param {string} userId - User ID to promote/demote
- * @param {boolean} isAdmin - Whether user should be admin
- * @param {string} token - Firebase Auth token
- * @returns {Promise<Object>} Result
- */
-export async function setAdminRole(userId, isAdmin, token) {
-  if (!userId || typeof userId !== "string") {
-    throw new Error("Valid user ID is required");
-  }
-  if (typeof isAdmin !== "boolean") {
-    throw new Error("isAdmin must be a boolean");
-  }
-  return apiPostAuth("/setAdminRole", { userId, isAdmin }, token);
-}

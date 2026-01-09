@@ -69,8 +69,6 @@ export function normalizeUserData(user) {
       phoneCountry: "+549",
       phoneLocal: "",
       accountStatus: "active",
-      role: "user",
-      admin: false,
       addresses: [],
     };
   }
@@ -85,8 +83,6 @@ export function normalizeUserData(user) {
     phoneCountry,
     phoneLocal,
     accountStatus: user.accountStatus || "active",
-    role: user.role || "user",
-    admin: !!user.admin,
     addresses:
       Array.isArray(user.addresses) && user.addresses.length > 0
         ? user.addresses.map((a, i) => ({
@@ -176,6 +172,5 @@ export function prepareUserFormData(formData) {
     phone,
     addresses: cleanAddresses,
     accountStatus: formData.accountStatus,
-    role: formData.role,
   };
 }

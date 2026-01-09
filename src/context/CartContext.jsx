@@ -92,13 +92,6 @@ export const CartProvider = ({ children }) => {
     return () => window.removeEventListener("cartCleared", handleCartCleared);
   }, []);
 
-  // Save cart to localStorage whenever it changes (but skip initial load)
-  useEffect(() => {
-    if (cartLoadedRef.current) {
-      cartStorageService.saveCart(state);
-    }
-  }, [state.items, state.total, state.itemCount]);
-
   const addItem = (product, quantity = 1) => {
     dispatch({
       type: CART_ACTIONS.ADD_ITEM,

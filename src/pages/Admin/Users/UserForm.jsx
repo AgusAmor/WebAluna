@@ -98,18 +98,6 @@ const UserForm = ({
         </div>
         <div className="flex flex-col md:flex-row gap-4 mb-3">
           <div className="flex-1">
-            <label className="font-bold text-blue-2 mb-1">Rol</label>
-            <select
-              name="role"
-              value={form.role}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none mb-2 md:mb-0"
-            >
-              <option value="user">Usuario</option>
-              <option value="admin">Administrador</option>
-            </select>
-          </div>
-          <div className="flex-1">
             <label className="font-bold text-blue-2 mb-1">Estado</label>
             <select
               name="accountStatus"
