@@ -74,30 +74,48 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => (
       />
     </div>
     {/* country field removed as per new structure */}
-    <div className="flex flex-col md:flex-row gap-4 mb-2">
-      <input
-        name="recipientName"
-        type="text"
-        placeholder="Nombre destinatario"
-        value={addr.recipientName}
-        onChange={(e) => onChange(idx, e)}
-        className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
-        minLength={2}
-        maxLength={60}
-        required
-      />
-      <input
-        name="recipientPhone"
-        type="tel"
-        placeholder="Teléfono destinatario"
-        value={addr.recipientPhone}
-        onChange={(e) => onChange(idx, e)}
-        className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
-        pattern="^\+?\d{8,15}$"
-        maxLength={15}
-        minLength={8}
-        title="Debe tener entre 8 y 15 dígitos, puede comenzar con el código de país o no."
-      />
+    <div className="mb-2">
+      <label className="text-sm font-bold text-blue-2 mb-2 block">
+        Datos del destinatario
+      </label>
+      <div className="flex flex-col md:flex-row gap-2">
+        <input
+          name="recipientName"
+          type="text"
+          placeholder="Nombre"
+          value={addr.recipientName}
+          onChange={(e) => onChange(idx, e)}
+          className="w-full md:w-3/5 px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
+          minLength={2}
+          maxLength={60}
+          required
+        />
+        <input
+          name="recipientPhoneCountry"
+          type="text"
+          value={addr.recipientPhoneCountry || "+549"}
+          onChange={(e) => onChange(idx, e)}
+          className="w-full md:w-1/10 px-3 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white text-sm"
+          pattern="^\+\d{1,4}$"
+          maxLength={5}
+          minLength={2}
+          title="Código de país en formato internacional."
+          required
+        />
+        <input
+          name="recipientPhoneLocal"
+          type="text"
+          placeholder="Teléfono"
+          value={addr.recipientPhoneLocal || ""}
+          onChange={(e) => onChange(idx, e)}
+          className="w-full md:w-3/10 px-3 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white text-sm"
+          pattern="^\d{6,12}$"
+          maxLength={12}
+          minLength={6}
+          title="Número local internacional, entre 6 y 12 dígitos, sin código de país."
+          required
+        />
+      </div>
     </div>
     <div className="flex items-center gap-3 mt-2">
       {/* Custom styled checkbox for 'Default Address' */}

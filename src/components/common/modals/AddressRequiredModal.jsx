@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { IoIosClose } from "react-icons/io";
 import AddressForm from "../forms/AddressForm";
+import {
+  splitPhoneNumber,
+  combinePhoneNumber,
+} from "../../../services/users/userFormService";
 
 /**
  * Modal for adding a default address when required for checkout
@@ -25,7 +29,8 @@ const AddressRequiredModal = ({
     region: "",
     postalCode: "",
     recipientName: "",
-    recipientPhone: "",
+    recipientPhoneCountry: "+549",
+    recipientPhoneLocal: "",
     isDefault: true,
   });
 
@@ -50,15 +55,35 @@ const AddressRequiredModal = ({
       !address.city ||
       !address.region ||
       !address.recipientName ||
-      !address.recipientPhone
+      !address.recipientPhoneCountry ||
+      !address.recipientPhoneLocal
     ) {
       setError("Por favor completa todos los campos requeridos");
       return;
     }
 
     try {
+      // Combine phone number fields
+      const recipientPhone = combinePhoneNumber(
+        address.recipientPhoneCountry,
+        address.recipientPhoneLocal
+      );
+
+      // Prepare address object for submission
+      const addressToSubmit = {
+        street: address.street,
+        number: address.number,
+        apartment: address.apartment,
+        city: address.city,
+        region: address.region,
+        postalCode: address.postalCode,
+        recipientName: address.recipientName,
+        recipientPhone: recipientPhone,
+        isDefault: address.isDefault,
+      };
+
       // Call the callback with the address
-      await onAddressAdded(address);
+      await onAddressAdded(addressToSubmit);
       handleClose();
     } catch (err) {
       setError(err.message || "Error al agregar dirección");
@@ -74,7 +99,8 @@ const AddressRequiredModal = ({
       region: "",
       postalCode: "",
       recipientName: "",
-      recipientPhone: "",
+      recipientPhoneCountry: "+549",
+      recipientPhoneLocal: "",
       isDefault: true,
     });
     setError(null);

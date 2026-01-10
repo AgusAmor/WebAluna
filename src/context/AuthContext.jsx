@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import { useAutoLogout } from "../hooks";
 import PropTypes from "prop-types";
 import authService from "../services/firebase/firebaseAuthService";
+import { fetchUserById } from "../services/firebase/firebaseUserService";
 import { cartStorageService } from "../services/cart/cartStorageService";
 import {
   validateResetEmail,
@@ -36,8 +37,20 @@ export const AuthProvider = ({ children }) => {
             );
 
             if (userDocExists) {
-              const userWithRole = await authService.adminVerify(currentUser);
-              setUser(userWithRole);
+              // Check if account is suspended BEFORE setting user as authenticated
+              const userDoc = await fetchUserById(currentUser.uid);
+              if (userDoc.accountStatus === "suspended") {
+                // Account is suspended - sign out and set error
+                await authService.logout();
+                setError(
+                  "Tu cuenta ha sido suspendida. Contacta con el administrador."
+                );
+                setUser(null);
+              } else {
+                const userWithRole = await authService.adminVerify(currentUser);
+                setUser(userWithRole);
+                setError(null); // Clear any previous error
+              }
             } else {
               // User exists in Auth but not in Firestore - sign them out
               await authService.logout();

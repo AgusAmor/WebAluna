@@ -310,15 +310,6 @@ class AuthService {
         // Non-critical error, continue
       }
 
-      // Check if user account is suspended
-      const userDoc = await fetchUserById(user.uid);
-      if (userDoc.accountStatus === "suspended") {
-        await signOut(this.auth);
-        throw new Error(
-          "Tu cuenta ha sido suspendida. Contacta con el administrador."
-        );
-      }
-
       return this.adminVerify(user);
     } catch (error) {
       console.error("Google login error:", error);

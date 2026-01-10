@@ -4,7 +4,7 @@
  * Encapsulates form state, validation, and authentication flow.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../../context/AuthContext";
@@ -23,6 +23,8 @@ export function useLoginModal(isOpen, onClose) {
   const [resetSuccess, setResetSuccess] = useState("");
   const [formData, setFormData] = useState(createEmptyFormData());
   const [errors, setErrors] = useState({});
+  const lastErrorShownRef = useRef(null);
+  const loginAttemptTimeRef = useRef(null);
 
   const {
     login,
@@ -37,30 +39,89 @@ export function useLoginModal(isOpen, onClose) {
 
   const navigate = useNavigate();
 
-  // Close modal automatically when user logs in successfully (no error)
+  // Reset error tracking when modal opens
   useEffect(() => {
-    if (isAuthenticated && user && isOpen && !error && !loading) {
-      // Show success toast
-      toast.success(
-        `¡Bienvenido${
-          user.displayName ? " " + user.displayName.split(" ")[0] : ""
-        }!`,
-        {
-          position: "bottom-right",
-          autoClose: 3000,
-        }
-      );
-
-      // Navigate to admin panel if user is admin
-      if (isUserAdmin(user)) {
-        navigate("/admin");
-      }
-      // Close modal and reset form
-      onClose();
-      setFormData(createEmptyFormData());
-      setErrors({});
+    if (isOpen) {
+      lastErrorShownRef.current = null;
+      loginAttemptTimeRef.current = null;
     }
-  }, [isAuthenticated, user, isOpen, onClose, navigate, error, loading]);
+  }, [isOpen]);
+
+  // Handle login result (success or error)
+  useEffect(() => {
+    if (!isOpen || loading) return; // Wait for loading to finish
+
+    // Check if there was a recent login attempt
+    const wasRecentLoginAttempt =
+      loginAttemptTimeRef.current &&
+      Date.now() - loginAttemptTimeRef.current < 3000;
+
+    // If there's an error from a recent login attempt, just mark it as shown
+    // The error will be displayed in the modal automatically
+    if (error && wasRecentLoginAttempt) {
+      lastErrorShownRef.current = error;
+      return; // Keep modal open, don't do anything else
+    }
+
+    // If login was successful (user exists and is authenticated with no error)
+    if (user && isAuthenticated && !error) {
+      // If there was a recent login attempt, wait a bit to ensure no error comes
+      if (wasRecentLoginAttempt) {
+        const timer = setTimeout(() => {
+          // After delay, check again if there's still no error
+          if (!error) {
+            toast.success(
+              `¡Bienvenido${
+                user.displayName ? " " + user.displayName.split(" ")[0] : ""
+              }!`,
+              {
+                position: "bottom-right",
+                autoClose: 3000,
+              }
+            );
+
+            // Navigate to admin panel if user is admin
+            if (isUserAdmin(user)) {
+              navigate("/admin");
+            } else {
+              navigate("/");
+            }
+
+            // Close modal and reset form
+            onClose();
+            setFormData(createEmptyFormData());
+            setErrors({});
+            loginAttemptTimeRef.current = null;
+          }
+        }, 500);
+
+        return () => clearTimeout(timer);
+      } else {
+        // No recent attempt, show success immediately
+        toast.success(
+          `¡Bienvenido${
+            user.displayName ? " " + user.displayName.split(" ")[0] : ""
+          }!`,
+          {
+            position: "bottom-right",
+            autoClose: 3000,
+          }
+        );
+
+        // Navigate to admin panel if user is admin
+        if (isUserAdmin(user)) {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
+
+        // Close modal and reset form
+        onClose();
+        setFormData(createEmptyFormData());
+        setErrors({});
+      }
+    }
+  }, [loading, error, user, isAuthenticated, isOpen, onClose, navigate]);
 
   /**
    * Handles input changes for login/register form
@@ -136,6 +197,8 @@ export function useLoginModal(isOpen, onClose) {
     e.preventDefault();
     if (!validateForm()) return;
 
+    loginAttemptTimeRef.current = Date.now();
+
     try {
       if (isLogin) {
         await login(formData.email, formData.password);
@@ -152,6 +215,8 @@ export function useLoginModal(isOpen, onClose) {
    * Handles Google login
    */
   const handleGoogleLogin = async () => {
+    loginAttemptTimeRef.current = Date.now();
+
     try {
       await loginWithGoogle();
       // Modal closes automatically via useEffect

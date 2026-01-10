@@ -18,7 +18,8 @@ export function createEmptyAddress() {
     postalCode: "",
     isDefault: false,
     recipientName: "",
-    recipientPhone: "",
+    recipientPhoneCountry: "+549",
+    recipientPhoneLocal: "",
   };
 }
 
@@ -85,11 +86,23 @@ export function normalizeUserData(user) {
     accountStatus: user.accountStatus || "active",
     addresses:
       Array.isArray(user.addresses) && user.addresses.length > 0
-        ? user.addresses.map((a, i) => ({
-            ...emptyAddress,
-            ...a,
-            id: a.id || `addr-${i + 1}`,
-          }))
+        ? user.addresses.map((a, i) => {
+            // Split recipientPhone if it exists as a string
+            const {
+              phoneCountry: recipientPhoneCountry,
+              phoneLocal: recipientPhoneLocal,
+            } = a.recipientPhone
+              ? splitPhoneNumber(a.recipientPhone)
+              : { phoneCountry: "+549", phoneLocal: "" };
+
+            return {
+              ...emptyAddress,
+              ...a,
+              id: a.id || `addr-${i + 1}`,
+              recipientPhoneCountry,
+              recipientPhoneLocal,
+            };
+          })
         : [],
   };
 }
@@ -163,8 +176,19 @@ export function removeAddressAtIndex(addresses, idx) {
 export function prepareUserFormData(formData) {
   const phone = combinePhoneNumber(formData.phoneCountry, formData.phoneLocal);
 
-  // Clean addresses by removing the temporary 'id' field
-  const cleanAddresses = formData.addresses.map(({ id, ...addr }) => addr);
+  // Clean addresses by removing the temporary 'id' field and combining phone fields
+  const cleanAddresses = formData.addresses.map(
+    ({ id, recipientPhoneCountry, recipientPhoneLocal, ...addr }) => {
+      const recipientPhone = combinePhoneNumber(
+        recipientPhoneCountry,
+        recipientPhoneLocal
+      );
+      return {
+        ...addr,
+        recipientPhone,
+      };
+    }
+  );
 
   return {
     displayName: formData.displayName,
