@@ -423,7 +423,7 @@ const Profile = () => {
                         >
                           <div className="flex justify-between items-start mb-4 pb-4 border-b border-gray-2">
                             <h3 className="font-semibold text-blue-2 text-lg">
-                              {addr.label || `Dirección ${idx + 1}`}
+                              {addr.label || `${addr.street} ${addr.number}`}
                             </h3>
                             {addr.isDefault && (
                               <span className="bg-gold text-white text-xs font-bold px-3 py-1 rounded-full">
@@ -433,34 +433,6 @@ const Profile = () => {
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <p className="text-xs font-semibold text-gray-1 uppercase tracking-wide mb-1">
-                                Destinatario
-                              </p>
-                              <p className="text-sm font-medium text-blue-1">
-                                {addr.recipientName || "-"}
-                              </p>
-                            </div>
-
-                            <div>
-                              <p className="text-xs font-semibold text-gray-1 uppercase tracking-wide mb-1">
-                                Teléfono
-                              </p>
-                              <p className="text-sm font-medium text-gold">
-                                {addr.recipientPhone || "-"}
-                              </p>
-                            </div>
-
-                            <div className="md:col-span-2">
-                              <p className="text-xs font-semibold text-gray-1 uppercase tracking-wide mb-1">
-                                Dirección
-                              </p>
-                              <p className="text-sm font-medium text-blue-1">
-                                {addr.street} {addr.number}
-                                {addr.apartment && ` - Apto. ${addr.apartment}`}
-                              </p>
-                            </div>
-
                             <div>
                               <p className="text-xs font-semibold text-gray-1 uppercase tracking-wide mb-1">
                                 Ciudad
@@ -485,6 +457,26 @@ const Profile = () => {
                               </p>
                               <p className="text-sm font-medium text-blue-1">
                                 {addr.postalCode || "-"}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-3">
+                            <div>
+                              <p className="text-xs font-semibold text-gray-1 uppercase tracking-wide mb-1">
+                                Destinatario
+                              </p>
+                              <p className="text-sm font-medium text-blue-1">
+                                {addr.recipientName || "-"}
+                              </p>
+                            </div>
+
+                            <div>
+                              <p className="text-xs font-semibold text-gray-1 uppercase tracking-wide mb-1">
+                                Teléfono
+                              </p>
+                              <p className="text-sm font-medium text-blue-1">
+                                {addr.recipientPhone || "-"}
                               </p>
                             </div>
                           </div>
