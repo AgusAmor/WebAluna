@@ -2,6 +2,7 @@ import { Hero } from "../../components/common";
 import { ProductCard } from "../../components/ui";
 import ProductDetailModal from "../../components/ui/ProductDetailModal";
 import { useProducts } from "../../hooks";
+import { ImSpinner2 } from "react-icons/im";
 
 const Products = () => {
   const {
@@ -77,9 +78,10 @@ const Products = () => {
 
         {/* Loading and error states */}
         {loading && (
-          <div className="text-center py-16">
+          <div className="text-center py-16 flex flex-col items-center gap-4">
+            <ImSpinner2 className="animate-spin h-12 w-12 text-blue-2" />
             <p className="text-xl text-gray-1 font-family-sora">
-              Loading products...
+              Cargando productos...
             </p>
           </div>
         )}

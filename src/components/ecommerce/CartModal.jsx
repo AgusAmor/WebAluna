@@ -36,18 +36,18 @@ const CartModal = ({ isOpen, onClose }) => {
       {/* Modal */}
       <div className="flex min-h-screen items-center justify-center p-4">
         <div
-          className="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden animate-fadeInScale"
+          className="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden animate-fadeInScale flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="p-5">
+          <div className="p-5 flex-shrink-0">
             <h2 className="text-center text-xl font-bold font-family-comfortaa text-blue-1">
               Tu Carrito
             </h2>
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto px-5 pb-5 max-h-[50vh]">
+          <div className="flex-1 overflow-y-auto px-5 pb-5">
             {isCartEmpty(items) ? (
               <div className="text-center py-8">
                 <p className="text-gray-1 mb-4 font-family-sora">
@@ -146,7 +146,7 @@ const CartModal = ({ isOpen, onClose }) => {
 
           {/* Footer */}
           {!isCartEmpty(items) && (
-            <div className="border-t border-gray-2 p-5">
+            <div className="border-t border-gray-2 p-5 flex-shrink-0 bg-white">
               <p className="text-xl font-bold text-gold text-center mb-4 font-family-comfortaa">
                 Total: ${formatPrice(total)}
               </p>
@@ -163,7 +163,7 @@ const CartModal = ({ isOpen, onClose }) => {
                   <button
                     onClick={handleCheckout}
                     disabled={checkoutLoading}
-                    className="bg-blue-2 text-white px-6 py-2 rounded-lg font-family-sora hover:bg-gold hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-gold text-white px-6 py-2 rounded-lg font-family-sora hover:bg-blue-3 hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {checkoutLoading ? "Procesando..." : "Finalizar Pedido"}
                   </button>

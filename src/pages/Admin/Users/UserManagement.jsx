@@ -67,8 +67,11 @@ const UserManagement = () => {
         {/* Users table listing all registered users */}
         <div className="bg-white rounded-xl shadow-md mt-2 overflow-x-auto">
           {loading ? (
-            <div className="text-center py-8 text-blue-2 font-bold">
-              Cargando usuarios...
+            <div className="flex items-center justify-center gap-4 py-8">
+              <ImSpinner2 className="animate-spin h-6 w-6 text-blue-2" />
+              <span className="text-blue-2 font-bold">
+                Cargando usuarios...
+              </span>
             </div>
           ) : error ? (
             <div className="text-center py-8 text-red-500 font-bold">

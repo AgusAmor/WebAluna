@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useHome } from "../../hooks";
+import { ImSpinner2 } from "react-icons/im";
 import "./Carousel.css";
 
 const Home = () => {
@@ -54,8 +55,9 @@ const Home = () => {
         >
           <div className="carousel" ref={carouselRef}>
             {loading ? (
-              <div className="carousel-item flex items-center justify-center text-gray-2 text-lg">
-                Cargando productos...
+              <div className="carousel-item flex items-center justify-center flex-col gap-4">
+                <ImSpinner2 className="animate-spin h-12 w-12 text-blue-2" />
+                <p className="text-gray-2 text-lg">Cargando productos...</p>
               </div>
             ) : error ? (
               <div className="carousel-item flex items-center justify-center text-red-500 text-lg">
