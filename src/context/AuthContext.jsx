@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { toast } from "react-toastify";
+import { showCustomToast } from "../services/ui/toastService.jsx";
 import { useAutoLogout } from "../hooks";
 import PropTypes from "prop-types";
 import authService from "../services/firebase/firebaseAuthService";
@@ -75,10 +75,7 @@ export const AuthProvider = ({ children }) => {
   useAutoLogout(() => {
     if (user) {
       logout();
-      toast.info("Sesión cerrada por inactividad", {
-        position: "bottom-right",
-        autoClose: 4000,
-      });
+      showCustomToast.info("Sesión cerrada por inactividad");
     }
   }, 5 * 60 * 1000);
 

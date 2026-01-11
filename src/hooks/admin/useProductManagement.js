@@ -162,7 +162,7 @@ export const useProductManagement = () => {
     deletingId,
     editProduct,
 
-    // Actions
+    // Handlers
     setImagePreview,
     handleCreateProduct,
     handleEditProduct,

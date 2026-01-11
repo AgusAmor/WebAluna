@@ -22,7 +22,7 @@ import {
   validateOrderData,
   hasDefaultAddress,
 } from "../../services/orders/orderService";
-import { toast } from "react-toastify";
+import { showCustomToast } from "../../services/ui/toastService.jsx";
 
 export function useCheckout() {
   const { user } = useAuth();
@@ -122,20 +122,14 @@ export function useCheckout() {
       setShowAddressModal(false);
       setLoading(false);
 
-      toast.success("Dirección agregada exitosamente", {
-        position: "bottom-right",
-        autoClose: 3000,
-      });
+      showCustomToast.success("Dirección agregada exitosamente");
 
       return true;
     } catch (err) {
       const errorMessage = err.message || "Error al agregar dirección";
       setError(errorMessage);
       setLoading(false);
-      toast.error(errorMessage, {
-        position: "bottom-right",
-        autoClose: 5000,
-      });
+      showCustomToast.error(errorMessage);
       throw new Error(errorMessage);
     }
   };
@@ -150,7 +144,7 @@ export function useCheckout() {
       userProfile &&
       !hasDefaultAddress(userProfile)
     ) {
-      toast.error(
+      showCustomToast.error(
         "Por favor agrega una dirección antes de finalizar el pedido"
       );
       setShowAddressModal(true);
@@ -222,12 +216,8 @@ export function useCheckout() {
       // Create order via Cloud Function (with security validation on backend)
       const createdOrder = await createOrderViaCloudFunction(orderData, token);
 
-      toast.success(
-        `Orden ${createdOrder.orderNumber} realizada con éxito, pronto seras notificado por mail sobre el estado de tu pedido..`,
-        {
-          position: "bottom-right",
-          autoClose: 5000,
-        }
+      showCustomToast.success(
+        `Orden ${createdOrder.orderNumber} realizada con éxito, pronto seras notificado por mail sobre el estado de tu pedido..`
       );
 
       // Clear cart after successful order creation
@@ -237,10 +227,7 @@ export function useCheckout() {
     } catch (err) {
       const errorMessage = err.message || "Error al procesar el pedido";
       setError(errorMessage);
-      toast.error(errorMessage, {
-        position: "bottom-right",
-        autoClose: 5000,
-      });
+      showCustomToast.error(errorMessage);
       throw new Error(errorMessage);
     } finally {
       setLoadingOrder(false);

@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { toast } from "react-toastify";
+import { showCustomToast } from "../../services/ui/toastService.jsx";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -76,14 +76,9 @@ export function useProducts(onLoginRequired) {
   const handleAddToCart = (product) => {
     if (!user) {
       // User not logged in - show toast and trigger login modal
-      toast.info("Debes iniciar sesión para agregar productos al carrito.", {
-        position: "bottom-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      showCustomToast.info(
+        "Debes iniciar sesión para agregar productos al carrito."
+      );
       if (onLoginRequired) {
         onLoginRequired();
       }

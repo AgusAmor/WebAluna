@@ -233,7 +233,7 @@ export const useProfile = () => {
     showResetPasswordConfirm,
     showDeleteAccountConfirm,
 
-    // Actions
+    //Handlers
     handleAddressChange,
     handleAddAddress,
     handleRemoveAddress,

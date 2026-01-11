@@ -109,3 +109,20 @@ textarea {
 .animate-shake {
   animation: shake 0.5s ease-in-out;
 }
+
+/* Toast Progress Bar Colors */
+.toast-progress-gold .Toastify__progress-bar {
+  background: #b6a269 !important;
+}
+
+.toast-progress-red .Toastify__progress-bar {
+  background: #ef4444 !important;
+}
+
+.toast-progress-blue .Toastify__progress-bar {
+  background: #427385 !important;
+}
+
+.toast-progress-blue .toastProgress {
+  background: #427385;
+}

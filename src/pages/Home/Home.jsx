@@ -65,7 +65,7 @@ const Home = () => {
               </div>
             ) : (
               <>
-                {/* Duplicar productos para efecto infinito sin reinicio */}
+                {/* Display duplicated products to create infinite carousel effect without reset */}
                 {carouselProducts.map((product, index) => (
                   <div
                     key={index}

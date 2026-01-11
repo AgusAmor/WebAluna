@@ -40,7 +40,7 @@ const CartModal = ({ isOpen, onClose }) => {
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="p-5 flex-shrink-0">
+          <div className="p-5 shrink-0">
             <h2 className="text-center text-xl font-bold font-family-comfortaa text-blue-1">
               Tu Carrito
             </h2>
@@ -146,7 +146,7 @@ const CartModal = ({ isOpen, onClose }) => {
 
           {/* Footer */}
           {!isCartEmpty(items) && (
-            <div className="border-t border-gray-2 p-5 flex-shrink-0 bg-white">
+            <div className="border-t border-gray-2 p-5 shrink-0 bg-white">
               <p className="text-xl font-bold text-gold text-center mb-4 font-family-comfortaa">
                 Total: ${formatPrice(total)}
               </p>

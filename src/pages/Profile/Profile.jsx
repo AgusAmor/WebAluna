@@ -3,7 +3,7 @@ import { MdEdit } from "react-icons/md";
 import { FaTrash, FaKey } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { showCustomToast } from "../../services/ui/toastService.jsx";
 import { ConfirmationModal, AddressForm } from "../../components/common";
 import { IoIosWarning } from "react-icons/io";
 import { useProfile } from "../../hooks";
@@ -54,10 +54,7 @@ const Profile = () => {
 
     if (success) {
       setShowFinalDeleteConfirm(false);
-      toast.success("Tu cuenta ha sido eliminada exitosamente", {
-        position: "bottom-right",
-        autoClose: 3000,
-      });
+      showCustomToast.success("Tu cuenta ha sido eliminada exitosamente");
       // Navigate immediately to show toast on home page
       navigate("/", { replace: true });
     }

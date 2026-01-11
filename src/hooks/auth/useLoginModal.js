@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { showCustomToast } from "../../services/ui/toastService.jsx";
 import { useAuth } from "../../context/AuthContext";
 import { isUserAdmin } from "../../utils/adminUtils";
 import {
@@ -70,14 +70,10 @@ export function useLoginModal(isOpen, onClose) {
         const timer = setTimeout(() => {
           // After delay, check again if there's still no error
           if (!error) {
-            toast.success(
+            showCustomToast.success(
               `¡Bienvenido${
                 user.displayName ? " " + user.displayName.split(" ")[0] : ""
-              }!`,
-              {
-                position: "bottom-right",
-                autoClose: 3000,
-              }
+              }!`
             );
 
             // Navigate to admin panel if user is admin
@@ -98,14 +94,10 @@ export function useLoginModal(isOpen, onClose) {
         return () => clearTimeout(timer);
       } else {
         // No recent attempt, show success immediately
-        toast.success(
+        showCustomToast.success(
           `¡Bienvenido${
             user.displayName ? " " + user.displayName.split(" ")[0] : ""
-          }!`,
-          {
-            position: "bottom-right",
-            autoClose: 3000,
-          }
+          }!`
         );
 
         // Navigate to admin panel if user is admin
@@ -160,12 +152,8 @@ export function useLoginModal(isOpen, onClose) {
     try {
       await requestPasswordReset(resetEmail);
       setResetSuccess("Se ha enviado el correo de recuperación");
-      toast.success(
-        "Correo de recuperación enviado. Revisa tu bandeja de entrada.",
-        {
-          position: "bottom-right",
-          autoClose: 4000,
-        }
+      showCustomToast.success(
+        "Correo de recuperación enviado. Revisa tu bandeja de entrada."
       );
       // Reset form after short delay
       setTimeout(() => {

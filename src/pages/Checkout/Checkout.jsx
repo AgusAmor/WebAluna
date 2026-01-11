@@ -17,7 +17,7 @@ import {
   hasDefaultAddress,
 } from "../../services/orders/orderService";
 import { formatPrice } from "../../services/cart/cartModalService";
-import { toast } from "react-toastify";
+import { showCustomToast } from "../../services/ui/toastService.jsx";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -165,10 +165,9 @@ const Checkout = () => {
                           onClick={() => {
                             const itemKey = getCartItemKey(id, type);
                             removeItem(itemKey);
-                            toast.info("Producto eliminado del carrito", {
-                              position: "bottom-right",
-                              autoClose: 3000,
-                            });
+                            showCustomToast.info(
+                              "Producto eliminado del carrito"
+                            );
                           }}
                           className="text-gold hover:text-red-500 hover:bg-gray-2 rounded-full p-2 transition-all duration-300"
                           title="Eliminar producto"
