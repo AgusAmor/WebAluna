@@ -16,7 +16,7 @@ import {
 
 const Header = () => {
   const {
-    isScrolled,
+    scrollProgress,
     isMenuOpen,
     isLoginModalOpen,
     showUserMenu,
@@ -33,12 +33,15 @@ const Header = () => {
   } = useHeader();
 
   const logoSizeMobile = getLogoSize(false, true);
-  const logoSizeDesktop = getLogoSize(isScrolled, false);
+
+  // Calculate intermediate logo size based on scroll progress for smooth transition
+  // Smooth transition from 80px to 48px as scrollProgress goes from 0 to 1
+  const smoothLogoSize = 80 + (48 - 80) * scrollProgress;
 
   return (
     <>
       <header className="bg-blue-1 border-blue-2 dark:bg-blue-1 sticky top-0 z-50 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6">
+        <div className="max-w-7xl mx-auto px-4 lg:px-6 transition-all duration-300">
           {/* Mobile Layout: Always the same (no scroll animation) */}
           <div className="flex lg:hidden items-center justify-between py-4">
             <Link to="/" className="shrink-0">
@@ -93,104 +96,79 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Desktop Layout: With scroll-based animation */}
-          {isScrolled ? (
-            <div className="hidden lg:flex items-center justify-between py-4 transition-all duration-500">
-              <Link to="/" className="shrink-0">
-                <img
-                  src={logo}
-                  alt="LogoAluna"
-                  style={{ height: `${logoSizeDesktop}px` }}
-                  className="transition-all duration-500 ease-out"
-                />
-              </Link>
+          {/* Desktop Layout: With smooth scroll-based animation */}
+          <div
+            className="hidden lg:flex items-center"
+            style={{
+              transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+              justifyContent:
+                scrollProgress > 0.5 ? "space-between" : "flex-start",
+              flexDirection: scrollProgress > 0.5 ? "row" : "column",
+              paddingTop: 24 + (16 - 24) * scrollProgress,
+              paddingBottom: 24 + (16 - 24) * scrollProgress,
+              gap: 16 - (16 - 24) * scrollProgress,
+            }}
+          >
+            <Link to="/" className="shrink-0">
+              <img
+                src={logo}
+                alt="LogoAluna"
+                style={{ height: `${smoothLogoSize}px` }}
+                className="transition-all duration-300 ease-out"
+              />
+            </Link>
 
-              <div className="flex items-center gap-6">
-                <NavigationLinks currentPath={location.pathname} />
-
-                {/* User menu desktop */}
-                {isAuthenticated ? (
-                  <div className="relative user-menu-container">
-                    <button
-                      onClick={toggleUserMenu}
-                      className="flex items-center gap-2 px-3 py-2 text-white hover:text-gold transition-colors rounded-lg hover:bg-blue-2"
-                    >
-                      <FiUser size={20} />
-                      <span className="text-sm font-family-comfortaa">
-                        {getUserDisplayName(user, true)}
-                      </span>
-                    </button>
-                    {showUserMenu && (
-                      <UserMenuDropdown
-                        user={user}
-                        onAdminClick={() => handleNavigate("/admin")}
-                        onProfileClick={() => handleNavigate("/profile")}
-                        onLogout={handleLogout}
-                        onClose={closeUserMenu}
-                      />
-                    )}
-                  </div>
-                ) : (
-                  <button
-                    onClick={openLoginModal}
-                    className="flex items-center gap-2 px-4 py-2 bg-gold text-blue-1 rounded-lg hover:bg-blue-2 hover:text-white transition-colors font-semibold font-family-comfortaa"
-                  >
-                    <FiUser size={18} />
-                    Iniciar Sesión
-                  </button>
-                )}
-              </div>
+            {/* Navigation - visible in both states but positioned differently */}
+            <div
+              style={{
+                transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+              }}
+            >
+              <NavigationLinks currentPath={location.pathname} />
             </div>
-          ) : (
-            <div className="hidden lg:block relative py-6 transition-all duration-500">
-              <div className="flex flex-col items-center gap-4">
-                <Link to="/">
-                  <img
-                    src={logo}
-                    alt="LogoAluna"
-                    style={{ height: `${logoSizeDesktop}px` }}
-                    className="transition-all duration-500 ease-out"
-                  />
-                </Link>
 
-                <NavigationLinks currentPath={location.pathname} />
-              </div>
-
-              {/* User button positioned absolute right center */}
-              <div className="absolute right-0 top-1/2 -translate-y-1/2">
-                {isAuthenticated ? (
-                  <div className="relative user-menu-container">
-                    <button
-                      onClick={toggleUserMenu}
-                      className="flex items-center gap-2 px-3 py-2 text-white hover:text-gold transition-colors rounded-lg hover:bg-blue-2"
-                    >
-                      <FiUser size={20} />
-                      <span className="text-sm font-family-comfortaa">
-                        {getUserDisplayName(user, true)}
-                      </span>
-                    </button>
-                    {showUserMenu && (
-                      <UserMenuDropdown
-                        user={user}
-                        onAdminClick={() => handleNavigate("/admin")}
-                        onProfileClick={() => handleNavigate("/profile")}
-                        onLogout={handleLogout}
-                        onClose={closeUserMenu}
-                      />
-                    )}
-                  </div>
-                ) : (
+            {/* User menu - repositions based on scroll progress */}
+            <div
+              style={{
+                transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                position: scrollProgress > 0.5 ? "relative" : "absolute",
+                right: scrollProgress > 0.5 ? "auto" : "16px",
+                top: scrollProgress > 0.5 ? "auto" : "50%",
+                transform: scrollProgress > 0.5 ? "none" : "translateY(-50%)",
+              }}
+            >
+              {isAuthenticated ? (
+                <div className="relative user-menu-container">
                   <button
-                    onClick={openLoginModal}
-                    className="flex items-center gap-2 px-4 py-2 bg-gold text-blue-1 rounded-lg hover:bg-blue-2 hover:text-white transition-colors font-semibold font-family-comfortaa"
+                    onClick={toggleUserMenu}
+                    className="flex items-center gap-2 px-3 py-2 text-white hover:text-gold transition-colors rounded-lg hover:bg-blue-2"
                   >
-                    <FiUser size={18} />
-                    Iniciar Sesión
+                    <FiUser size={20} />
+                    <span className="text-sm font-family-comfortaa">
+                      {getUserDisplayName(user, true)}
+                    </span>
                   </button>
-                )}
-              </div>
+                  {showUserMenu && (
+                    <UserMenuDropdown
+                      user={user}
+                      onAdminClick={() => handleNavigate("/admin")}
+                      onProfileClick={() => handleNavigate("/profile")}
+                      onLogout={handleLogout}
+                      onClose={closeUserMenu}
+                    />
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={openLoginModal}
+                  className="flex items-center gap-2 px-4 py-2 bg-gold text-blue-1 rounded-lg hover:bg-blue-2 hover:text-white transition-colors font-semibold font-family-comfortaa"
+                >
+                  <FiUser size={18} />
+                  Iniciar Sesión
+                </button>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </header>
 

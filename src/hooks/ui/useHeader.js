@@ -11,7 +11,7 @@ import { useAuth } from "../../context/AuthContext";
 import { isUserAdmin } from "../../utils/adminUtils";
 
 export function useHeader() {
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -20,20 +20,26 @@ export function useHeader() {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
 
-  // Scroll detection with requestAnimationFrame for performance
+  // Scroll detection with smooth progress calculation
   useEffect(() => {
     let ticking = false;
+    const SCROLL_START = 0;
+    const SCROLL_END = 150;
 
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
           const scrollPosition = window.scrollY;
 
-          if (scrollPosition > 120) {
-            setIsScrolled(true);
-          } else if (scrollPosition < 60) {
-            setIsScrolled(false);
-          }
+          // Calculate smooth progress (0 to 1) for all animations
+          const progress = Math.min(
+            Math.max(
+              (scrollPosition - SCROLL_START) / (SCROLL_END - SCROLL_START),
+              0
+            ),
+            1
+          );
+          setScrollProgress(progress);
 
           ticking = false;
         });
@@ -69,18 +75,6 @@ export function useHeader() {
     } catch (error) {
       console.error("Logout error:", error);
       showCustomToast.error("Error al cerrar sesión");
-    }
-  };
-
-  /**
-   * Navigates to profile or admin panel based on user role
-   */
-  const handleProfileClick = () => {
-    setShowUserMenu(false);
-    if (isUserAdmin(user)) {
-      navigate("/admin");
-    } else {
-      navigate("/profile");
     }
   };
 
@@ -131,7 +125,7 @@ export function useHeader() {
 
   return {
     // State
-    isScrolled,
+    scrollProgress,
     isMenuOpen,
     isLoginModalOpen,
     showUserMenu,
@@ -140,7 +134,6 @@ export function useHeader() {
     isAuthenticated,
     // Handlers
     handleLogout,
-    handleProfileClick,
     handleNavigate,
     toggleMobileMenu,
     toggleUserMenu,
