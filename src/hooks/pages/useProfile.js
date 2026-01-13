@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { showCustomToast } from "../../services/ui/toastService.jsx";
 import { useAuth } from "../../context/AuthContext";
 import {
   loadUserProfile,
@@ -167,14 +169,11 @@ export const useProfile = () => {
     setIsResettingPassword(true);
     try {
       await requestPasswordResetService(userData?.email);
-      setSuccess(
-        "Email de recuperación enviado. Revisa tu bandeja de entrada (también el correo no deseado o SPAM)."
+      showCustomToast.success(
+        "Correo de recuperación enviado. Revisa tu bandeja de entrada (también el correo no deseado o SPAM)."
       );
-      setTimeout(() => setSuccess(null), 4000);
     } catch (err) {
-      // console.error("Error resetting password:", err);
-      setError("Error al enviar el email. Intenta nuevamente.");
-      setTimeout(() => setError(null), 4000);
+      showCustomToast.error("Error al enviar el email. Intenta nuevamente.");
     } finally {
       setIsResettingPassword(false);
     }

@@ -299,33 +299,12 @@ const Profile = () => {
                   </div>
                   <div>
                     <p className="text-xs text-gray-1 uppercase font-semibold mb-1">
-                      Último login
+                      Último ingreso
                     </p>
                     <p className="text-sm font-medium text-blue-2">
                       {formatDate(userData?.lastLoginAt || userData?.createdAt)}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-1 uppercase font-semibold mb-1">
-                      Verificación
-                    </p>
-                    <p
-                      className={`text-sm font-medium ${
-                        userData?.emailVerified
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {userData?.emailVerified ? "Verificado" : "Pendiente"}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Success Message */}
-              {success && (
-                <div className="mt-4 p-3 bg-green-100 border border-green-300 text-green-700 rounded-lg text-sm">
-                  {success}
                 </div>
               )}
             </div>

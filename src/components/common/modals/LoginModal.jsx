@@ -196,7 +196,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                   disabled={loading}
                   className="w-full bg-blue-2 text-white px-6 py-2 rounded-lg font-family-sora hover:bg-gold hover:text-blue-1 hover:scale-105 transition-all duration-300 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? "Enviando..." : "Enviar instrucciones"}
+                  {loading ? "Enviando..." : "Enviar correo de recuperación"}
                 </button>
                 <div className="text-center mt-6">
                   <button
