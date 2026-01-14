@@ -17,6 +17,9 @@ const ProductManagement = lazy(() =>
 const UserManagement = lazy(() =>
   import("../pages/Admin/Users/UserManagement.jsx")
 );
+const OrderManagement = lazy(() =>
+  import("../pages/Admin/Orders/OrderManagement.jsx")
+);
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -97,6 +100,14 @@ const AppRouter = () => {
                 element={
                   <ProtectedRoute requireAdmin>
                     <UserManagement />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/pedidos"
+                element={
+                  <ProtectedRoute requireAdmin>
+                    <OrderManagement />
                   </ProtectedRoute>
                 }
               />

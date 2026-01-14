@@ -116,6 +116,10 @@ exports.getOrder = async (req, res) => {
     sendSuccess(res, {
       id: orderDoc.id,
       ...orderData,
+      // Convert Firestore Timestamp to ISO string for frontend compatibility
+      createdAt: orderData.createdAt?.toDate
+        ? orderData.createdAt.toDate().toISOString()
+        : orderData.createdAt,
     });
   } catch (error) {
     handleError(res, error, {
@@ -143,9 +147,14 @@ exports.getUserOrders = async (req, res) => {
 
     const orders = [];
     ordersSnapshot.forEach((doc) => {
+      const orderData = doc.data();
       orders.push({
         id: doc.id,
-        ...doc.data(),
+        ...orderData,
+        // Convert Firestore Timestamp to ISO string for frontend compatibility
+        createdAt: orderData.createdAt?.toDate
+          ? orderData.createdAt.toDate().toISOString()
+          : orderData.createdAt,
       });
     });
 
@@ -175,9 +184,14 @@ exports.getAllOrders = async (req, res) => {
 
     const orders = [];
     ordersSnapshot.forEach((doc) => {
+      const orderData = doc.data();
       orders.push({
         id: doc.id,
-        ...doc.data(),
+        ...orderData,
+        // Convert Firestore Timestamp to ISO string for frontend compatibility
+        createdAt: orderData.createdAt?.toDate
+          ? orderData.createdAt.toDate().toISOString()
+          : orderData.createdAt,
       });
     });
 
@@ -259,9 +273,14 @@ exports.getOrdersByStatus = async (req, res) => {
 
     const orders = [];
     ordersSnapshot.forEach((doc) => {
+      const orderData = doc.data();
       orders.push({
         id: doc.id,
-        ...doc.data(),
+        ...orderData,
+        // Convert Firestore Timestamp to ISO string for frontend compatibility
+        createdAt: orderData.createdAt?.toDate
+          ? orderData.createdAt.toDate().toISOString()
+          : orderData.createdAt,
       });
     });
 

@@ -86,6 +86,8 @@ export function useProducts(onLoginRequired) {
     }
     // User is logged in - add to cart
     addItem(product);
+    // Show success toast
+    showCustomToast.info(`"${product.name}" se agregó al carrito.`);
   };
 
   /**
