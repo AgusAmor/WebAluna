@@ -37,6 +37,9 @@ export const useProfile = () => {
     useState(false);
   const [showDeleteAccountConfirm, setShowDeleteAccountConfirm] =
     useState(false);
+  const [showCancelOrderConfirm, setShowCancelOrderConfirm] = useState(false);
+  const [orderToCancel, setOrderToCancel] = useState(null);
+  const [isCancellingOrder, setIsCancellingOrder] = useState(false);
 
   /**
    * Load user profile data on mount or when user changes
@@ -257,28 +260,53 @@ export const useProfile = () => {
    * Cancel a pending order
    */
   const handleCancelOrder = async (order) => {
-    const confirmed = window.confirm(
-      `¿Estás seguro de que deseas cancelar el pedido #${order.orderNumber || order.id?.slice(-8)}?`
-    );
-    
-    if (!confirmed) return;
+    setOrderToCancel(order);
+    setShowCancelOrderConfirm(true);
+  };
+
+  /**
+   * Confirm cancel order
+   */
+  const handleConfirmCancelOrder = async () => {
+    if (!orderToCancel) return;
 
     try {
+      setIsCancellingOrder(true);
       const token = await user.getIdToken();
-      await updateOrderStatus(order.id, "cancelled", token);
+      const updatedOrder = await updateOrderStatus(
+        {
+          orderId: orderToCancel.id,
+          newStatus: "cancelled",
+          note: "Pedido cancelado por el cliente",
+          updatedBy: user.uid,
+        },
+        token
+      );
       
-      // Update local state
+      // Update local state with the complete updated order from backend
       setUserOrders((prevOrders) =>
         prevOrders.map((o) =>
-          o.id === order.id ? { ...o, status: "cancelled" } : o
+          o.id === orderToCancel.id ? { ...o, ...updatedOrder } : o
         )
       );
       
-      showCustomToast("Pedido cancelado exitosamente", "success");
+      showCustomToast.success("Pedido cancelado exitosamente");
+      setShowCancelOrderConfirm(false);
+      setOrderToCancel(null);
     } catch (err) {
       console.error("Error cancelling order:", err);
-      showCustomToast("Error al cancelar el pedido. Intenta de nuevo.", "error");
+      showCustomToast.error("Error al cancelar el pedido. Intenta de nuevo.");
+    } finally {
+      setIsCancellingOrder(false);
     }
+  };
+
+  /**
+   * Cancel the cancel operation
+   */
+  const handleCancelOrderCancel = () => {
+    setShowCancelOrderConfirm(false);
+    setOrderToCancel(null);
   };
 
   return {
@@ -296,6 +324,9 @@ export const useProfile = () => {
     isDeletingAccount,
     showResetPasswordConfirm,
     showDeleteAccountConfirm,
+    showCancelOrderConfirm,
+    orderToCancel,
+    isCancellingOrder,
 
     //Handlers
     handleAddressChange,
@@ -308,6 +339,8 @@ export const useProfile = () => {
     handleDeleteAccount,
     updateEditField,
     handleCancelOrder,
+    handleConfirmCancelOrder,
+    handleCancelOrderCancel,
     setShowResetPasswordConfirm,
     setShowDeleteAccountConfirm,
   };

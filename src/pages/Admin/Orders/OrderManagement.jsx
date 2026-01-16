@@ -144,9 +144,7 @@ const OrderManagement = () => {
       showCustomToast.success("Estado actualizado exitosamente");
     } catch (error) {
       console.error("Error updating order status:", error);
-      showCustomToast.error(
-        error.message || "Error al actualizar el estado"
-      );
+      showCustomToast.error(error.message || "Error al actualizar el estado");
     } finally {
       setUpdatingId(null);
     }

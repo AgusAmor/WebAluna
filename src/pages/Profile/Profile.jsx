@@ -28,6 +28,9 @@ const Profile = () => {
     isDeletingAccount,
     showResetPasswordConfirm,
     showDeleteAccountConfirm,
+    showCancelOrderConfirm,
+    orderToCancel,
+    isCancellingOrder,
     handleAddressChange,
     handleAddAddress,
     handleRemoveAddress,
@@ -38,6 +41,8 @@ const Profile = () => {
     handleDeleteAccount,
     updateEditField,
     handleCancelOrder,
+    handleConfirmCancelOrder,
+    handleCancelOrderCancel,
     setShowResetPasswordConfirm,
     setShowDeleteAccountConfirm,
   } = useProfile();
@@ -660,6 +665,22 @@ const Profile = () => {
         isLoading={isDeletingAccount}
         onConfirm={executeFinalDeleteAccount}
         onCancel={() => setShowFinalDeleteConfirm(false)}
+        variant="danger"
+      />
+
+      {/* Cancel Order Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showCancelOrderConfirm}
+        title="Cancelar Pedido"
+        message={`¿Estás seguro de que deseas cancelar el pedido #${
+          orderToCancel?.orderNumber || orderToCancel?.id?.slice(-8)
+        }?`}
+        description="Esta acción no se puede deshacer. El pedido pasará a estado cancelado."
+        confirmText="Cancelar Pedido"
+        cancelText="Mantener Pedido"
+        isLoading={isCancellingOrder}
+        onConfirm={handleConfirmCancelOrder}
+        onCancel={handleCancelOrderCancel}
         variant="danger"
       />
     </div>
