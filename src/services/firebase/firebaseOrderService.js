@@ -156,38 +156,6 @@ export async function updateOrderStatus(updateData, token) {
 }
 
 /**
- * Retrieves orders filtered by status (admin only)
- * @param {string} status - Order status to filter by
- * @param {string} token - Firebase Auth token
- * @returns {Promise<Object>} - {orders: Array, count: number}
- * @throws {Error} - If retrieval fails or not admin
- */
-export async function getOrdersByStatus(status, token) {
-  try {
-    const response = await fetch(
-      `${BASE_URL}/getOrdersByStatus?status=${status}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || "No se pudieron obtener los pedidos");
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error("Error retrieving orders by status:", error);
-    throw error;
-  }
-}
-
-/**
  * Deletes an order (admin only)
  * @param {string} orderId - Order document ID
  * @param {string} token - Firebase Auth token

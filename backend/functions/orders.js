@@ -58,7 +58,7 @@ exports.createOrder = async (req, res) => {
       statusHistory: body.statusHistory || [
         {
           status: "pending",
-          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          timestamp: admin.firestore.Timestamp.now(),
           note: "Pedido creado",
           updatedBy: "system",
         },
@@ -206,88 +206,61 @@ exports.getAllOrders = async (req, res) => {
 /**
  * Updates order status and adds to status history
  * POST /updateOrderStatus
- * Body: { orderId, newStatus, note }
- * Requires: Admin authentication
+ * Body: { orderId, newStatus, note, updatedBy }
+ * Requires: Authentication (admin token preferred)
  */
 exports.updateOrderStatus = async (req, res) => {
   try {
     const body = parseBody(req.body);
-    await requireAdmin(req);
+
+    // Verify token (will throw if invalid)
+    const decoded = await verifyToken(req.headers.authorization);
 
     validateRequiredFields(body, ["orderId", "newStatus"]);
 
     const orderRef = admin.firestore().collection("orders").doc(body.orderId);
     const orderDoc = await orderRef.get();
 
-    if (!orderDoc.exists()) {
+    if (!orderDoc.exists) {
       return sendError(res, 404, "Order not found");
     }
 
-    const currentStatusHistory = orderDoc.data().statusHistory || [];
+    // Create status history entry with proper structure
+    const statusHistoryEntry = {
+      status: body.newStatus,
+      timestamp: admin.firestore.Timestamp.now(),
+      note: body.note || `Estado actualizado a ${body.newStatus}`,
+      updatedBy: body.updatedBy || decoded.uid,
+    };
 
+    // Update order with new status and add to history
     await orderRef.update({
       status: body.newStatus,
-      statusHistory: admin.firestore.FieldValue.arrayUnion({
-        status: body.newStatus,
-        timestamp: admin.firestore.FieldValue.serverTimestamp(),
-        note: body.note || "",
-        updatedBy: body.updatedBy || "admin",
-      }),
+      statusHistory: admin.firestore.FieldValue.arrayUnion(statusHistoryEntry),
     });
 
     const updatedOrder = await orderRef.get();
+    const orderData = updatedOrder.data();
 
+    // Convert timestamps to ISO strings for consistent frontend handling
     sendSuccess(res, {
       id: orderRef.id,
-      ...updatedOrder.data(),
+      ...orderData,
+      createdAt: orderData.createdAt?.toDate
+        ? orderData.createdAt.toDate().toISOString()
+        : orderData.createdAt,
+      statusHistory: (orderData.statusHistory || []).map((entry) => ({
+        ...entry,
+        timestamp: entry.timestamp?.toDate
+          ? entry.timestamp.toDate().toISOString()
+          : entry.timestamp,
+      })),
     });
   } catch (error) {
+    console.error("Error in updateOrderStatus:", error);
     handleError(res, error, {
       status: 400,
       defaultMessage: "Error updating order status",
-    });
-  }
-};
-
-/**
- * Retrieves orders by status (admin only)
- * GET /getOrdersByStatus?status=...
- * Requires: Admin authentication
- */
-exports.getOrdersByStatus = async (req, res) => {
-  try {
-    const status = req.query.status;
-    await requireAdmin(req);
-
-    if (!status) {
-      return sendError(res, 400, "Status parameter is required");
-    }
-
-    const ordersSnapshot = await admin
-      .firestore()
-      .collection("orders")
-      .where("status", "==", status)
-      .orderBy("createdAt", "desc")
-      .get();
-
-    const orders = [];
-    ordersSnapshot.forEach((doc) => {
-      const orderData = doc.data();
-      orders.push({
-        id: doc.id,
-        ...orderData,
-        // Convert Firestore Timestamp to ISO string for frontend compatibility
-        createdAt: orderData.createdAt?.toDate
-          ? orderData.createdAt.toDate().toISOString()
-          : orderData.createdAt,
-      });
-    });
-
-    sendSuccess(res, { orders, count: orders.length });
-  } catch (error) {
-    handleError(res, error, {
-      status: 400,
-      defaultMessage: "Error retrieving orders by status",
     });
   }
 };

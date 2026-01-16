@@ -46,15 +46,6 @@ const OrderManagement = () => {
         const response = await getAllOrders(token);
 
         if (response && response.orders) {
-          // Map orders to ensure all required fields are present
-          // Structure from Firebase:
-          // {
-          //   id, orderNumber, userId, customerInfo: {name, email, phone},
-          //   status, items: [{productId, productName, family, size, quantity, unitPrice}],
-          //   summary: {subtotal, shipping, total},
-          //   delivery: {method: "shipping"|"pickup", shippingAddress: {...}},
-          //   statusHistory, createdAt
-          // }
           const mappedOrders = response.orders.map((order) => {
             // Convert shippingAddress to array format for formatDefaultAddress
             const addressArray = order.delivery?.shippingAddress
@@ -100,7 +91,7 @@ const OrderManagement = () => {
       } catch (err) {
         console.error("Error fetching orders:", err);
         setError(err.message || "No se pudieron cargar los pedidos");
-        showCustomToast(err.message || "Error al cargar los pedidos", "error");
+        showCustomToast.error(err.message || "Error al cargar los pedidos");
       } finally {
         setLoading(false);
       }
@@ -150,12 +141,11 @@ const OrderManagement = () => {
       );
       setSelectedOrder({ ...selectedOrder, status: newStatus });
       setSelectedStatus(newStatus);
-      showCustomToast("Estado actualizado exitosamente", "success");
+      showCustomToast.success("Estado actualizado exitosamente");
     } catch (error) {
       console.error("Error updating order status:", error);
-      showCustomToast(
-        error.message || "Error al actualizar el estado",
-        "error"
+      showCustomToast.error(
+        error.message || "Error al actualizar el estado"
       );
     } finally {
       setUpdatingId(null);
@@ -172,13 +162,10 @@ const OrderManagement = () => {
 
         // Remove from local state
         setOrders(orders.filter((order) => order.id !== orderId));
-        showCustomToast("Pedido eliminado exitosamente", "success");
+        showCustomToast.success("Pedido eliminado exitosamente");
       } catch (error) {
         console.error("Error deleting order:", error);
-        showCustomToast(
-          error.message || "Error al eliminar el pedido",
-          "error"
-        );
+        showCustomToast.error(error.message || "Error al eliminar el pedido");
       } finally {
         setDeletingId(null);
       }
@@ -186,17 +173,22 @@ const OrderManagement = () => {
   };
 
   const handleUpdateStatus = async (orderId, currentStatus) => {
-    // Define status flow: pendiente -> procesando -> completado
+    // Define status flow based on ORDER_STATUS constants
+    // Flujo: pending -> confirmed -> printing -> dispatched -> delivered/withdrawn -> (final)
     const statusFlow = {
-      pendiente: "procesando",
-      procesando: "completado",
-      completado: "completado", // Already at final status
+      [ORDER_STATUS.PENDING]: ORDER_STATUS.CONFIRMED,
+      [ORDER_STATUS.CONFIRMED]: ORDER_STATUS.PRINTING,
+      [ORDER_STATUS.PRINTING]: ORDER_STATUS.DISPATCHED,
+      [ORDER_STATUS.DISPATCHED]: ORDER_STATUS.DELIVERED,
+      [ORDER_STATUS.DELIVERED]: ORDER_STATUS.DELIVERED, // Already at final status
+      [ORDER_STATUS.WITHDRAWN]: ORDER_STATUS.WITHDRAWN, // Already at final status
+      [ORDER_STATUS.CANCELLED]: ORDER_STATUS.CANCELLED, // Can't change cancelled orders
     };
 
-    const nextStatus = statusFlow[currentStatus] || "procesando";
+    const nextStatus = statusFlow[currentStatus] || currentStatus;
 
     if (nextStatus === currentStatus) {
-      showCustomToast("Este pedido ya está en estado final", "info");
+      showCustomToast.info("Este pedido ya está en estado final");
       return;
     }
 
@@ -220,13 +212,10 @@ const OrderManagement = () => {
           order.id === orderId ? { ...order, status: nextStatus } : order
         )
       );
-      showCustomToast("Estado actualizado exitosamente", "success");
+      showCustomToast.success("Estado actualizado exitosamente");
     } catch (error) {
       console.error("Error updating order status:", error);
-      showCustomToast(
-        error.message || "Error al actualizar el estado",
-        "error"
-      );
+      showCustomToast.error(error.message || "Error al actualizar el estado");
     } finally {
       setUpdatingId(null);
     }
@@ -386,9 +375,11 @@ const OrderManagement = () => {
                 >
                   <option value="">Todos</option>
                   <option value={ORDER_STATUS.PENDING}>Pendiente</option>
-                  <option value={ORDER_STATUS.PROCESSING}>Procesando</option>
-                  <option value={ORDER_STATUS.SHIPPED}>Enviado</option>
+                  <option value={ORDER_STATUS.CONFIRMED}>Confirmado</option>
+                  <option value={ORDER_STATUS.PRINTING}>Imprimiendo</option>
+                  <option value={ORDER_STATUS.DISPATCHED}>Despachado</option>
                   <option value={ORDER_STATUS.DELIVERED}>Entregado</option>
+                  <option value={ORDER_STATUS.WITHDRAWN}>Retirado</option>
                   <option value={ORDER_STATUS.CANCELLED}>Cancelado</option>
                 </select>
               </div>
@@ -571,13 +562,17 @@ const OrderManagement = () => {
                               className={`text-white px-3 py-1 rounded-lg text-xs font-bold transition-colors w-24 flex items-center justify-center ${
                                 updatingId === order.id
                                   ? "bg-gray-400 cursor-not-allowed opacity-60"
-                                  : order.status === "completado"
+                                  : order.status === ORDER_STATUS.DELIVERED ||
+                                    order.status === ORDER_STATUS.WITHDRAWN ||
+                                    order.status === ORDER_STATUS.CANCELLED
                                   ? "bg-gray-400 cursor-not-allowed"
                                   : "bg-green-600 hover:bg-green-700"
                               }`}
                               disabled={
                                 updatingId === order.id ||
-                                order.status === "completado"
+                                order.status === ORDER_STATUS.DELIVERED ||
+                                order.status === ORDER_STATUS.WITHDRAWN ||
+                                order.status === ORDER_STATUS.CANCELLED
                               }
                               onClick={() =>
                                 handleUpdateStatus(order.id, order.status)
@@ -816,9 +811,11 @@ const OrderManagement = () => {
                 >
                   <option value="">-- Seleccionar estado --</option>
                   <option value={ORDER_STATUS.PENDING}>Pendiente</option>
-                  <option value={ORDER_STATUS.PROCESSING}>Procesando</option>
-                  <option value={ORDER_STATUS.SHIPPED}>Enviado</option>
+                  <option value={ORDER_STATUS.CONFIRMED}>Confirmado</option>
+                  <option value={ORDER_STATUS.PRINTING}>Imprimiendo</option>
+                  <option value={ORDER_STATUS.DISPATCHED}>Despachado</option>
                   <option value={ORDER_STATUS.DELIVERED}>Entregado</option>
+                  <option value={ORDER_STATUS.WITHDRAWN}>Retirado</option>
                   <option value={ORDER_STATUS.CANCELLED}>Cancelado</option>
                 </select>
               </div>

@@ -15,8 +15,10 @@ export const PRODUCT_CATEGORIES = {
 // Order Status
 export const ORDER_STATUS = {
   PENDING: "pending",
-  PROCESSING: "processing",
-  SHIPPED: "shipped",
+  CONFIRMED: "confirmed",
+  PRINTING: "printing",
+  DISPATCHED: "dispatched",
   DELIVERED: "delivered",
+  WITHDRAWN: "withdrawn",
   CANCELLED: "cancelled",
 };

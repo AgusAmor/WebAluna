@@ -1,5 +1,6 @@
 import React from "react";
 import { formatDateTime } from "../../utils/dateFormatter";
+import { ORDER_STATUS } from "../../constants";
 
 /**
  * OrderCard Component - Displays order information in a card format
@@ -11,25 +12,19 @@ import { formatDateTime } from "../../utils/dateFormatter";
 const OrderCard = ({ order, onViewDetails, onCancel }) => {
   const getStatusColor = (status) => {
     switch (status) {
-      case "pending":
+      case ORDER_STATUS.PENDING:
         return "bg-yellow-100 text-yellow-700";
-      case "procesando":
+      case ORDER_STATUS.CONFIRMED:
         return "bg-blue-100 text-blue-700";
-      case "processing":
-        return "bg-blue-100 text-blue-700";
-      case "enviado":
+      case ORDER_STATUS.PRINTING:
+        return "bg-orange-100 text-orange-700";
+      case ORDER_STATUS.DISPATCHED:
         return "bg-purple-100 text-purple-700";
-      case "shipped":
-        return "bg-purple-100 text-purple-700";
-      case "entregado":
+      case ORDER_STATUS.DELIVERED:
         return "bg-green-100 text-green-700";
-      case "delivered":
+      case ORDER_STATUS.WITHDRAWN:
         return "bg-green-100 text-green-700";
-      case "completado":
-        return "bg-green-100 text-green-700";
-      case "cancelado":
-        return "bg-red-100 text-red-700";
-      case "cancelled":
+      case ORDER_STATUS.CANCELLED:
         return "bg-red-100 text-red-700";
       default:
         return "bg-gray-100 text-gray-700";
@@ -38,16 +33,13 @@ const OrderCard = ({ order, onViewDetails, onCancel }) => {
 
   const getStatusLabel = (status) => {
     const statusMap = {
-      pending: "Pendiente",
-      procesando: "Procesando",
-      processing: "Procesando",
-      enviado: "Enviado",
-      shipped: "Enviado",
-      entregado: "Entregado",
-      delivered: "Entregado",
-      completado: "Completado",
-      cancelado: "Cancelado",
-      cancelled: "Cancelado",
+      [ORDER_STATUS.PENDING]: "Pendiente",
+      [ORDER_STATUS.CONFIRMED]: "Confirmado",
+      [ORDER_STATUS.PRINTING]: "Imprimiendo",
+      [ORDER_STATUS.DISPATCHED]: "Despachado",
+      [ORDER_STATUS.DELIVERED]: "Entregado",
+      [ORDER_STATUS.WITHDRAWN]: "Retirado",
+      [ORDER_STATUS.CANCELLED]: "Cancelado",
     };
     return statusMap[status] || status;
   };
@@ -108,14 +100,17 @@ const OrderCard = ({ order, onViewDetails, onCancel }) => {
 
       {/* Action Buttons */}
       <div className="flex gap-2 justify-end">
-        {order.status === "pending" && onCancel && (
-          <button
-            onClick={() => onCancel(order)}
-            className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-bold transition-colors"
-          >
-            Cancelar
-          </button>
-        )}
+        {/* Cancel button - only show for orders that haven't started printing yet */}
+        {(order.status === ORDER_STATUS.PENDING ||
+          order.status === ORDER_STATUS.CONFIRMED) &&
+          onCancel && (
+            <button
+              onClick={() => onCancel(order)}
+              className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-bold transition-colors"
+            >
+              Cancelar
+            </button>
+          )}
         {onViewDetails && (
           <button
             onClick={() => onViewDetails(order)}

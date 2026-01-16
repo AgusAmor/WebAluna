@@ -25,7 +25,6 @@ const {
   getUserOrders,
   getAllOrders,
   updateOrderStatus,
-  getOrdersByStatus,
   deleteOrder,
 } = require("./orders.js");
 
@@ -96,5 +95,4 @@ exports.getOrder = createCloudFunction(getOrder);
 exports.getUserOrders = createCloudFunction(getUserOrders);
 exports.getAllOrders = createCloudFunction(getAllOrders);
 exports.updateOrderStatus = createCloudFunction(updateOrderStatus);
-exports.getOrdersByStatus = createCloudFunction(getOrdersByStatus);
 exports.deleteOrder = createCloudFunction(deleteOrder);

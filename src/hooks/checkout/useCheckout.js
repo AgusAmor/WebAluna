@@ -30,7 +30,7 @@ export function useCheckout() {
 
   const [userProfile, setUserProfile] = useState(null);
   const [deliveryMethod, setDeliveryMethod] = useState("shipping");
-  const [shippingCost] = useState(0);
+  const [shippingCost, setShippingCost] = useState(3800);
   const [profileLoading, setProfileLoading] = useState(true);
   const [loadingOrder, setLoadingOrder] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -63,13 +63,15 @@ export function useCheckout() {
    */
   const handleDeliveryMethodChange = (method) => {
     setDeliveryMethod(method);
-    // If switching to shipping and no default address, show address modal
-    if (
-      method === "shipping" &&
-      userProfile &&
-      !hasDefaultAddress(userProfile)
-    ) {
-      setShowAddressModal(true);
+    // Set shipping cost based on delivery method
+    if (method === "shipping") {
+      setShippingCost(3800);
+      // If switching to shipping and no default address, show address modal
+      if (userProfile && !hasDefaultAddress(userProfile)) {
+        setShowAddressModal(true);
+      }
+    } else {
+      setShippingCost(0); // No shipping cost for pickup
     }
   };
 
