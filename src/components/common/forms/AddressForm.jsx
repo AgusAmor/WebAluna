@@ -8,113 +8,158 @@ import { FaTrash, FaCheck } from "react-icons/fa";
 const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => (
   <div className="rounded-2xl shadow-md border border-gray-2 p-5 mb-4 bg-white/80">
     <div className="flex flex-col md:flex-row gap-4 mb-2">
-      <input
-        name="street"
-        type="text"
-        placeholder="Calle"
-        value={addr.street}
-        onChange={(e) => onChange(idx, e)}
-        className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
-        minLength={2}
-        maxLength={80}
-        required
-      />
-      <input
-        name="number"
-        type="number"
-        placeholder="Número"
-        value={addr.number || ""}
-        onChange={(e) => onChange(idx, e)}
-        className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
-        min={1}
-        max={99999}
-        required
-      />
-      <input
-        name="apartment"
-        type="text"
-        placeholder="Depto (opcional)"
-        value={addr.apartment}
-        onChange={(e) => onChange(idx, e)}
-        className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
-        maxLength={40}
-      />
+      <div className="w-full flex flex-col">
+        <label className="text-sm font-bold text-blue-2 mb-2 block h-5">
+          Calle
+        </label>
+        <input
+          name="street"
+          type="text"
+          placeholder="Calle"
+          value={addr.street}
+          onChange={(e) => onChange(idx, e)}
+          className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
+          minLength={2}
+          maxLength={80}
+          required
+        />
+      </div>
+      <div className="w-full flex flex-col">
+        <label className="text-sm font-bold text-blue-2 mb-2 block h-5">
+          Número
+        </label>
+        <input
+          name="number"
+          type="number"
+          placeholder="Número"
+          value={addr.number || ""}
+          onChange={(e) => onChange(idx, e)}
+          className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
+          min={1}
+          max={99999}
+          required
+        />
+      </div>
+      <div className="w-full flex flex-col">
+        <label className="text-sm font-bold text-blue-2 mb-2 block h-5">
+          Depto (opcional)
+        </label>
+        <input
+          name="apartment"
+          type="text"
+          placeholder="Depto (opcional)"
+          value={addr.apartment}
+          onChange={(e) => onChange(idx, e)}
+          className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
+          maxLength={40}
+        />
+      </div>
     </div>
     <div className="flex flex-col md:flex-row gap-4 mb-2">
-      <input
-        name="city"
-        type="text"
-        placeholder="Ciudad"
-        value={addr.city}
-        onChange={(e) => onChange(idx, e)}
-        className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
-        minLength={2}
-        maxLength={60}
-        required
-      />
-      <input
-        name="region"
-        type="text"
-        placeholder="Barrio"
-        value={addr.region}
-        onChange={(e) => onChange(idx, e)}
-        className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
-        minLength={2}
-        maxLength={60}
-        required
-      />
-      <input
-        name="postalCode"
-        type="text"
-        placeholder="Código Postal"
-        value={addr.postalCode}
-        onChange={(e) => onChange(idx, e)}
-        className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
-        maxLength={20}
-      />
-    </div>
-    {/* country field removed as per new structure */}
-    <div className="mb-2">
-      <label className="text-sm font-bold text-blue-2 mb-2 block">
-        Datos del destinatario
-      </label>
-      <div className="flex flex-col md:flex-row gap-2">
+      <div className="w-full flex flex-col">
+        <label className="text-sm font-bold text-blue-2 mb-2 block h-5">
+          Ciudad
+        </label>
         <input
-          name="recipientName"
+          name="city"
           type="text"
-          placeholder="Nombre"
-          value={addr.recipientName}
+          placeholder="Ciudad"
+          value={addr.city}
           onChange={(e) => onChange(idx, e)}
-          className="w-full md:w-3/5 px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
+          className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
           minLength={2}
           maxLength={60}
           required
         />
+      </div>
+      <div className="w-full flex flex-col">
+        <label className="text-sm font-bold text-blue-2 mb-2 block h-5">
+          Barrio
+        </label>
         <input
-          name="recipientPhoneCountry"
+          name="region"
           type="text"
-          value={addr.recipientPhoneCountry || "+549"}
+          placeholder="Barrio"
+          value={addr.region}
           onChange={(e) => onChange(idx, e)}
-          className="w-full md:w-1/10 px-3 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white text-sm"
-          pattern="^\+\d{1,4}$"
-          maxLength={5}
+          className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
           minLength={2}
-          title="Código de país en formato internacional."
+          maxLength={60}
           required
         />
+      </div>
+      <div className="w-full flex flex-col">
+        <label className="text-sm font-bold text-blue-2 mb-2 block h-5">
+          Código Postal
+        </label>
         <input
-          name="recipientPhoneLocal"
+          name="postalCode"
           type="text"
-          placeholder="Teléfono"
-          value={addr.recipientPhoneLocal || ""}
+          placeholder="Código Postal"
+          value={addr.postalCode}
           onChange={(e) => onChange(idx, e)}
-          className="w-full md:w-3/10 px-3 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white text-sm"
-          pattern="^\d{6,12}$"
-          maxLength={12}
-          minLength={6}
-          title="Número local internacional, entre 6 y 12 dígitos, sin código de país."
-          required
+          className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
+          maxLength={20}
         />
+      </div>
+    </div>
+    {/* country field removed as per new structure */}
+    <div className="mb-2">
+      <label className="text-m font-bold text-blue-1 mb-2 mt-4 block">
+        Datos del destinatario
+      </label>
+      <div className="flex flex-col md:flex-row gap-2">
+        <div className="w-full md:w-1/2 flex flex-col">
+          <label className="text-sm font-bold text-blue-2 mb-2 block h-5">
+            Nombre
+          </label>
+          <input
+            name="recipientName"
+            type="text"
+            placeholder="Nombre"
+            value={addr.recipientName}
+            onChange={(e) => onChange(idx, e)}
+            className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
+            minLength={2}
+            maxLength={60}
+            required
+          />
+        </div>
+        <div className="w-full md:w-1/4 flex flex-col">
+          <label className="text-sm font-bold text-blue-2 mb-2 block h-5">
+            Código País
+          </label>
+          <input
+            name="recipientPhoneCountry"
+            type="text"
+            value={addr.recipientPhoneCountry || "+549"}
+            onChange={(e) => onChange(idx, e)}
+            className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
+            pattern="^\+\d{1,4}$"
+            maxLength={5}
+            minLength={2}
+            title="Código de país en formato internacional."
+            required
+          />
+        </div>
+        <div className="w-full md:w-1/4 flex flex-col">
+          <label className="text-sm font-bold text-blue-2 mb-2 block h-5">
+            Teléfono
+          </label>
+          <input
+            name="recipientPhoneLocal"
+            type="text"
+            placeholder="Teléfono"
+            value={addr.recipientPhoneLocal || ""}
+            onChange={(e) => onChange(idx, e)}
+            className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
+            pattern="^\d{6,12}$"
+            maxLength={12}
+            minLength={6}
+            title="Número local internacional, entre 6 y 12 dígitos, sin código de país."
+            required
+          />
+        </div>
       </div>
     </div>
     <div className="flex items-center gap-3 mt-2">

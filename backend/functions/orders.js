@@ -142,7 +142,6 @@ exports.getUserOrders = async (req, res) => {
       .firestore()
       .collection("orders")
       .where("userId", "==", decoded.uid)
-      .orderBy("createdAt", "desc")
       .get();
 
     const orders = [];

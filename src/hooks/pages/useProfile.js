@@ -14,6 +14,7 @@ import {
   deleteCurrentAccount,
   requestPasswordReset as requestPasswordResetService,
 } from "../../services/auth/accountService";
+import { getUserOrders, updateOrderStatus, deleteOrder } from "../../services/firebase/firebaseOrderService";
 
 /**
  * Custom hook for profile management
@@ -22,6 +23,8 @@ import {
 export const useProfile = () => {
   const { user, updateUserProfile, refreshUser } = useAuth();
   const [userData, setUserData] = useState(null);
+  const [userOrders, setUserOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -80,6 +83,38 @@ export const useProfile = () => {
     };
 
     fetchData();
+  }, [user]);
+
+  /**
+   * Load user orders on mount
+   */
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (user && user.uid) {
+        try {
+          setLoadingOrders(true);
+          const token = await user.getIdToken();
+          const response = await getUserOrders(token);
+          
+          if (response && response.orders) {
+            // Sort orders by date (newest first)
+            const sortedOrders = response.orders.sort((a, b) => {
+              const dateA = new Date(a.createdAt).getTime();
+              const dateB = new Date(b.createdAt).getTime();
+              return dateB - dateA;
+            });
+            setUserOrders(sortedOrders);
+          }
+        } catch (err) {
+          console.error("Error fetching user orders:", err);
+          setUserOrders([]);
+        } finally {
+          setLoadingOrders(false);
+        }
+      }
+    };
+
+    fetchOrders();
   }, [user]);
 
   /**
@@ -218,10 +253,40 @@ export const useProfile = () => {
     }));
   };
 
+  /**
+   * Cancel a pending order
+   */
+  const handleCancelOrder = async (order) => {
+    const confirmed = window.confirm(
+      `¿Estás seguro de que deseas cancelar el pedido #${order.orderNumber || order.id?.slice(-8)}?`
+    );
+    
+    if (!confirmed) return;
+
+    try {
+      const token = await user.getIdToken();
+      await updateOrderStatus(order.id, "cancelled", token);
+      
+      // Update local state
+      setUserOrders((prevOrders) =>
+        prevOrders.map((o) =>
+          o.id === order.id ? { ...o, status: "cancelled" } : o
+        )
+      );
+      
+      showCustomToast("Pedido cancelado exitosamente", "success");
+    } catch (err) {
+      console.error("Error cancelling order:", err);
+      showCustomToast("Error al cancelar el pedido. Intenta de nuevo.", "error");
+    }
+  };
+
   return {
     // State
     userData,
+    userOrders,
     loading,
+    loadingOrders,
     isEditingProfile,
     isSaving,
     error,
@@ -242,6 +307,7 @@ export const useProfile = () => {
     handleResetPassword,
     handleDeleteAccount,
     updateEditField,
+    handleCancelOrder,
     setShowResetPasswordConfirm,
     setShowDeleteAccountConfirm,
   };

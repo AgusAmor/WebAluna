@@ -5,6 +5,7 @@ import { ImSpinner2 } from "react-icons/im";
 import { useNavigate } from "react-router-dom";
 import { showCustomToast } from "../../services/ui/toastService.jsx";
 import { ConfirmationModal, AddressForm } from "../../components/common";
+import { OrderCard } from "../../components/ecommerce";
 import { IoIosWarning } from "react-icons/io";
 import { useProfile } from "../../hooks";
 import { formatDate } from "../../utils/dateFormatter";
@@ -15,7 +16,9 @@ const Profile = () => {
     React.useState(false);
   const {
     userData,
+    userOrders,
     loading,
+    loadingOrders,
     isEditingProfile,
     isSaving,
     error,
@@ -34,6 +37,7 @@ const Profile = () => {
     handleResetPassword,
     handleDeleteAccount,
     updateEditField,
+    handleCancelOrder,
     setShowResetPasswordConfirm,
     setShowDeleteAccountConfirm,
   } = useProfile();
@@ -495,20 +499,46 @@ const Profile = () => {
 
             {/* Recent Orders / Activity */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-bold font-family-comfortaa text-blue-2 mb-4">
+              <h3 className="text-lg font-bold font-family-comfortaa text-blue-2 mb-1">
                 Actividad Reciente
               </h3>
 
-              {userData.totalOrders > 0 ? (
-                <div className="space-y-3">
-                  <p className="text-sm text-gray-1">
-                    Tienes {userData.totalOrders} pedido
-                    {userData.totalOrders > 1 ? "s" : ""} realizado
-                    {userData.totalOrders > 1 ? "s" : ""}
+              {loadingOrders ? (
+                <div className="flex justify-center items-center py-8">
+                  <ImSpinner2 className="animate-spin text-gold" size={30} />
+                </div>
+              ) : userOrders && userOrders.length > 0 ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-1 mb-4">
+                    Tienes {userOrders.length} pedido
+                    {userOrders.length > 1 ? "s" : ""} realizado
+                    {userOrders.length > 1 ? "s" : ""}
                   </p>
-                  <button className="w-full bg-blue-2 text-white py-2 px-4 rounded-lg hover:bg-blue-1 transition-colors font-semibold text-sm">
-                    Ver Historial Completo
-                  </button>
+
+                  {/* Display first 3 orders */}
+                  {userOrders.slice(0, 3).map((order) => (
+                    <OrderCard
+                      key={order.id}
+                      order={order}
+                      onViewDetails={() => {
+                        // Could open a modal with order details or navigate
+                        showCustomToast(
+                          `Pedido ${order.orderNumber || order.id} - ${
+                            order.status
+                          }`,
+                          "info"
+                        );
+                      }}
+                      onCancel={handleCancelOrder}
+                    />
+                  ))}
+
+                  {/* Show "View More" button if there are more than 3 orders */}
+                  {userOrders.length > 3 && (
+                    <button className="w-full mt-4 bg-blue-2 text-white py-2 px-4 rounded-lg hover:bg-blue-1 transition-colors font-semibold text-sm">
+                      Ver Historial Completo ({userOrders.length} pedidos)
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-6">
