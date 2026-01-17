@@ -1,6 +1,7 @@
 import React from "react";
 import { Hero } from "../../../components/common";
 import UserModal from "./UserModal";
+import UserFilters from "./UserFilters";
 import UsersTable from "./UsersTable";
 import UserForm from "./UserForm";
 import { useUserManagement } from "../../../hooks";
@@ -26,6 +27,12 @@ const UserManagement = () => {
     handleDeleteUser,
   } = useUserManagement();
 
+  // Filter states
+  const [filterName, setFilterName] = React.useState("");
+  const [filterStatus, setFilterStatus] = React.useState("");
+  const [filterDateFrom, setFilterDateFrom] = React.useState("");
+  const [filterDateTo, setFilterDateTo] = React.useState("");
+
   return (
     <div className="min-h-screen bg-gray-3 px-4 py-2 pb-20">
       <Hero
@@ -33,6 +40,19 @@ const UserManagement = () => {
         subtitle="Administra los usuarios registrados en el sistema."
       />
       <div className="max-w-6xl mx-auto">
+        {/* User Filters */}
+        <UserFilters
+          users={users}
+          filterName={filterName}
+          setFilterName={setFilterName}
+          filterStatus={filterStatus}
+          setFilterStatus={setFilterStatus}
+          filterDateFrom={filterDateFrom}
+          setFilterDateFrom={setFilterDateFrom}
+          filterDateTo={filterDateTo}
+          setFilterDateTo={setFilterDateTo}
+        />
+
         {/* User Modal */}
         <UserModal
           isOpen={showModal}
@@ -60,6 +80,10 @@ const UserManagement = () => {
             loading={loading}
             error={error}
             deletingId={deletingId}
+            filterName={filterName}
+            filterStatus={filterStatus}
+            filterDateFrom={filterDateFrom}
+            filterDateTo={filterDateTo}
             onEdit={handleEditUser}
             onDelete={handleDeleteUser}
           />

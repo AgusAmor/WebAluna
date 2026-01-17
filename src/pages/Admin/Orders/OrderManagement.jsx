@@ -212,8 +212,13 @@ const OrderManagement = () => {
 
         {/* Loading state */}
         {loading ? (
-          <div className="flex justify-center items-center h-96">
-            <ImSpinner2 className="animate-spin text-gold" size={40} />
+          <div className="bg-white rounded-xl shadow-md mt-2 overflow-x-auto">
+            <div className="flex flex-col items-center justify-center gap-4 py-16">
+              <ImSpinner2 className="animate-spin h-12 w-12 text-gold" />
+              <span className="text-blue-2 font-bold text-lg">
+                Cargando pedidos...
+              </span>
+            </div>
           </div>
         ) : orders.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-8 text-center">
