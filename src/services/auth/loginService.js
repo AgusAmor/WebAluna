@@ -2,101 +2,19 @@
  * loginService.js
  * Business logic for login/register/password reset forms.
  * Contains pure functions with no React dependencies.
+ * Re-exports validation functions from validationService
  */
 
-import {
-  isValidEmail,
-  validatePassword as validatePasswordUtil,
-} from "../../utils/validators";
+// Re-export validation functions from centralized service
+export {
+  validateLoginForm,
+  validateRegisterForm,
+  validateResetEmail,
+} from "../validationService.js";
 
 /**
- * Validates password with Spanish error messages
- * @param {string} password - Password to validate
- * @returns {Object} - { isValid: boolean, error: string }
- */
-export function validatePassword(password) {
-  const error = validatePasswordUtil(password);
-  if (error) {
-    return {
-      isValid: false,
-      error: password
-        ? "La contraseña debe tener al menos 6 caracteres"
-        : "La contraseña es requerida",
-    };
-  }
-  return { isValid: true, error: "" };
-}
-
-/**
- * Validates login form data
- * @param {Object} formData - Form data to validate
- * @returns {Object} - Errors object
- */
-export function validateLoginForm(formData) {
-  const errors = {};
-
-  if (!formData.email.trim()) {
-    errors.email = "El email es requerido";
-  } else if (!isValidEmail(formData.email)) {
-    errors.email = "Email inválido";
-  }
-
-  const passwordValidation = validatePassword(formData.password);
-  if (!passwordValidation.isValid) {
-    errors.password = passwordValidation.error;
-  }
-
-  return errors;
-}
-
-/**
- * Validates register form data
- * @param {Object} formData - Form data to validate
- * @returns {Object} - Errors object
- */
-export function validateRegisterForm(formData) {
-  const errors = {};
-
-  if (!formData.name.trim()) {
-    errors.name = "El nombre es requerido";
-  }
-
-  if (!formData.email.trim()) {
-    errors.email = "El email es requerido";
-  } else if (!isValidEmail(formData.email)) {
-    errors.email = "Email inválido";
-  }
-
-  const passwordValidation = validatePassword(formData.password);
-  if (!passwordValidation.isValid) {
-    errors.password = passwordValidation.error;
-  }
-
-  if (formData.password !== formData.confirmPassword) {
-    errors.confirmPassword = "Las contraseñas no coinciden";
-  }
-
-  return errors;
-}
-
-/**
- * Validates password reset email
- * @param {string} email - Email to validate
- * @returns {Object} - { isValid: boolean, error: string }
- */
-export function validateResetEmail(email) {
-  if (!email.trim()) {
-    return { isValid: false, error: "El email es requerido" };
-  }
-  if (!isValidEmail(email)) {
-    return { isValid: false, error: "Email inválido" };
-  }
-  return { isValid: true, error: "" };
-}
-
-/**
- * Creates empty form data object
- * @returns {Object} - Empty form data
+ * Creates empty form data object for login
+ * @returns {Object} - Empty login form data
  */
 export function createEmptyFormData() {
   return {

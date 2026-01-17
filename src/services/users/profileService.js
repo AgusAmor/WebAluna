@@ -1,52 +1,18 @@
 import { updateProfile } from "firebase/auth";
 import { fetchUserById, updateUser } from "../firebase/firebaseUserService";
 
-/**
- * Profile Service - Business logic for user profile management
- * Separates business logic from UI components
- */
+// Import address and phone utilities from centralized locations
+import {
+  createEmptyAddress,
+  removeAddressAtIndex,
+} from "../../utils/addressUtils.js";
+import {
+  splitPhoneNumber,
+  combinePhoneNumber,
+} from "../../utils/phoneUtils.js";
 
-/**
- * Splits a phone number in E.164 format into country code and local number
- * @param {string} phone - Phone number in E.164 format (e.g., "+5491123456789")
- * @returns {Object} Object with phoneCountry and phoneLocal
- */
-export const splitPhoneNumber = (phone) => {
-  let phoneCountry = "+549";
-  let phoneLocal = "";
-
-  if (phone && /^\+\d{8,15}$/.test(phone)) {
-    const match = phone.match(/^(\+\d{1,3})(\d{6,12})$/);
-    if (match) {
-      phoneCountry = match[1];
-      phoneLocal = match[2];
-    }
-  }
-
-  return { phoneCountry, phoneLocal };
-};
-
-/**
- * Combines phone country code and local number into E.164 format
- * @param {string} phoneCountry - Country code (e.g., "+549")
- * @param {string} phoneLocal - Local number (e.g., "1123456789")
- * @returns {string} Combined phone number
- */
-export const combinePhoneNumber = (phoneCountry, phoneLocal) => {
-  return `${phoneCountry}${phoneLocal}`;
-};
-
-/**
- * Ensures user data has addresses array initialized
- * @param {Object} userData - User data object
- * @returns {Object} User data with addresses array
- */
-export const normalizeUserData = (userData) => {
-  return {
-    ...userData,
-    addresses: userData.addresses || [],
-  };
-};
+// Import user normalization from userFormService
+import { normalizeUserData } from "./userFormService.js";
 
 /**
  * Prepares user data for editing by adding phone split fields
@@ -88,32 +54,6 @@ export const updateAddressAtIndex = (addresses, idx, name, value) => {
 };
 
 /**
- * Removes address at specific index
- * @param {Array} addresses - Current addresses array
- * @param {number} idx - Index of address to remove
- * @returns {Array} Updated addresses array
- */
-export const removeAddressAtIndex = (addresses, idx) => {
-  return addresses.filter((_, i) => i !== idx);
-};
-
-/**
- * Creates a new empty address object
- * @returns {Object} Empty address object
- */
-export const createEmptyAddress = () => ({
-  street: "",
-  number: "",
-  apartment: "",
-  city: "",
-  region: "",
-  postalCode: "",
-  recipientName: "",
-  recipientPhone: "",
-  isDefault: false,
-});
-
-/**
  * Saves profile changes to backend and updates local state
  * @param {Object} params - Parameters object
  * @param {Object} params.user - Current authenticated user
@@ -136,7 +76,7 @@ export const saveProfileChanges = async ({
     email: editFormData.email,
     phone: combinePhoneNumber(
       editFormData.phoneCountry,
-      editFormData.phoneLocal
+      editFormData.phoneLocal,
     ),
     addresses: editFormData.addresses || [],
   };
@@ -179,3 +119,14 @@ export const loadUserProfile = async (userId) => {
 
   return { userData, editFormData };
 };
+
+// Re-export utilities from centralized locations for convenience
+export {
+  removeAddressAtIndex,
+  createEmptyAddress,
+} from "../../utils/addressUtils.js";
+export {
+  splitPhoneNumber,
+  combinePhoneNumber,
+} from "../../utils/phoneUtils.js";
+export { normalizeUserData } from "./userFormService.js";

@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { isValidEmail, isValidPhone } from "../../utils/validators";
+import { isValidEmail, isValidPhone } from "../../services/validationService";
 
 /**
  * Custom Hook for form validation and error handling
@@ -20,7 +20,7 @@ export function useFormValidation(initialValues = {}) {
         setErrors((prev) => ({ ...prev, [name]: "" }));
       }
     },
-    [errors]
+    [errors],
   );
 
   const handleBlur = useCallback((e) => {
@@ -56,6 +56,3 @@ export function useFormValidation(initialValues = {}) {
     resetForm,
   };
 }
-
-// Re-export validators from utils for convenience
-export { isValidEmail, isValidPhone };

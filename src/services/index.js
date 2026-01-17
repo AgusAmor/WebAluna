@@ -8,7 +8,11 @@
  * - products: Product management
  * - ui: UI-related services (header, home)
  * - users: User profile and management
+ * - validation: Centralized form validation
  */
+
+// ===== VALIDATION SERVICES =====
+export * from "./validationService.js";
 
 // ===== AUTH SERVICES =====
 export { default as authService } from "./firebase/firebaseAuthService.js";
@@ -36,6 +40,4 @@ export * from "./ui/headerService.js";
 export * from "./ui/homeService.js";
 
 // ===== USER SERVICES =====
-export * from "./users/profileService.js";
-export * from "./users/userFormService.js";
-export * from "./users/userManagementService.js";
+export * from "./users/index.js";

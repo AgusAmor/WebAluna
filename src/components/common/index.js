@@ -5,6 +5,7 @@
  * - forms: Form-related components
  * - modals: Modal dialogs
  * - navigation: Navigation components
+ * - management: Admin management pages
  * - General utilities
  */
 

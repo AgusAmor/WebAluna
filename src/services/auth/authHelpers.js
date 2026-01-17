@@ -4,7 +4,7 @@
  * Contains validation and error handling logic with no React dependencies.
  */
 
-import { isValidEmail } from "../../utils/validators";
+import { isValidEmail } from "../validationService";
 
 /**
  * Validates password reset email
@@ -29,7 +29,7 @@ export async function handleAuthAction(
   action,
   setError,
   setLoading,
-  onSuccess
+  onSuccess,
 ) {
   try {
     setError(null);

@@ -14,7 +14,11 @@ import {
   deleteCurrentAccount,
   requestPasswordReset as requestPasswordResetService,
 } from "../../services/auth/accountService";
-import { getUserOrders, updateOrderStatus, deleteOrder } from "../../services/firebase/firebaseOrderService";
+import {
+  getUserOrders,
+  updateOrderStatus,
+  deleteOrder,
+} from "../../services/firebase/firebaseOrderService";
 
 /**
  * Custom hook for profile management
@@ -98,7 +102,7 @@ export const useProfile = () => {
           setLoadingOrders(true);
           const token = await user.getIdToken();
           const response = await getUserOrders(token);
-          
+
           if (response && response.orders) {
             // Sort orders by date (newest first)
             const sortedOrders = response.orders.sort((a, b) => {
@@ -282,14 +286,14 @@ export const useProfile = () => {
         },
         token
       );
-      
+
       // Update local state with the complete updated order from backend
       setUserOrders((prevOrders) =>
         prevOrders.map((o) =>
           o.id === orderToCancel.id ? { ...o, ...updatedOrder } : o
         )
       );
-      
+
       showCustomToast.success("Pedido cancelado exitosamente");
       setShowCancelOrderConfirm(false);
       setOrderToCancel(null);

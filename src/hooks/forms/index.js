@@ -4,8 +4,4 @@
  * Form validation and handling hooks
  */
 
-export {
-  useFormValidation,
-  isValidEmail,
-  isValidPhone,
-} from "./useFormValidation.js";
+export { useFormValidation } from "./useFormValidation.js";
