@@ -4,8 +4,12 @@ import { FaTrash, FaKey } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { useNavigate } from "react-router-dom";
 import { showCustomToast } from "../../services/ui/toastService.jsx";
-import { ConfirmationModal, AddressForm } from "../../components/common";
-import { OrderCard } from "../../components/ecommerce";
+import {
+  ConfirmationModal,
+  AddressForm,
+  OrderHistory,
+} from "../../components/common";
+import { OrderCard, OrderDetailsModal } from "../../components/ecommerce";
 import { IoIosWarning } from "react-icons/io";
 import { useProfile } from "../../hooks";
 import { formatDate } from "../../utils/dateFormatter";
@@ -14,6 +18,9 @@ const Profile = () => {
   const navigate = useNavigate();
   const [showFinalDeleteConfirm, setShowFinalDeleteConfirm] =
     React.useState(false);
+  const [selectedOrder, setSelectedOrder] = React.useState(null);
+  const [showOrderDetails, setShowOrderDetails] = React.useState(false);
+  const [showFullHistory, setShowFullHistory] = React.useState(false);
   const {
     userData,
     userOrders,
@@ -525,14 +532,9 @@ const Profile = () => {
                     <OrderCard
                       key={order.id}
                       order={order}
-                      onViewDetails={() => {
-                        // Could open a modal with order details or navigate
-                        showCustomToast(
-                          `Pedido ${order.orderNumber || order.id} - ${
-                            order.status
-                          }`,
-                          "info"
-                        );
+                      onViewDetails={(order) => {
+                        setSelectedOrder(order);
+                        setShowOrderDetails(true);
                       }}
                       onCancel={handleCancelOrder}
                     />
@@ -540,8 +542,17 @@ const Profile = () => {
 
                   {/* Show "View More" button if there are more than 3 orders */}
                   {userOrders.length > 3 && (
-                    <button className="w-full mt-4 bg-blue-2 text-white py-2 px-4 rounded-lg hover:bg-blue-1 transition-colors font-semibold text-sm">
-                      Ver Historial Completo ({userOrders.length} pedidos)
+                    <button
+                      onClick={() => setShowFullHistory(true)}
+                      className="w-full mt-4 bg-blue-2 text-white py-2 px-4 rounded-lg hover:bg-blue-1 transition-colors font-semibold text-sm relative group"
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        Ver Historial Completo
+                        {/* Badge */}
+                        <span className="inline-flex items-center justify-center bg-gold text-black text-xs font-bold rounded-full w-6 h-6 border-2 border-white">
+                          {userOrders.length}
+                        </span>
+                      </div>
                     </button>
                   )}
                 </div>
@@ -683,6 +694,72 @@ const Profile = () => {
         onCancel={handleCancelOrderCancel}
         variant="danger"
       />
+
+      {/* Order Details Modal */}
+      <OrderDetailsModal
+        isOpen={showOrderDetails}
+        order={selectedOrder}
+        onClose={() => {
+          setShowOrderDetails(false);
+          setSelectedOrder(null);
+        }}
+        onCancel={handleCancelOrder}
+      />
+
+      {/* Full Order History Modal */}
+      {showFullHistory && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowFullHistory(false);
+            }
+          }}
+        >
+          <div
+            className="bg-white rounded-xl shadow-lg p-8 w-full max-w-3xl min-w-[350px] relative flex flex-col max-h-[90vh] overflow-y-auto animate-fadeInScale"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              className="absolute top-3 right-3 text-blue-2 hover:text-gold text-2xl"
+              onClick={() => setShowFullHistory(false)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+
+            {/* Header */}
+            <h2 className="text-2xl font-bold text-blue-2 mb-6 font-family-comfortaa pr-8">
+              Historial de Pedidos
+            </h2>
+
+            {/* Orders List */}
+            <div className="flex-1 overflow-y-auto">
+              <OrderHistory
+                orders={userOrders}
+                loading={loadingOrders}
+                onViewDetails={(order) => {
+                  setSelectedOrder(order);
+                  setShowOrderDetails(true);
+                  setShowFullHistory(false);
+                }}
+                onCancel={handleCancelOrder}
+              />
+            </div>
+
+            {/* Close Button */}
+            <div className="flex gap-3 pt-6 border-t border-gray-2 mt-6">
+              <button
+                onClick={() => setShowFullHistory(false)}
+                className="w-full py-2 px-4 bg-blue-2 text-white rounded-lg hover:bg-blue-1 transition-colors font-semibold"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
