@@ -1,7 +1,8 @@
 import React from "react";
 import { IoIosClose } from "react-icons/io";
-import { formatDateTime } from "../../utils/dateFormatter";
+import { formatDate } from "../../utils/dateFormatter";
 import { ORDER_STATUS } from "../../constants";
+import { OrderStatusBadge } from "./index";
 
 /**
  * OrderDetailsModal Component
@@ -14,40 +15,6 @@ import { ORDER_STATUS } from "../../constants";
  */
 const OrderDetailsModal = ({ isOpen, order, onClose, onCancel }) => {
   if (!isOpen || !order) return null;
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case ORDER_STATUS.PENDING:
-        return "bg-yellow-100 text-yellow-700";
-      case ORDER_STATUS.CONFIRMED:
-        return "bg-blue-100 text-blue-700";
-      case ORDER_STATUS.PRINTING:
-        return "bg-orange-100 text-orange-700";
-      case ORDER_STATUS.DISPATCHED:
-        return "bg-purple-100 text-purple-700";
-      case ORDER_STATUS.DELIVERED:
-        return "bg-green-100 text-green-700";
-      case ORDER_STATUS.WITHDRAWN:
-        return "bg-green-100 text-green-700";
-      case ORDER_STATUS.CANCELLED:
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
-
-  const getStatusLabel = (status) => {
-    const statusMap = {
-      [ORDER_STATUS.PENDING]: "Pendiente",
-      [ORDER_STATUS.CONFIRMED]: "Confirmado",
-      [ORDER_STATUS.PRINTING]: "Imprimiendo",
-      [ORDER_STATUS.DISPATCHED]: "Despachado",
-      [ORDER_STATUS.DELIVERED]: "Entregado",
-      [ORDER_STATUS.WITHDRAWN]: "Retirado",
-      [ORDER_STATUS.CANCELLED]: "Cancelado",
-    };
-    return statusMap[status] || status;
-  };
 
   const canCancel =
     order.status === ORDER_STATUS.PENDING ||
@@ -79,84 +46,77 @@ const OrderDetailsModal = ({ isOpen, order, onClose, onCancel }) => {
 
           {/* Header */}
           <div className="py-5 px-6 border-b border-gray-2 shrink-0">
-            <div className="flex items-center justify-between pr-8">
+            <div className="flex items-start justify-between pr-8">
               <h2 className="text-2xl font-bold font-family-comfortaa text-blue-2">
                 Detalles del Pedido
               </h2>
-              <span
-                className={`inline-block px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${getStatusColor(
-                  order.status,
-                )}`}
-              >
-                {getStatusLabel(order.status)}
-              </span>
+              <div className="flex flex-col items-end gap-1 relative">
+                <OrderStatusBadge status={order.status} />
+                {order.statusHistory && order.statusHistory.length > 0 && (
+                  <p className="text-xs text-gray-1 absolute top-8 right-0 whitespace-nowrap">
+                    Actualizado{" "}
+                    {formatDate(
+                      order.statusHistory[order.statusHistory.length - 1]
+                        .timestamp,
+                    )}
+                  </p>
+                )}
+              </div>
             </div>
-            <p className="text-lg text-gold font-bold mt-3">
-              #{order.orderNumber || order.id?.slice(-8)}
-            </p>
+            <div className="flex items-start justify-between mt-1">
+              <div className="flex flex-col gap-1">
+                <p className="text-lg text-gold font-bold">
+                  #{order.orderNumber || order.id?.slice(-8)}
+                </p>
+                <p className="text-xs text-gray-1">
+                  Emitido {formatDate(order.createdAt)}
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
-            {/* Dates */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-2">
-                  Fecha de Pedido
-                </label>
-                <p className="text-sm text-blue-1 font-medium">
-                  {formatDateTime(order.createdAt)}
-                </p>
-              </div>
-              {order.updatedAt && (
-                <div>
-                  <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-2">
-                    Última Actualización
-                  </label>
-                  <p className="text-sm text-blue-1 font-medium">
-                    {formatDateTime(order.updatedAt)}
-                  </p>
-                </div>
-              )}
-            </div>
-
             {/* Products */}
             <div>
               <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-3">
                 Productos ({order.items?.length || 0})
               </label>
-              <div className="space-y-3">
+              <div className="bg-white rounded-md border border-gray-3 p-4">
                 {order.items && order.items.length > 0 ? (
-                  order.items.map((item, index) => (
-                    <div
-                      key={index}
-                      className="p-4 bg-white rounded-lg border border-gray-3"
-                    >
-                      <div className="flex justify-between mb-2">
-                        <p className="font-bold text-blue-1">
-                          {item.productName}
-                        </p>
-                        <p className="font-bold text-gold">
-                          ${item.unitPrice || "0"}
-                        </p>
-                      </div>
-                      <div className="text-xs text-gray-1 space-y-1">
-                        {item.family && <p>Familia: {item.family}</p>}
-                        {item.size && <p>Tamaño: {item.size}</p>}
-                        {item.quantity && (
-                          <p className="font-medium text-blue-1">
-                            Cantidad: {item.quantity}
-                          </p>
-                        )}
-                        <p className="text-blue-2 font-semibold pt-1 border-t border-gray-3 mt-2">
-                          Subtotal: ${item.unitPrice * item.quantity || "0"}
-                        </p>
-                      </div>
-                    </div>
-                  ))
+                  <div className="space-y-3">
+                    {order.items.map((item, index) => {
+                      const unitPrice = item.unitPrice || 0;
+                      const quantity = item.quantity || 1;
+                      const subtotal = unitPrice * quantity;
+
+                      return (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center text-sm pb-2 border-b border-gray-300 last:border-b-0"
+                        >
+                          <div className="flex-1">
+                            <p className="font-bold text-blue-1">
+                              {item.productName}
+                            </p>
+                            <p className="text-xs text-gray-1">
+                              {item.family && `${item.family} - `}
+                              Tamaño: {item.size || "normal"}
+                            </p>
+                            <p className="text-xs font-medium text-blue-3">
+                              ${unitPrice.toFixed(2)} x {quantity}
+                            </p>
+                          </div>
+                          <span className="font-bold text-gold ml-4">
+                            ${subtotal.toFixed(2)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 ) : (
-                  <p className="text-sm text-gray-1">
-                    Sin productos registrados
+                  <p className="text-gray-1 text-sm">
+                    No hay productos en este pedido
                   </p>
                 )}
               </div>

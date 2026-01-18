@@ -25,4 +25,4 @@ export { default as UserMenuDropdown } from "./navigation/UserMenuDropdown.jsx";
 export { default as FloatingCartButton } from "./FloatingCartButton.jsx";
 export { default as Hero } from "./Hero.jsx";
 export { default as ProtectedRoute } from "./ProtectedRoute.jsx";
-export { default as OrderHistory } from "./OrderHistory.jsx";
+export { default as OrderHistory } from "../ecommerce/OrderHistory.jsx";

@@ -2,6 +2,7 @@ import React from "react";
 import { ImSpinner2 } from "react-icons/im";
 import { formatDateTime } from "../../../utils/dateFormatter";
 import { ORDER_STATUS } from "../../../constants";
+import { OrderStatusBadge } from "../../../components/ecommerce";
 
 /**
  * OrdersTable Component
@@ -81,17 +82,7 @@ const OrdersTable = ({
                   ${order.totalAmount || "0"}
                 </td>
                 <td className="py-2 px-2 text-center">
-                  <span
-                    className={`inline-block px-2 py-1 rounded text-xs font-bold ${
-                      order.status === "completado"
-                        ? "bg-green-100 text-green-700"
-                        : order.status === "procesando"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {order.status}
-                  </span>
+                  <OrderStatusBadge status={order.status} />
                 </td>
                 <td className="py-2 px-2 text-center">
                   <div className="flex flex-col items-center gap-2">

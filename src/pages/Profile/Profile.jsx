@@ -4,12 +4,12 @@ import { FaTrash, FaKey } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { useNavigate } from "react-router-dom";
 import { showCustomToast } from "../../services/ui/toastService.jsx";
+import { ConfirmationModal, AddressForm } from "../../components/common";
 import {
-  ConfirmationModal,
-  AddressForm,
+  OrderCard,
+  OrderDetailsModal,
   OrderHistory,
-} from "../../components/common";
-import { OrderCard, OrderDetailsModal } from "../../components/ecommerce";
+} from "../../components/ecommerce";
 import { IoIosWarning } from "react-icons/io";
 import { useProfile } from "../../hooks";
 import { formatDate } from "../../utils/dateFormatter";

@@ -18,16 +18,33 @@ const useOrderManagement = (user) => {
 
   const handleUpdateStatus = useCallback(
     async (orderId, currentStatus) => {
+      // Find the current order to check delivery type
+      const currentOrder = orders.find((o) => o.id === orderId);
+      const isPickup = 
+        currentOrder?.delivery?.method === "pickup" || 
+        currentOrder?.deliveryType === "pickup";
+
       // Define status flow based on ORDER_STATUS constants
-      const statusFlow = {
-        [ORDER_STATUS.PENDING]: ORDER_STATUS.CONFIRMED,
-        [ORDER_STATUS.CONFIRMED]: ORDER_STATUS.PRINTING,
-        [ORDER_STATUS.PRINTING]: ORDER_STATUS.DISPATCHED,
-        [ORDER_STATUS.DISPATCHED]: ORDER_STATUS.DELIVERED,
-        [ORDER_STATUS.DELIVERED]: ORDER_STATUS.DELIVERED,
-        [ORDER_STATUS.WITHDRAWN]: ORDER_STATUS.WITHDRAWN,
-        [ORDER_STATUS.CANCELLED]: ORDER_STATUS.CANCELLED,
-      };
+      // Different flow for pickup vs shipping
+      const statusFlow = isPickup
+        ? {
+            [ORDER_STATUS.PENDING]: ORDER_STATUS.CONFIRMED,
+            [ORDER_STATUS.CONFIRMED]: ORDER_STATUS.PRINTING,
+            [ORDER_STATUS.PRINTING]: ORDER_STATUS.DISPATCHED,
+            [ORDER_STATUS.DISPATCHED]: ORDER_STATUS.WITHDRAWN,
+            [ORDER_STATUS.WITHDRAWN]: ORDER_STATUS.WITHDRAWN,
+            [ORDER_STATUS.DELIVERED]: ORDER_STATUS.DELIVERED,
+            [ORDER_STATUS.CANCELLED]: ORDER_STATUS.CANCELLED,
+          }
+        : {
+            [ORDER_STATUS.PENDING]: ORDER_STATUS.CONFIRMED,
+            [ORDER_STATUS.CONFIRMED]: ORDER_STATUS.PRINTING,
+            [ORDER_STATUS.PRINTING]: ORDER_STATUS.DISPATCHED,
+            [ORDER_STATUS.DISPATCHED]: ORDER_STATUS.DELIVERED,
+            [ORDER_STATUS.DELIVERED]: ORDER_STATUS.DELIVERED,
+            [ORDER_STATUS.WITHDRAWN]: ORDER_STATUS.WITHDRAWN,
+            [ORDER_STATUS.CANCELLED]: ORDER_STATUS.CANCELLED,
+          };
 
       const nextStatus = statusFlow[currentStatus] || currentStatus;
 
@@ -64,7 +81,7 @@ const useOrderManagement = (user) => {
         setUpdatingId(null);
       }
     },
-    [user],
+    [user, orders],
   );
 
   const handleCancelOrder = useCallback(
