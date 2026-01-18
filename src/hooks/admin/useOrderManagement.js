@@ -20,8 +20,8 @@ const useOrderManagement = (user) => {
     async (orderId, currentStatus) => {
       // Find the current order to check delivery type
       const currentOrder = orders.find((o) => o.id === orderId);
-      const isPickup = 
-        currentOrder?.delivery?.method === "pickup" || 
+      const isPickup =
+        currentOrder?.delivery?.method === "pickup" ||
         currentOrder?.deliveryType === "pickup";
 
       // Define status flow based on ORDER_STATUS constants

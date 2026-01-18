@@ -14,11 +14,11 @@ const OrderCard = ({ order, onViewDetails, onCancel }) => {
   const itemCount = order.items ? order.items.length : 0;
 
   return (
-    <div className=" rounded-xl border border-gray-2 shadow-md p-4">
+    <div className="rounded-xl border border-gray-2 shadow-md p-4">
       {/* Header: Order Number & Status Badge */}
-      <div className="flex items-start justify-between mb-3">
+      <div className="flex items-start justify-between gap-2 mb-3">
         <p className="text-sm font-bold text-blue-1">
-          #{order.orderNumber || order.id?.slice(-8)}
+          {order.orderNumber || order.id?.slice(-8)}
         </p>
 
         {/* Status Badge */}

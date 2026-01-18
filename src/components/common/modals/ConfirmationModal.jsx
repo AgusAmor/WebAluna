@@ -76,11 +76,11 @@ const ConfirmationModal = ({
 
           {/* Content */}
           <div className="p-6">
-            <div className="text-center text-gray-1 text-md mb-3">
+            <div className="text-center text-blue-1 font-semibold text-md mb-3">
               {message}
             </div>
             {description && (
-              <div className="text-gray-2 text-xs mb-6 text-center">
+              <div className="text-gray-1 text-xs font-medium mb-6 text-center">
                 {description}
               </div>
             )}
