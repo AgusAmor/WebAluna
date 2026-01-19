@@ -71,6 +71,42 @@ export const saveProfileChanges = async ({
   if (!user) throw new Error("Usuario no autenticado");
 
   const token = await user.getIdToken();
+
+  // Clean addresses - remove temporary fields and combine phone fields
+  const cleanAddresses = (editFormData.addresses || []).map(
+    ({
+      id,
+      recipientPhoneCountry,
+      recipientPhoneLocal,
+      apartment,
+      ...addr
+    }) => {
+      const recipientPhone = combinePhoneNumber(
+        recipientPhoneCountry,
+        recipientPhoneLocal,
+      );
+
+      // Build address object with only Firestore-expected fields
+      const cleanedAddress = {
+        street: addr.street || "",
+        number: addr.number ? String(addr.number) : "",
+        city: addr.city || "",
+        region: addr.region || "",
+        postalCode: addr.postalCode || "",
+        recipientName: addr.recipientName || "",
+        recipientPhone: recipientPhone || "",
+        isDefault: Boolean(addr.isDefault),
+      };
+
+      // Only include apartment if it has a value
+      if (apartment && apartment.trim()) {
+        cleanedAddress.apartment = apartment;
+      }
+
+      return cleanedAddress;
+    },
+  );
+
   const updateData = {
     displayName: editFormData.displayName,
     email: editFormData.email,
@@ -78,7 +114,7 @@ export const saveProfileChanges = async ({
       editFormData.phoneCountry,
       editFormData.phoneLocal,
     ),
-    addresses: editFormData.addresses || [],
+    addresses: cleanAddresses,
   };
 
   // Update Firestore
@@ -115,7 +151,15 @@ export const saveProfileChanges = async ({
 export const loadUserProfile = async (userId) => {
   const data = await fetchUserById(userId);
   const userData = normalizeUserData(data);
-  const editFormData = prepareUserDataForEdit(userData);
+
+  // Use normalizeUserData for editFormData as well to ensure consistent field structure
+  // Then add phone split fields for the form
+  const { phoneCountry, phoneLocal } = splitPhoneNumber(userData.phone);
+  const editFormData = {
+    ...userData,
+    phoneCountry,
+    phoneLocal,
+  };
 
   return { userData, editFormData };
 };

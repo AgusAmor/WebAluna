@@ -23,12 +23,17 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       // Only validate if ALL required fields are filled and not empty strings
+      // Ensure fields are strings before calling .trim()
       const hasAllFields =
-        addr.street?.trim() &&
+        typeof addr.street === "string" &&
+        addr.street.trim() &&
         addr.number &&
-        addr.city?.trim() &&
-        addr.region?.trim() &&
-        addr.postalCode?.trim();
+        typeof addr.city === "string" &&
+        addr.city.trim() &&
+        typeof addr.region === "string" &&
+        addr.region.trim() &&
+        typeof addr.postalCode === "string" &&
+        addr.postalCode.trim();
 
       if (hasAllFields) {
         validateAddressObject(addr, fieldId);
@@ -60,7 +65,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
             name="street"
             type="text"
             placeholder="Calle"
-            value={addr.street}
+            value={addr.street || ""}
             onChange={(e) => onChange(idx, e)}
             className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
             minLength={2}
@@ -92,7 +97,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
             name="apartment"
             type="text"
             placeholder="Depto (opcional)"
-            value={addr.apartment}
+            value={addr.apartment || ""}
             onChange={(e) => onChange(idx, e)}
             className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
             maxLength={40}
@@ -108,7 +113,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
             name="city"
             type="text"
             placeholder="Ciudad"
-            value={addr.city}
+            value={addr.city || ""}
             onChange={(e) => onChange(idx, e)}
             className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
             minLength={2}
@@ -124,7 +129,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
             name="region"
             type="text"
             placeholder="Barrio"
-            value={addr.region}
+            value={addr.region || ""}
             onChange={(e) => onChange(idx, e)}
             className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
             minLength={2}
@@ -140,7 +145,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
             name="postalCode"
             type="text"
             placeholder="Código Postal"
-            value={addr.postalCode}
+            value={addr.postalCode || ""}
             onChange={(e) => onChange(idx, e)}
             className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
             maxLength={20}
@@ -149,11 +154,15 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
       </div>
 
       {/* Address Validation Status - Only show when all fields are complete */}
-      {addr.street?.trim() &&
+      {typeof addr.street === "string" &&
+        addr.street.trim() &&
         addr.number &&
-        addr.city?.trim() &&
-        addr.region?.trim() &&
-        addr.postalCode?.trim() &&
+        typeof addr.city === "string" &&
+        addr.city.trim() &&
+        typeof addr.region === "string" &&
+        addr.region.trim() &&
+        typeof addr.postalCode === "string" &&
+        addr.postalCode.trim() &&
         (validating ||
           validationErrors[fieldId] ||
           validationSuccess[fieldId]) && (
@@ -193,7 +202,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
               name="recipientName"
               type="text"
               placeholder="Nombre"
-              value={addr.recipientName}
+              value={addr.recipientName || ""}
               onChange={(e) => onChange(idx, e)}
               className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
               minLength={2}

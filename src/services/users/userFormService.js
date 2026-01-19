@@ -40,6 +40,7 @@ export function normalizeUserData(user) {
   const emptyAddress = createEmptyAddress();
 
   return {
+    id: user.id, // Preserve the user ID
     displayName: user.displayName || "",
     email: user.email || "",
     phone: user.phone || "",
@@ -57,12 +58,31 @@ export function normalizeUserData(user) {
               ? splitPhoneNumber(a.recipientPhone)
               : { phoneCountry: "+549", phoneLocal: "" };
 
+            // Map old field names to new ones for backward compatibility
+            const mappedAddress = {
+              ...a,
+              region: a.region || a.state || "",
+              postalCode: a.postalCode || a.zipCode || "",
+            };
+
             return {
               ...emptyAddress,
-              ...a,
+              ...mappedAddress,
+              // Ensure string fields are strings, never null or number
+              street: String(mappedAddress.street || ""),
+              number: mappedAddress.number ? String(mappedAddress.number) : "",
+              apartment: String(mappedAddress.apartment || ""),
+              city: String(mappedAddress.city || ""),
+              region: String(mappedAddress.region || ""),
+              postalCode: String(mappedAddress.postalCode || ""),
+              recipientName: String(mappedAddress.recipientName || ""),
+              recipientPhoneCountry:
+                mappedAddress.recipientPhoneCountry || recipientPhoneCountry,
+              recipientPhoneLocal: String(
+                mappedAddress.recipientPhoneLocal || recipientPhoneLocal || "",
+              ),
               id: a.id || `addr-${i + 1}`,
-              recipientPhoneCountry,
-              recipientPhoneLocal,
+              isDefault: Boolean(mappedAddress.isDefault),
             };
           })
         : [],
@@ -91,15 +111,36 @@ export function prepareUserFormData(formData) {
 
   // Clean addresses by removing the temporary 'id' field and combining phone fields
   const cleanAddresses = formData.addresses.map(
-    ({ id, recipientPhoneCountry, recipientPhoneLocal, ...addr }) => {
+    ({
+      id,
+      recipientPhoneCountry,
+      recipientPhoneLocal,
+      apartment,
+      ...addr
+    }) => {
       const recipientPhone = combinePhoneNumber(
         recipientPhoneCountry,
         recipientPhoneLocal,
       );
-      return {
-        ...addr,
-        recipientPhone,
+
+      // Build address object with only Firestore-expected fields
+      const cleanedAddress = {
+        street: addr.street || "",
+        number: addr.number ? String(addr.number) : "",
+        city: addr.city || "",
+        region: addr.region || "",
+        postalCode: addr.postalCode || "",
+        recipientName: addr.recipientName || "",
+        recipientPhone: recipientPhone || "",
+        isDefault: Boolean(addr.isDefault),
       };
+
+      // Only include apartment if it has a value
+      if (apartment && apartment.trim()) {
+        cleanedAddress.apartment = apartment;
+      }
+
+      return cleanedAddress;
     },
   );
 

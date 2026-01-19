@@ -11,6 +11,7 @@ import {
   saveUserChanges,
   deleteUserAccount,
 } from "../../services/users/userManagementService";
+import { normalizeUserData } from "../../services/users/userFormService";
 
 export function useUserManagement() {
   const [users, setUsers] = useState([]);
@@ -43,7 +44,9 @@ export function useUserManagement() {
    * @param {Object} userToEdit - User object to edit
    */
   const handleEditUser = (userToEdit) => {
-    setEditUser(userToEdit);
+    // Normalize user data to ensure consistent field structure (especially addresses)
+    const normalizedUser = normalizeUserData(userToEdit);
+    setEditUser(normalizedUser);
     setShowModal(true);
   };
 

@@ -10,9 +10,13 @@
 export const createEmptyAddress = () => ({
   street: "",
   number: "",
+  apartment: "",
   city: "",
-  state: "",
-  zipCode: "",
+  region: "",
+  postalCode: "",
+  recipientName: "",
+  recipientPhoneCountry: "+549",
+  recipientPhoneLocal: "",
   isDefault: false,
 });
 
@@ -25,16 +29,15 @@ export const createEmptyAddress = () => ({
  * @returns {Array} Updated addresses array
  */
 export const updateDefaultAddress = (addresses, idx, fieldName, checked) => {
+  // Only handle isDefault field logic
   if (fieldName === "isDefault" && checked) {
     return addresses.map((addr, i) => ({
       ...addr,
       isDefault: i === idx,
     }));
   }
-  return addresses.map((addr, i) => ({
-    ...addr,
-    [fieldName]: i === idx ? checked : addr[fieldName],
-  }));
+  // For any other field, return addresses unchanged (don't re-modify)
+  return addresses;
 };
 
 /**
