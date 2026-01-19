@@ -489,26 +489,6 @@ const Profile = () => {
 
           {/* Sidebar - Quick Info & Orders */}
           <div className="space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white rounded-lg shadow-md p-4 text-center">
-                <p className="text-2xl font-bold text-blue-2">
-                  {userData.totalOrders || 0}
-                </p>
-                <p className="text-xs text-gray-1 uppercase font-semibold">
-                  Pedidos
-                </p>
-              </div>
-              <div className="bg-white rounded-lg shadow-md p-4 text-center">
-                <p className="text-2xl font-bold text-gold">
-                  ${userData.totalSpent || 0}
-                </p>
-                <p className="text-xs text-gray-1 uppercase font-semibold">
-                  Total gastado
-                </p>
-              </div>
-            </div>
-
             {/* Recent Orders / Activity */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-lg font-bold font-family-comfortaa text-blue-2 mb-1">

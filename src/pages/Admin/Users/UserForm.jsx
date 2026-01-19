@@ -120,7 +120,7 @@ const UserForm = ({
             <>
               {form.addresses.map((addr, idx) => (
                 <AddressForm
-                  key={addr.id}
+                  key={idx}
                   addr={addr}
                   idx={idx}
                   onChange={handleAddressChange}

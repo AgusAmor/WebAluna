@@ -53,17 +53,26 @@ export const DB_CONFIG = {
       USERS: "users",
       PRODUCTS: "products",
       ORDERS: "orders",
-      CATEGORIES: "categories",
     },
   },
+};
 
-  SUPABASE: {
-    TABLES: {
-      USERS: "users",
-      PRODUCTS: "products",
-      ORDERS: "orders",
-      CATEGORIES: "categories",
-    },
+export const SHIPPING_CONFIG = {
+  // Mapbox API base configuration
+  MAPBOX: {
+    TOKEN: import.meta.env.VITE_MAPBOX_TOKEN,
+    BASE_URL: "https://api.mapbox.com",
+  },
+
+  // Shipping cost calculation
+  BASE_COST: 100, // ARS
+  COST_PER_KM: 10, // ARS per km
+  MAX_SHIPPING_DISTANCE: 100, // km
+
+  // Warehouse location for distance calculation
+  WAREHOUSE: {
+    latitude: -34.6037, // Buenos Aires, Argentina (example)
+    longitude: -58.3816,
   },
 };
 
@@ -71,4 +80,5 @@ export default {
   API_CONFIG,
   APP_CONFIG,
   DB_CONFIG,
+  SHIPPING_CONFIG,
 };

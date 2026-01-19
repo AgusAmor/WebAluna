@@ -5,6 +5,7 @@
  * - auth: Authentication and account management
  * - cart: Shopping cart operations
  * - firebase: Firebase integrations
+ * - mapbox: Mapbox API integrations (geocoding, directions)
  * - products: Product management
  * - ui: UI-related services (header, home)
  * - users: User profile and management
@@ -30,6 +31,11 @@ export * from "./firebase/firebase.js";
 export * from "./firebase/apiClient.js";
 export * from "./firebase/firebaseProductService.js";
 export * from "./firebase/firebaseUserService.js";
+
+// ===== MAPBOX SERVICES =====
+export * from "./mapbox/mapboxConfig.js";
+export * from "./mapbox/geocodingService.js";
+export * from "./mapbox/directionsService.js";
 
 // ===== PRODUCT SERVICES =====
 export * from "./products/productManagementService.js";

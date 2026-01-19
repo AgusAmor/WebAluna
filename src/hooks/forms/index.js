@@ -5,3 +5,4 @@
  */
 
 export { useFormValidation } from "./useFormValidation.js";
+export { useAddressValidation } from "./useAddressValidation.js";

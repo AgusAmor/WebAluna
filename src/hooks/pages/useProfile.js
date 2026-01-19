@@ -97,7 +97,7 @@ export const useProfile = () => {
    */
   useEffect(() => {
     const fetchOrders = async () => {
-      if (user && user.uid) {
+      if (user && user.uid && typeof user.getIdToken === "function") {
         try {
           setLoadingOrders(true);
           const token = await user.getIdToken();
@@ -212,7 +212,7 @@ export const useProfile = () => {
     try {
       await requestPasswordResetService(userData?.email);
       showCustomToast.success(
-        "Correo de recuperación enviado. Revisa tu bandeja de entrada (también el correo no deseado o SPAM)."
+        "Correo de recuperación enviado. Revisa tu bandeja de entrada (también el correo no deseado o SPAM).",
       );
     } catch (err) {
       showCustomToast.error("Error al enviar el email. Intenta nuevamente.");
@@ -272,7 +272,8 @@ export const useProfile = () => {
    * Confirm cancel order
    */
   const handleConfirmCancelOrder = async () => {
-    if (!orderToCancel) return;
+    if (!orderToCancel || !user || typeof user.getIdToken !== "function")
+      return;
 
     try {
       setIsCancellingOrder(true);
@@ -284,14 +285,14 @@ export const useProfile = () => {
           note: "Pedido cancelado por el cliente",
           updatedBy: user.uid,
         },
-        token
+        token,
       );
 
       // Update local state with the complete updated order from backend
       setUserOrders((prevOrders) =>
         prevOrders.map((o) =>
-          o.id === orderToCancel.id ? { ...o, ...updatedOrder } : o
-        )
+          o.id === orderToCancel.id ? { ...o, ...updatedOrder } : o,
+        ),
       );
 
       showCustomToast.success("Pedido cancelado exitosamente");
