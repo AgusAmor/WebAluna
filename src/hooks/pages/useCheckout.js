@@ -145,7 +145,7 @@ export function useCheckout() {
       !hasDefaultAddress(userProfile)
     ) {
       showCustomToast.error(
-        "Por favor agrega una dirección antes de finalizar el pedido"
+        "Por favor agrega una dirección antes de finalizar el pedido",
       );
       setShowAddressModal(true);
       return;
@@ -193,7 +193,12 @@ export function useCheckout() {
       const orderData = {
         orderNumber: generateOrderNumber(),
         userId: user.uid,
-        customerInfo: extractCustomerInfo(currentUserProfile),
+        customerInfo: {
+          ...extractCustomerInfo(currentUserProfile),
+          // Ensure email comes from authenticated user object (Firebase Auth)
+          // This guarantees email is always available, even if userProfile is incomplete
+          email: user.email || extractCustomerInfo(currentUserProfile).email,
+        },
         status: "pending",
         items: formatOrderItems(items),
         summary: createOrderSummary(items, shippingCost),
@@ -217,7 +222,7 @@ export function useCheckout() {
       const createdOrder = await createOrderViaCloudFunction(orderData, token);
 
       showCustomToast.success(
-        `Orden ${createdOrder.orderNumber} realizada con éxito, pronto seras notificado por mail sobre el estado de tu pedido..`
+        `Orden ${createdOrder.orderNumber} realizada con éxito, pronto seras notificado por mail sobre el estado de tu pedido..`,
       );
 
       // Clear cart after successful order creation

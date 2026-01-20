@@ -19,6 +19,30 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
   } = useAddressValidation();
   const fieldId = `address-${idx}`;
 
+  // Handle number field validation - restrict to max 4 digits (9999)
+  const handleNumberChange = (e) => {
+    const value = e.target.value;
+
+    // If the value is empty or a valid number within range, allow it
+    if (
+      value === "" ||
+      (value && parseInt(value) >= 1 && parseInt(value) <= 9999)
+    ) {
+      onChange(idx, e);
+    } else if (value && parseInt(value) > 9999) {
+      // If value exceeds max, create a new event with the truncated value
+      const newEvent = {
+        ...e,
+        target: {
+          ...e.target,
+          value: "9999",
+          name: "number",
+        },
+      };
+      onChange(idx, newEvent);
+    }
+  };
+
   // Auto-validate when address fields change (with debounce)
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -69,7 +93,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
             onChange={(e) => onChange(idx, e)}
             className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
             minLength={2}
-            maxLength={80}
+            maxLength={100}
             required
           />
         </div>
@@ -82,10 +106,10 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
             type="number"
             placeholder="Número"
             value={addr.number || ""}
-            onChange={(e) => onChange(idx, e)}
+            onChange={handleNumberChange}
             className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
             min={1}
-            max={99999}
+            max={9999}
             required
           />
         </div>
@@ -100,7 +124,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
             value={addr.apartment || ""}
             onChange={(e) => onChange(idx, e)}
             className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
-            maxLength={40}
+            maxLength={20}
           />
         </div>
       </div>
@@ -117,7 +141,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
             onChange={(e) => onChange(idx, e)}
             className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
             minLength={2}
-            maxLength={60}
+            maxLength={50}
             required
           />
         </div>
@@ -133,7 +157,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
             onChange={(e) => onChange(idx, e)}
             className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
             minLength={2}
-            maxLength={60}
+            maxLength={50}
             required
           />
         </div>
@@ -148,7 +172,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
             value={addr.postalCode || ""}
             onChange={(e) => onChange(idx, e)}
             className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
-            maxLength={20}
+            maxLength={8}
           />
         </div>
       </div>
