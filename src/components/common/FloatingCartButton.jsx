@@ -11,10 +11,11 @@ const FloatingCartButton = () => {
   const location = useLocation();
 
   const isAdminPage = isAdminRoute(location.pathname);
+  const isCheckoutPage = location.pathname === "/checkout";
 
   return (
     <>
-      {!isAdminPage && (
+      {!isAdminPage && !isCheckoutPage && (
         <>
           {/* Floating Cart Button */}
           <button

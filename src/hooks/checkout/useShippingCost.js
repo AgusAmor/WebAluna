@@ -19,9 +19,10 @@ export function useShippingCost() {
   /**
    * Calculates shipping cost for a given delivery address
    * @param {Object} address - Address object with fields: street, number, city, region, postalCode
+   * @param {number} productTotal - Total amount of products (before shipping). Free shipping if >= FREE_SHIPPING_THRESHOLD
    * @returns {Promise<Object>} Object with cost, distance, and metadata
    */
-  const calculateCost = useCallback(async (address) => {
+  const calculateCost = useCallback(async (address, productTotal = 0) => {
     if (!address || !address.street || !address.number || !address.city) {
       setError("Dirección incompleta para calcular envío");
       setShippingCost(null);
@@ -68,11 +69,16 @@ export function useShippingCost() {
       }
 
       // Calculate cost
-      const cost = calculateShippingCost(
+      let cost = calculateShippingCost(
         distanceKm,
         SHIPPING_CONFIG.BASE_COST,
         SHIPPING_CONFIG.COST_PER_KM,
       );
+
+      // Apply free shipping if product total >= threshold
+      if (productTotal >= SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD) {
+        cost = 0;
+      }
 
       // Update state
       setShippingDistance(distanceKm);
@@ -84,6 +90,7 @@ export function useShippingCost() {
         distanceFormatted: `${distanceKm.toFixed(2)} km`,
         costPerKm: SHIPPING_CONFIG.COST_PER_KM,
         baseCost: SHIPPING_CONFIG.BASE_COST,
+        isFreeShipping: productTotal >= SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD,
       };
     } catch (err) {
       const errorMessage = err.message || "Error al calcular el costo de envío";

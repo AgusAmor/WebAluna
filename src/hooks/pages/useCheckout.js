@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import { useShippingCost } from "../checkout/useShippingCost";
@@ -26,6 +27,7 @@ import {
 import { showCustomToast } from "../../services/ui/toastService.jsx";
 
 export function useCheckout() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { items, total, clearCart, updateQuantity, removeItem } = useCart();
   const {
@@ -43,6 +45,8 @@ export function useCheckout() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showAddressModal, setShowAddressModal] = useState(false);
+  const [showOrderConfirmModal, setShowOrderConfirmModal] = useState(false);
+  const [createdOrder, setCreatedOrder] = useState(null);
 
   /**
    * Normalize addresses by adding IDs if they don't have one
@@ -97,12 +101,18 @@ export function useCheckout() {
         (addr) => addr.isDefault,
       );
       if (defaultAddress) {
-        calculateShippingCost(defaultAddress);
+        calculateShippingCost(defaultAddress, total);
       }
     } else if (deliveryMethod === "pickup") {
       resetShipping();
     }
-  }, [deliveryMethod, userProfile, calculateShippingCost, resetShipping]);
+  }, [
+    deliveryMethod,
+    userProfile,
+    calculateShippingCost,
+    resetShipping,
+    total,
+  ]);
 
   /**
    * Recalculate shipping cost with a specific address
@@ -110,7 +120,7 @@ export function useCheckout() {
    */
   const recalculateShippingWithAddress = (address) => {
     if (address && deliveryMethod === "shipping") {
-      calculateShippingCost(address);
+      calculateShippingCost(address, total);
     }
   };
 
@@ -289,12 +299,9 @@ export function useCheckout() {
       // Create order via Cloud Function (with security validation on backend)
       const createdOrder = await createOrderViaCloudFunction(orderData, token);
 
-      showCustomToast.success(
-        `Orden ${createdOrder.orderNumber} realizada con éxito, pronto seras notificado por mail sobre el estado de tu pedido..`,
-      );
-
-      // Clear cart after successful order creation
-      clearCart();
+      // Store created order and show confirmation modal
+      setCreatedOrder(createdOrder);
+      setShowOrderConfirmModal(true);
 
       return createdOrder;
     } catch (err) {
@@ -305,6 +312,26 @@ export function useCheckout() {
     } finally {
       setLoadingOrder(false);
     }
+  };
+
+  /**
+   * Handle order confirmation from modal
+   * Shows toast, clears cart, and redirects to home
+   */
+  const handleOrderConfirmation = () => {
+    if (createdOrder) {
+      showCustomToast.success(
+        `Pronto serás notificad@ por mail sobre el estado de tu pedido...`,
+      );
+    }
+
+    // Clear cart
+    clearCart();
+
+    // Close modal and redirect
+    setShowOrderConfirmModal(false);
+    setCreatedOrder(null);
+    navigate("/");
   };
 
   return {
@@ -328,6 +355,11 @@ export function useCheckout() {
     showAddressModal,
     setShowAddressModal,
     handleAddressAdded,
+    // Order confirmation modal
+    showOrderConfirmModal,
+    setShowOrderConfirmModal,
+    handleOrderConfirmation,
+    createdOrder,
     // Checkout
     handlePayClick,
     loading,

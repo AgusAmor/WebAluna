@@ -16,8 +16,8 @@ import { MAPBOX_CONFIG, validateMapboxToken } from "./mapboxConfig.js";
  * @returns {boolean} True if result is a good match
  */
 const isValidMatch = (feature, query) => {
-  // Minimum relevance score (0-1)
-  const MIN_RELEVANCE = 0.7;
+  // Minimum relevance score (0-1) - reduced from 0.7 for more flexibility
+  const MIN_RELEVANCE = 0.5;
 
   // Check relevance score
   if (feature.relevance < MIN_RELEVANCE) {
@@ -43,8 +43,8 @@ const isValidMatch = (feature, query) => {
     );
     const matchPercentage = matchingParts.length / queryParts.length;
 
-    // At least 60% of query parts should be in the result
-    if (matchPercentage < 0.6) {
+    // At least 40% of query parts should be in the result (reduced from 60%)
+    if (matchPercentage < 0.4) {
       return false;
     }
   }

@@ -7,12 +7,16 @@ import {
   FaMinus,
   FaPlus,
   FaTrash,
+  FaInfoCircle,
+  FaCheckCircle,
 } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { useCheckout } from "../../hooks/pages";
+import { ShippingInfoBanner } from "../../components/checkout";
 import {
   AddressRequiredModal,
   SelectAddressModal,
+  SingleButtonConfirmationModal,
 } from "../../components/common/modals";
 import { getCartItemKey } from "../../utils/cartItemUtils";
 import {
@@ -25,6 +29,7 @@ import { showCustomToast } from "../../services/ui/toastService.jsx";
 const Checkout = () => {
   const navigate = useNavigate();
   const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
+  const [showShippingInfoModal, setShowShippingInfoModal] = useState(false);
   const [selectedShippingAddress, setSelectedShippingAddress] = useState(null);
   const {
     userProfile,
@@ -46,6 +51,10 @@ const Checkout = () => {
     loading,
     error,
     loadingOrder,
+    showOrderConfirmModal,
+    setShowOrderConfirmModal,
+    handleOrderConfirmation,
+    createdOrder,
   } = useCheckout();
 
   // Redirect to cart if empty
@@ -94,6 +103,12 @@ const Checkout = () => {
 
   return (
     <div className="min-h-screen py-8 bg-white">
+      {/* Shipping Info Modal - appears when navigating to checkout */}
+      <ShippingInfoBanner
+        isOpen={showShippingInfoModal}
+        setIsOpen={setShowShippingInfoModal}
+      />
+
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8 flex items-center gap-4">
@@ -234,8 +249,14 @@ const Checkout = () => {
                       <span className="text-xs text-red-500">
                         {shippingError}
                       </span>
+                    ) : deliveryMethod === "shipping" &&
+                      orderSummary.subtotal >= 80000 ? (
+                      <span className="text-gold font-semibold">¡Gratis!</span>
+                    ) : deliveryMethod === "pickup" &&
+                      orderSummary.subtotal >= 80000 ? (
+                      <span className="text-gold font-semibold">Sin costo</span>
                     ) : (
-                      <span>${formatPrice(shippingCost || 0)}</span>
+                      <span>${formatPrice(shippingCost)}</span>
                     )}
                   </div>
                 </div>
@@ -275,10 +296,20 @@ const Checkout = () => {
                         Envío a domicilio
                       </p>
                       <p className="text-sm text-blue-2">
-                        Envío gratis en pedidos mayores a $70000
+                        Envío gratis en pedidos mayores a $80000
                       </p>
                     </div>
                   </div>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowShippingInfoModal(true);
+                    }}
+                    className="ml-auto text-blue-2 hover:text-gold transition-colors p-2"
+                    title="Ver información de envío"
+                  >
+                    <FaInfoCircle className="h-5 w-5" />
+                  </button>
                 </label>
 
                 {/* Pickup Option */}
@@ -435,6 +466,22 @@ const Checkout = () => {
           null
         }
         isLoading={loading}
+      />
+
+      {/* Order Confirmation Modal */}
+      <SingleButtonConfirmationModal
+        isOpen={showOrderConfirmModal}
+        title="Gracias por elegirnos para transformar tu espacio."
+        message="Tu pedido ha sido realizado exitosamente"
+        description={
+          createdOrder
+            ? `Número de orden: ${createdOrder.orderNumber}`
+            : "Procesando orden..."
+        }
+        onConfirm={handleOrderConfirmation}
+        confirmText="Ir al Inicio"
+        icon={<FaCheckCircle />}
+        isLoading={false}
       />
     </div>
   );

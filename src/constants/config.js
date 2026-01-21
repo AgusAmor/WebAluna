@@ -59,9 +59,10 @@ export const DB_CONFIG = {
 
 export const SHIPPING_CONFIG = {
   // Shipping cost calculation
-  BASE_COST: 100, // ARS
-  COST_PER_KM: 10, // ARS per km
+  BASE_COST: 3000, // ARS
+  COST_PER_KM: 800, // ARS per km
   MAX_SHIPPING_DISTANCE: 100, // km
+  FREE_SHIPPING_THRESHOLD: 80000, // ARS
 
   // Warehouse location for distance calculation
   WAREHOUSE: {
