@@ -81,7 +81,7 @@ export function normalizeUserData(user) {
               recipientPhoneLocal: String(
                 mappedAddress.recipientPhoneLocal || recipientPhoneLocal || "",
               ),
-              id: a.id || `addr-${i + 1}`,
+              id: a.id || `addr_${i}_${Date.now()}`,
               isDefault: Boolean(mappedAddress.isDefault),
             };
           })

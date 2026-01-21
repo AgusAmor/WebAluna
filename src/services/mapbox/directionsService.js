@@ -6,6 +6,7 @@
  */
 
 import { MAPBOX_CONFIG, validateMapboxToken } from "./mapboxConfig.js";
+import { SHIPPING_CONFIG } from "../../constants/config.js";
 
 /**
  * Calculates route between two coordinates
@@ -89,54 +90,6 @@ export const calculateRoute = async (origin, destination, options = {}) => {
 };
 
 /**
- * Calculates distance between two addresses (using geocoding first)
- * @param {string} originAddress - Starting address
- * @param {string} destinationAddress - Ending address
- * @returns {Promise<Object>} Distance and routing information
- */
-export const calculateDistanceByAddress = async (
-  originAddress,
-  destinationAddress,
-) => {
-  try {
-    validateMapboxToken();
-
-    // Import geocoding service to avoid circular dependency
-    const { geocodeAddress } = await import("./geocodingService.js");
-
-    // Geocode both addresses
-    const originResult = await geocodeAddress(originAddress);
-    if (!originResult.success || originResult.results.length === 0) {
-      return {
-        success: false,
-        error: "Could not geocode origin address",
-      };
-    }
-
-    const destResult = await geocodeAddress(destinationAddress);
-    if (!destResult.success || destResult.results.length === 0) {
-      return {
-        success: false,
-        error: "Could not geocode destination address",
-      };
-    }
-
-    // Get coordinates from first result
-    const origin = originResult.results[0].coordinates;
-    const destination = destResult.results[0].coordinates;
-
-    // Calculate route
-    return await calculateRoute(origin, destination);
-  } catch (error) {
-    console.error("Distance Calculation Error:", error);
-    return {
-      success: false,
-      error: error.message,
-    };
-  }
-};
-
-/**
  * Validates coordinate format
  * @param {Object} coords - Coordinates object
  * @returns {boolean} True if coordinates are valid
@@ -161,14 +114,14 @@ const isValidCoordinates = (coords) => {
 /**
  * Calculates shipping cost based on distance
  * @param {number} distanceKm - Distance in kilometers
- * @param {number} baseCost - Base shipping cost
- * @param {number} costPerKm - Cost per kilometer
+ * @param {number} baseCost - Base shipping cost (defaults to SHIPPING_CONFIG.BASE_COST)
+ * @param {number} costPerKm - Cost per kilometer (defaults to SHIPPING_CONFIG.COST_PER_KM)
  * @returns {number} Total shipping cost
  */
 export const calculateShippingCost = (
   distanceKm,
-  baseCost = 100,
-  costPerKm = 10,
+  baseCost = SHIPPING_CONFIG.BASE_COST,
+  costPerKm = SHIPPING_CONFIG.COST_PER_KM,
 ) => {
   if (typeof distanceKm !== "number" || distanceKm < 0) {
     throw new Error("Invalid distance provided");

@@ -139,64 +139,6 @@ export const geocodeAddress = async (address, options = {}) => {
 };
 
 /**
- * Reverse geocodes coordinates to address
- * @param {number} latitude - Latitude coordinate
- * @param {number} longitude - Longitude coordinate
- * @returns {Promise<Object>} Address information
- */
-export const reverseGeocode = async (latitude, longitude) => {
-  try {
-    validateMapboxToken();
-
-    if (typeof latitude !== "number" || typeof longitude !== "number") {
-      throw new Error("Invalid coordinates provided");
-    }
-
-    const params = new URLSearchParams({
-      access_token: MAPBOX_CONFIG.TOKEN,
-      limit: 1,
-    });
-
-    const url = `${MAPBOX_CONFIG.BASE_URL}${MAPBOX_CONFIG.ENDPOINTS.GEOCODING}/${longitude},${latitude}.json?${params}`;
-
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Reverse geocoding failed: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    if (!data.features || data.features.length === 0) {
-      return {
-        success: false,
-        address: null,
-        message: "No address found for these coordinates",
-      };
-    }
-
-    const feature = data.features[0];
-
-    return {
-      success: true,
-      address: feature.place_name,
-      coordinates: {
-        latitude: feature.center[1],
-        longitude: feature.center[0],
-      },
-      placeType: feature.place_type,
-    };
-  } catch (error) {
-    console.error("Reverse Geocoding Service Error:", error);
-    return {
-      success: false,
-      address: null,
-      error: error.message,
-    };
-  }
-};
-
-/**
  * Validates if an address exists
  * @param {string} address - Address to validate
  * @returns {Promise<boolean>} True if address is valid

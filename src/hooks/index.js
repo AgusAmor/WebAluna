@@ -7,6 +7,7 @@
  * - Pages & Features
  * - Admin Panel
  * - UI & Interactions
+ * - Checkout & Shipping
  */
 
 // Auth hooks
@@ -20,6 +21,9 @@ export * from "./pages";
 
 // Admin hooks
 export * from "./admin";
+
+// Checkout hooks
+export * from "./checkout";
 
 // UI hooks
 export * from "./ui";

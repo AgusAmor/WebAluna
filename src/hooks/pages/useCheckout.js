@@ -7,6 +7,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
+import { useShippingCost } from "../checkout/useShippingCost";
 import { createOrder as createOrderViaCloudFunction } from "../../services/firebase/firebaseOrderService";
 import {
   fetchUserById,
@@ -27,15 +28,38 @@ import { showCustomToast } from "../../services/ui/toastService.jsx";
 export function useCheckout() {
   const { user } = useAuth();
   const { items, total, clearCart, updateQuantity, removeItem } = useCart();
+  const {
+    shippingCost,
+    calculating: calculatingShipping,
+    error: shippingError,
+    calculateCost: calculateShippingCost,
+    reset: resetShipping,
+  } = useShippingCost();
 
   const [userProfile, setUserProfile] = useState(null);
   const [deliveryMethod, setDeliveryMethod] = useState("shipping");
-  const [shippingCost] = useState(0);
   const [profileLoading, setProfileLoading] = useState(true);
   const [loadingOrder, setLoadingOrder] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showAddressModal, setShowAddressModal] = useState(false);
+
+  /**
+   * Normalize addresses by adding IDs if they don't have one
+   */
+  const normalizeAddresses = (profile) => {
+    if (!profile?.addresses) return profile;
+
+    const normalizedAddresses = profile.addresses.map((addr, idx) => ({
+      ...addr,
+      id: addr.id || `addr_${idx}_${Date.now()}`,
+    }));
+
+    return {
+      ...profile,
+      addresses: normalizedAddresses,
+    };
+  };
 
   /**
    * Load user profile on mount
@@ -45,7 +69,9 @@ export function useCheckout() {
       if (user?.uid) {
         try {
           const profile = await fetchUserById(user.uid);
-          setUserProfile(profile);
+          // Normalize addresses to ensure they have IDs
+          const normalizedProfile = normalizeAddresses(profile);
+          setUserProfile(normalizedProfile);
         } catch (err) {
           console.warn("Could not fetch user profile:", err);
           setUserProfile(null);
@@ -57,6 +83,36 @@ export function useCheckout() {
 
     loadUserProfile();
   }, [user?.uid]);
+
+  /**
+   * Calculate shipping cost when delivery method or address changes
+   */
+  useEffect(() => {
+    if (
+      deliveryMethod === "shipping" &&
+      userProfile &&
+      hasDefaultAddress(userProfile)
+    ) {
+      const defaultAddress = userProfile.addresses.find(
+        (addr) => addr.isDefault,
+      );
+      if (defaultAddress) {
+        calculateShippingCost(defaultAddress);
+      }
+    } else if (deliveryMethod === "pickup") {
+      resetShipping();
+    }
+  }, [deliveryMethod, userProfile, calculateShippingCost, resetShipping]);
+
+  /**
+   * Recalculate shipping cost with a specific address
+   * @param {Object} address - Address to calculate shipping for
+   */
+  const recalculateShippingWithAddress = (address) => {
+    if (address && deliveryMethod === "shipping") {
+      calculateShippingCost(address);
+    }
+  };
 
   /**
    * Handle delivery method change
@@ -104,10 +160,18 @@ export function useCheckout() {
         }
       }
 
+      // Generate a unique ID for the new address if it doesn't have one
+      const addressWithId = {
+        ...address,
+        id:
+          address.id ||
+          `addr_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      };
+
       // Add the new address to user profile
       const updatedAddresses = currentUserProfile?.addresses
-        ? [...currentUserProfile.addresses, address]
-        : [address];
+        ? [...currentUserProfile.addresses, addressWithId]
+        : [addressWithId];
 
       // Update user in Firestore via Cloud Function
       await updateUser(user.uid, { addresses: updatedAddresses }, token);
@@ -124,7 +188,8 @@ export function useCheckout() {
 
       showCustomToast.success("Dirección agregada exitosamente");
 
-      return true;
+      // Return the address with the generated ID
+      return addressWithId;
     } catch (err) {
       const errorMessage = err.message || "Error al agregar dirección";
       setError(errorMessage);
@@ -136,11 +201,13 @@ export function useCheckout() {
 
   /**
    * Handle pay button click
+   * @param {Object} shippingAddress - Selected shipping address for this checkout
    */
-  const handlePayClick = async () => {
+  const handlePayClick = async (shippingAddress) => {
     // Validate delivery method requirements
     if (
       deliveryMethod === "shipping" &&
+      !shippingAddress &&
       userProfile &&
       !hasDefaultAddress(userProfile)
     ) {
@@ -206,8 +273,9 @@ export function useCheckout() {
           method: deliveryMethod,
           shippingAddress:
             deliveryMethod === "shipping"
-              ? extractShippingAddress(currentUserProfile)
+              ? shippingAddress || extractShippingAddress(currentUserProfile)
               : null,
+          cost: deliveryMethod === "shipping" ? shippingCost || 0 : 0,
         },
         statusHistory: createInitialStatusHistory(new Date()),
       };
@@ -252,7 +320,10 @@ export function useCheckout() {
     // Delivery method
     deliveryMethod,
     shippingCost,
+    calculatingShipping,
+    shippingError,
     handleDeliveryMethodChange,
+    recalculateShippingWithAddress,
     // Address modal
     showAddressModal,
     setShowAddressModal,

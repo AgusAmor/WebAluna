@@ -58,12 +58,6 @@ export const DB_CONFIG = {
 };
 
 export const SHIPPING_CONFIG = {
-  // Mapbox API base configuration
-  MAPBOX: {
-    TOKEN: import.meta.env.VITE_MAPBOX_TOKEN,
-    BASE_URL: "https://api.mapbox.com",
-  },
-
   // Shipping cost calculation
   BASE_COST: 100, // ARS
   COST_PER_KM: 10, // ARS per km
@@ -71,8 +65,8 @@ export const SHIPPING_CONFIG = {
 
   // Warehouse location for distance calculation
   WAREHOUSE: {
-    latitude: -34.6037, // Buenos Aires, Argentina (example)
-    longitude: -58.3816,
+    latitude: -34.5657935,
+    longitude: -58.5007791,
   },
 };
 

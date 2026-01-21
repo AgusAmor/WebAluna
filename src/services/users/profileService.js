@@ -21,8 +21,17 @@ import { normalizeUserData } from "./userFormService.js";
  */
 export const prepareUserDataForEdit = (userData) => {
   const { phoneCountry, phoneLocal } = splitPhoneNumber(userData.phone);
+
+  // Normalize addresses to ensure they have IDs
+  const normalizedAddresses =
+    userData.addresses?.map((addr, idx) => ({
+      ...addr,
+      id: addr.id || `addr_${idx}_${Date.now()}`,
+    })) || [];
+
   return {
     ...userData,
+    addresses: normalizedAddresses,
     phoneCountry,
     phoneLocal,
   };

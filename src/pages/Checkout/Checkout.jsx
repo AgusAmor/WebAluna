@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaArrowLeft,
@@ -10,7 +10,10 @@ import {
 } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { useCheckout } from "../../hooks/pages";
-import { AddressRequiredModal } from "../../components/common/modals";
+import {
+  AddressRequiredModal,
+  SelectAddressModal,
+} from "../../components/common/modals";
 import { getCartItemKey } from "../../utils/cartItemUtils";
 import {
   createOrderSummary,
@@ -21,6 +24,8 @@ import { showCustomToast } from "../../services/ui/toastService.jsx";
 
 const Checkout = () => {
   const navigate = useNavigate();
+  const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
+  const [selectedShippingAddress, setSelectedShippingAddress] = useState(null);
   const {
     userProfile,
     profileLoading,
@@ -30,7 +35,10 @@ const Checkout = () => {
     removeItem,
     deliveryMethod,
     shippingCost,
+    calculatingShipping,
+    shippingError,
     handleDeliveryMethodChange,
+    recalculateShippingWithAddress,
     showAddressModal,
     setShowAddressModal,
     handleAddressAdded,
@@ -46,6 +54,26 @@ const Checkout = () => {
       navigate("/");
     }
   }, [items, navigate]);
+
+  // Handle address selection from modal
+  const handleAddressSelected = async (selectedAddress) => {
+    try {
+      // If it's a new address (doesn't have an ID), add it to profile
+      if (!selectedAddress.id) {
+        const addedAddressWithId = await handleAddressAdded(selectedAddress);
+        // Use the address with the generated ID for shipping
+        setSelectedShippingAddress(addedAddressWithId);
+        recalculateShippingWithAddress(addedAddressWithId);
+      } else {
+        // If it's an existing address, use it for this checkout (don't change default)
+        setSelectedShippingAddress(selectedAddress);
+        recalculateShippingWithAddress(selectedAddress);
+      }
+      setShowSelectAddressModal(false);
+    } catch (err) {
+      console.error("Error selecting address:", err);
+    }
+  };
 
   if (profileLoading) {
     return (
@@ -166,7 +194,7 @@ const Checkout = () => {
                             const itemKey = getCartItemKey(id, type);
                             removeItem(itemKey);
                             showCustomToast.info(
-                              "Producto eliminado del carrito"
+                              "Producto eliminado del carrito",
                             );
                           }}
                           className="text-gold hover:text-red-500 hover:bg-gray-2 rounded-full p-2 transition-all duration-300"
@@ -196,7 +224,20 @@ const Checkout = () => {
                 </div>
                 <div className="flex justify-between text-blue-2">
                   <span>Envío:</span>
-                  <span>${formatPrice(orderSummary.shipping)}</span>
+                  <div className="flex items-center gap-2">
+                    {deliveryMethod === "shipping" && calculatingShipping ? (
+                      <>
+                        <ImSpinner2 className="animate-spin h-4 w-4" />
+                        <span className="text-xs">Calculando...</span>
+                      </>
+                    ) : deliveryMethod === "shipping" && shippingError ? (
+                      <span className="text-xs text-red-500">
+                        {shippingError}
+                      </span>
+                    ) : (
+                      <span>${formatPrice(shippingCost || 0)}</span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex justify-between text-xl font-bold text-gold font-family-comfortaa">
                   <span>Total:</span>
@@ -282,27 +323,49 @@ const Checkout = () => {
 
               {deliveryMethod === "shipping" ? (
                 <>
-                  {userProfile && hasDefaultAddress(userProfile) ? (
-                    <div className="bg-white p-4 rounded-lg text-sm text-blue-2 space-y-1 border border-gray-2">
-                      {userProfile.addresses
-                        .filter((addr) => addr.isDefault)
-                        .map((addr, idx) => (
-                          <div key={idx}>
-                            <p className="font-bold text-xl text-blue-1">
-                              {addr.street} {addr.number}
-                            </p>
-                            <p>{addr.apartment ? ` ${addr.apartment}` : ""}</p>
-                            <p>
-                              {addr.city}, {addr.region}
-                            </p>
-                            <p>CP: {addr.postalCode}</p>
-                            <p className="mt-2 text-xs">{addr.recipientName}</p>
-                            <p className=" text-xs">
-                              Tel: {addr.recipientPhone}
-                            </p>
-                          </div>
-                        ))}
-                    </div>
+                  {userProfile &&
+                  (hasDefaultAddress(userProfile) ||
+                    selectedShippingAddress) ? (
+                    <>
+                      <div className="bg-white p-4 rounded-lg text-sm text-blue-2 space-y-1 border border-gray-2">
+                        {(() => {
+                          const addressToShow =
+                            selectedShippingAddress ||
+                            userProfile.addresses.find(
+                              (addr) => addr.isDefault,
+                            );
+
+                          return (
+                            <div>
+                              <p className="font-bold text-xl text-blue-1">
+                                {addressToShow.street} {addressToShow.number}
+                              </p>
+                              <p>
+                                {addressToShow.apartment
+                                  ? ` ${addressToShow.apartment}`
+                                  : ""}
+                              </p>
+                              <p>
+                                {addressToShow.city}, {addressToShow.region}
+                              </p>
+                              <p>CP: {addressToShow.postalCode}</p>
+                              <p className="mt-2 text-xs">
+                                {addressToShow.recipientName}
+                              </p>
+                              <p className=" text-xs">
+                                Tel: {addressToShow.recipientPhone}
+                              </p>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                      <button
+                        onClick={() => setShowSelectAddressModal(true)}
+                        className="w-full mt-3 py-2 px-4 bg-blue-2 text-white rounded-lg font-family-sora hover:bg-blue-1 transition-colors"
+                      >
+                        Cambiar Dirección
+                      </button>
+                    </>
                   ) : (
                     <div className="p-4 rounded-lg border border-gold bg-white">
                       <p className="text-sm text-blue-2 mb-3">
@@ -329,11 +392,12 @@ const Checkout = () => {
 
             {/* Pay Button */}
             <button
-              onClick={handlePayClick}
+              onClick={() => handlePayClick(selectedShippingAddress)}
               disabled={
                 loadingOrder ||
                 loading ||
                 (deliveryMethod === "shipping" &&
+                  !selectedShippingAddress &&
                   userProfile &&
                   !hasDefaultAddress(userProfile))
               }
@@ -356,6 +420,20 @@ const Checkout = () => {
         isOpen={showAddressModal}
         onClose={() => setShowAddressModal(false)}
         onAddressAdded={handleAddressAdded}
+        isLoading={loading}
+      />
+
+      {/* Select Address Modal */}
+      <SelectAddressModal
+        isOpen={showSelectAddressModal}
+        onClose={() => setShowSelectAddressModal(false)}
+        onAddressSelected={handleAddressSelected}
+        addresses={userProfile?.addresses || []}
+        currentAddress={
+          selectedShippingAddress ||
+          userProfile?.addresses?.find((addr) => addr.isDefault) ||
+          null
+        }
         isLoading={loading}
       />
     </div>
