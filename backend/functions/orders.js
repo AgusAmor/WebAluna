@@ -17,6 +17,7 @@ const {
   handleError,
   sendError,
 } = require("./utils/responseHandler.js");
+const { sendOrderStatusEmail } = require("./utils/emailService.js");
 
 /**
  * Creates a new order in Firestore
@@ -74,7 +75,7 @@ exports.createOrder = async (req, res) => {
         id: docRef.id,
         ...createdOrder.data(),
       },
-      201
+      201,
     );
   } catch (error) {
     handleError(res, error, {
@@ -225,6 +226,8 @@ exports.updateOrderStatus = async (req, res) => {
       return sendError(res, 404, "Order not found");
     }
 
+    const orderData = orderDoc.data();
+
     // Create status history entry with proper structure
     const statusHistoryEntry = {
       status: body.newStatus,
@@ -239,17 +242,57 @@ exports.updateOrderStatus = async (req, res) => {
       statusHistory: admin.firestore.FieldValue.arrayUnion(statusHistoryEntry),
     });
 
+    // Send email notification to customer
+    if (orderData.customerInfo && orderData.customerInfo.email) {
+      const customerName =
+        orderData.customerInfo.firstName ||
+        orderData.customerInfo.fullName ||
+        orderData.customerInfo.name ||
+        "Estimado cliente";
+
+      // Extract items data for email
+      const items = (orderData.items || []).map((item) => ({
+        name: item.productName || item.name || "Producto",
+        size: item.size || item.variant || "",
+        quantity: item.quantity || 1,
+        price: item.unitPrice || item.price || 0,
+      }));
+
+      console.log("Sending email with:", {
+        email: orderData.customerInfo.email,
+        customerName,
+        orderNumber: orderData.orderNumber,
+        status: body.newStatus,
+        itemsCount: items.length,
+      });
+
+      const emailResult = await sendOrderStatusEmail(
+        orderData.customerInfo.email,
+        customerName,
+        orderData.orderNumber,
+        body.newStatus,
+        items,
+      );
+
+      if (!emailResult.success) {
+        console.warn(
+          `Failed to send email for order ${body.orderId}: ${emailResult.error}`,
+        );
+        // Don't fail the request if email fails, just log it
+      }
+    }
+
     const updatedOrder = await orderRef.get();
-    const orderData = updatedOrder.data();
+    const updatedOrderData = updatedOrder.data();
 
     // Convert timestamps to ISO strings for consistent frontend handling
     sendSuccess(res, {
       id: orderRef.id,
-      ...orderData,
-      createdAt: orderData.createdAt?.toDate
-        ? orderData.createdAt.toDate().toISOString()
-        : orderData.createdAt,
-      statusHistory: (orderData.statusHistory || []).map((entry) => ({
+      ...updatedOrderData,
+      createdAt: updatedOrderData.createdAt?.toDate
+        ? updatedOrderData.createdAt.toDate().toISOString()
+        : updatedOrderData.createdAt,
+      statusHistory: (updatedOrderData.statusHistory || []).map((entry) => ({
         ...entry,
         timestamp: entry.timestamp?.toDate
           ? entry.timestamp.toDate().toISOString()
