@@ -12,7 +12,10 @@ import {
 } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { useCheckout } from "../../hooks/pages";
-import { ShippingInfoBanner } from "../../components/checkout";
+import {
+  ShippingInfoBanner,
+  DeliveryLocationMap,
+} from "../../components/checkout";
 import {
   AddressRequiredModal,
   SelectAddressModal,
@@ -240,7 +243,9 @@ const Checkout = () => {
                 <div className="flex justify-between text-blue-2">
                   <span>Envío:</span>
                   <div className="flex items-center gap-2">
-                    {deliveryMethod === "shipping" && calculatingShipping ? (
+                    {deliveryMethod === "pickup" ? (
+                      <span className="text-gold font-semibold">Sin cargo</span>
+                    ) : deliveryMethod === "shipping" && calculatingShipping ? (
                       <>
                         <ImSpinner2 className="animate-spin h-4 w-4" />
                         <span className="text-xs">Calculando...</span>
@@ -252,9 +257,6 @@ const Checkout = () => {
                     ) : deliveryMethod === "shipping" &&
                       orderSummary.subtotal >= 80000 ? (
                       <span className="text-gold font-semibold">¡Gratis!</span>
-                    ) : deliveryMethod === "pickup" &&
-                      orderSummary.subtotal >= 80000 ? (
-                      <span className="text-gold font-semibold">Sin costo</span>
                     ) : (
                       <span>${formatPrice(shippingCost)}</span>
                     )}
@@ -305,7 +307,7 @@ const Checkout = () => {
                       e.preventDefault();
                       setShowShippingInfoModal(true);
                     }}
-                    className="ml-auto text-blue-2 hover:text-gold transition-colors p-2"
+                    className="ml-auto text-blue-2 hover:text-gold transition-colors p-2 cursor-pointer"
                     title="Ver información de envío"
                   >
                     <FaInfoCircle className="h-5 w-5" />
@@ -358,7 +360,7 @@ const Checkout = () => {
                   (hasDefaultAddress(userProfile) ||
                     selectedShippingAddress) ? (
                     <>
-                      <div className="bg-white p-4 rounded-lg text-sm text-blue-2 space-y-1 border border-gray-2">
+                      <div className="bg-white p-4 rounded-lg text-sm text-blue-2 space-y-1 border border-gray-2 mb-4">
                         {(() => {
                           const addressToShow =
                             selectedShippingAddress ||
@@ -390,6 +392,20 @@ const Checkout = () => {
                           );
                         })()}
                       </div>
+
+                      {/* Mapa de entrega */}
+                      {(() => {
+                        const addressToShow =
+                          selectedShippingAddress ||
+                          userProfile.addresses.find((addr) => addr.isDefault);
+                        return (
+                          <DeliveryLocationMap
+                            clientAddress={addressToShow}
+                            deliveryMethod="shipping"
+                          />
+                        );
+                      })()}
+
                       <button
                         onClick={() => setShowSelectAddressModal(true)}
                         className="w-full mt-3 py-2 px-4 bg-blue-2 text-white rounded-lg font-family-sora hover:bg-blue-1 transition-colors"
@@ -413,10 +429,31 @@ const Checkout = () => {
                   )}
                 </>
               ) : (
-                <div className="bg-white p-4 rounded-lg border border-gray-2">
-                  <p className="text-sm text-blue-1 font-family-sora">
-                    Tu pedido será retirado en nuestro local.
-                  </p>
+                <div className="space-y-4">
+                  <div className="bg-white p-4 rounded-lg border border-gray-2 space-y-2">
+                    <h3 className="font-bold text-blue-1 font-family-sora">
+                      Aluna - Punto de Retiro
+                    </h3>
+                    <p className="text-sm text-blue-2">
+                      <strong>Dirección:</strong>{" "}
+                      <a
+                        href="https://www.google.com/maps/place/Pje.+Beethoven+3590,+C1431+Cdad.+Aut%C3%B3noma+de+Buenos+Aires/@-34.5657891,-58.503354,17z/data=!3m1!4b1!4m6!3m5!1s0x95bcb6fbc88e33a3:0x992ce3839f477b11!8m2!3d-34.5657935!4d-58.5007791!16s%2Fg%2F11fy_f0k39?entry=ttu&g_ep=EgoyMDI2MDEyMS4wIKXMDSoASAFQAw%3D%3D"
+                        target="_blank"
+                        className="text-gold font-medium hover:text-blue-3 transition-all"
+                      >
+                        Beethoven 3590
+                      </a>
+                    </p>
+                    <p className="text-sm text-blue-2">
+                      Podrás retirar tu pedido en nuestro local sin cargo.
+                    </p>
+                  </div>
+
+                  {/* Mapa de retiro */}
+                  <DeliveryLocationMap
+                    clientAddress={null}
+                    deliveryMethod="pickup"
+                  />
                 </div>
               )}
             </div>
@@ -432,7 +469,7 @@ const Checkout = () => {
                   userProfile &&
                   !hasDefaultAddress(userProfile))
               }
-              className="w-full bg-gold text-white font-bold font-family-sora py-3 rounded-lg hover:bg-blue-2  hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gold text-white font-bold font-family-sora py-3 rounded-lg hover:bg-blue-2  hover:scale-105 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loadingOrder || loading ? "Procesando..." : "Pagar"}
             </button>
