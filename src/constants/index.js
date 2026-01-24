@@ -4,7 +4,7 @@
  * All application constants organized by domain:
  * - auth: Authentication and user roles
  * - cart: Shopping cart actions
- * - product: Product categories and order status
+ * - product: Product categories
  * - route: Application routes
  * - ui: UI settings and storage keys
  * - validation: Form validation rules
@@ -16,7 +16,7 @@ export * from "./authConstants";
 // Cart Operations
 export * from "./cartConstants";
 
-// Product & Orders
+// Product
 export * from "./productConstants";
 
 // Routes

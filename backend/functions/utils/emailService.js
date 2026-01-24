@@ -7,6 +7,60 @@
 const nodemailer = require("nodemailer");
 const { defineString } = require("firebase-functions/params");
 
+// Order status messages constants
+export const ORDER_STATUS_MESSAGES = {
+  pending: {
+    title: "Estamos procesando tu pedido",
+    message: "ha sido recibido y está siendo procesado.",
+    footer: "Te notificaremos cuando tu pedido sea confirmado.",
+  },
+  confirmed: {
+    title: "¡Tu pedido ha sido confirmado!",
+    message: "ha sido confirmado.",
+    footer:
+      "Estamos preparando todo para comenzar a imprimir. Te mantendremos al tanto del avance de tu pedido.",
+  },
+  printing: {
+    title: "Estamos imprimiendo tu pedido",
+    message: "está siendo elaborado.",
+    footer:
+      "Este proceso se realiza con dedicación y precisión. ¡Tu pedido pronto estará listo!",
+  },
+  dispatched: {
+    // Varies by delivery method (shipping or pickup)
+    shipping: {
+      title: "Tu pedido está listo para el envío",
+      message: "está listo y lo enviaremos a la brevedad.",
+      footer:
+        "Nos pondremos en contacto con el destinatario cuando tu pedido esté en camino.",
+    },
+    pickup: {
+      title: "Tu pedido está esperando ser retirado",
+      message: "está listo y esperando ser retirado.",
+      footer:
+        "Puedes pasar a recogerlo cualquier dia de 14hs a 20hs por nuestra sucursal.",
+    },
+  },
+  delivered: {
+    title: "Tu pedido ha sido entregado",
+    message: "ha sido entregado.",
+    footer:
+      "Esperamos que disfrutes tu nueva lámpara Aluna. Gracias por elegirnos para ambientar tu espacio.",
+  },
+  cancelled: {
+    title: "Tu pedido ha sido cancelado",
+    message: "ha sido cancelado.",
+    footer:
+      "Si tienes dudas, no dudes en contactarnos. Estamos aquí para ayudarte.",
+  },
+};
+
+// Delivery method constants
+const DELIVERY_METHODS = {
+  SHIPPING: "shipping",
+  PICKUP: "pickup",
+};
+
 // Define email configuration parameters
 const emailUser = defineString("EMAIL_USER");
 const emailPassword = defineString("EMAIL_PASSWORD");
@@ -14,7 +68,13 @@ const emailPassword = defineString("EMAIL_PASSWORD");
 /**
  * Email templates for different order statuses
  */
-const getEmailTemplate = (orderNumber, status, customerName, items = []) => {
+const getEmailTemplate = (
+  orderNumber,
+  status,
+  customerName,
+  items = [],
+  deliveryMethod = DELIVERY_METHODS.SHIPPING,
+) => {
   // Color palette from brand
   const colors = {
     blue1: "#264e60",
@@ -180,50 +240,28 @@ const getEmailTemplate = (orderNumber, status, customerName, items = []) => {
     </html>
   `;
 
-  const templates = {
-    pending: {
-      subject: `Pedido #${orderNumber} - En proceso`,
-      title: "Estamos procesando tu pedido",
-      message: `Tu pedido <span class="highlight">#${orderNumber}</span> ha sido recibido y está siendo procesado.`,
-      footer: "Te notificaremos cuando tu pedido sea confirmado.",
-    },
-    confirmed: {
-      subject: `Pedido #${orderNumber} - Confirmado`,
-      title: "Tu pedido ha sido confirmado",
-      message: `¡Excelente! Tu pedido <span class="highlight">#${orderNumber}</span> ha sido confirmado.`,
-      footer:
-        "Estamos preparando todo para comenzar a imprimir. Pronto te notificaremos con más detalles.",
-    },
-    printing: {
-      subject: `Pedido #${orderNumber} - Imprimiendo`,
-      title: "Estamos imprimiendo tu pedido.",
-      message: `Tu pedido <span class="highlight">#${orderNumber}</span> está siendo impreso en nuestras impresoras 3D.`,
-      footer:
-        "Este es un proceso importante para asegurar la calidad. Pronto estará listo para envío.",
-    },
-    shipped: {
-      subject: `Pedido #${orderNumber} - Enviado`,
-      title: "¡Tu pedido está en camino!",
-      message: `¡Buenas noticias! Tu pedido <span class="highlight">#${orderNumber}</span> esta en camino a tu domicilio.`,
-      footer: "Pronto recibirás tu nueva lampara Aluna.",
-    },
-    delivered: {
-      subject: `Pedido #${orderNumber} - Entregado`,
-      title: "Tu pedido ha sido entregado",
-      message: `¡Tu pedido <span class="highlight">#${orderNumber}</span> ha sido entregado!`,
-      footer:
-        "Esperamos que disfrutes tu compra. Gracias por confiar en nosotros.",
-    },
-    cancelled: {
-      subject: `Pedido #${orderNumber} - Cancelado`,
-      title: "Tu pedido ha sido cancelado",
-      message: `Tu pedido <span class="highlight">#${orderNumber}</span> ha sido cancelado.`,
-      footer:
-        "Si tienes dudas, no dudes en contactarnos. Estamos aquí para ayudarte.",
-    },
-  };
+  // Get message based on status and delivery method
+  let messageData;
+  if (status === "dispatched") {
+    // For dispatched status, use delivery method to select variant
+    const method = deliveryMethod || "shipping";
+    messageData =
+      ORDER_STATUS_MESSAGES.dispatched[method] ||
+      ORDER_STATUS_MESSAGES.dispatched.shipping ||
+      ORDER_STATUS_MESSAGES.pending;
+  } else {
+    messageData =
+      ORDER_STATUS_MESSAGES[status] || ORDER_STATUS_MESSAGES.pending;
+  }
 
-  const template = templates[status] || templates.pending;
+  const statusLabels = {
+    pending: "En proceso",
+    confirmed: "Confirmado",
+    printing: "Imprimiendo",
+    dispatched: "Despachado",
+    delivered: "Entregado",
+    cancelled: "Cancelado",
+  };
 
   // Build products HTML
   let productsHTML = "";
@@ -251,16 +289,19 @@ const getEmailTemplate = (orderNumber, status, customerName, items = []) => {
   }
 
   return {
-    subject: template.subject,
+    subject: `Pedido #${orderNumber} - ${statusLabels[status] || "Actualización"}`,
     html: baseTemplate
       .replace(
         "{LOGO_URL}",
         "https://firebasestorage.googleapis.com/v0/b/aluna-1af1f.firebasestorage.app/o/brand%2Flogotipo.png?alt=media",
       )
-      .replace("{TITLE}", template.title)
-      .replace("{MESSAGE}", template.message)
+      .replace("{TITLE}", messageData.title)
+      .replace(
+        "{MESSAGE}",
+        `Tu pedido <span class="highlight">#${orderNumber}</span> ${messageData.message}`,
+      )
       .replace("{PRODUCTS}", productsHTML)
-      .replace("{FOOTER_MESSAGE}", template.footer),
+      .replace("{FOOTER_MESSAGE}", messageData.footer),
   };
 };
 
@@ -301,6 +342,7 @@ const createTransporter = () => {
  * @param {string} orderNumber - Order number
  * @param {string} status - New order status
  * @param {Array} items - Order items with name, quantity, price
+ * @param {string} deliveryMethod - Delivery method for dispatched status (ship or pickup)
  * @returns {Promise<Object>} Email send result
  */
 exports.sendOrderStatusEmail = async (
@@ -309,6 +351,7 @@ exports.sendOrderStatusEmail = async (
   orderNumber,
   status,
   items = [],
+  deliveryMethod = DELIVERY_METHODS.SHIPPING,
 ) => {
   try {
     if (!customerEmail) {
@@ -320,12 +363,19 @@ exports.sendOrderStatusEmail = async (
       customerName,
       orderNumber,
       status,
+      deliveryMethod,
       itemsCount: items.length,
       items: items,
     });
 
-    // Get email template based on status
-    const template = getEmailTemplate(orderNumber, status, customerName, items);
+    // Get email template based on status and delivery method
+    const template = getEmailTemplate(
+      orderNumber,
+      status,
+      customerName,
+      items,
+      deliveryMethod,
+    );
 
     // Create transporter
     const transporter = createTransporter();

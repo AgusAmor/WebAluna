@@ -258,11 +258,15 @@ exports.updateOrderStatus = async (req, res) => {
         price: item.unitPrice || item.price || 0,
       }));
 
+      // Extract delivery method for dispatched status
+      const deliveryMethod = orderData.delivery?.method || "shipping";
+
       console.log("Sending email with:", {
         email: orderData.customerInfo.email,
         customerName,
         orderNumber: orderData.orderNumber,
         status: body.newStatus,
+        deliveryMethod,
         itemsCount: items.length,
       });
 
@@ -272,6 +276,7 @@ exports.updateOrderStatus = async (req, res) => {
         orderData.orderNumber,
         body.newStatus,
         items,
+        deliveryMethod,
       );
 
       if (!emailResult.success) {
