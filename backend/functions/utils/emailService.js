@@ -8,7 +8,7 @@ const nodemailer = require("nodemailer");
 const { defineString } = require("firebase-functions/params");
 
 // Order status messages constants
-export const ORDER_STATUS_MESSAGES = {
+const ORDER_STATUS_MESSAGES = {
   pending: {
     title: "Estamos procesando tu pedido",
     message: "ha sido recibido y está siendo procesado.",
@@ -65,6 +65,167 @@ const DELIVERY_METHODS = {
 const emailUser = defineString("EMAIL_USER");
 const emailPassword = defineString("EMAIL_PASSWORD");
 
+// Color palette from brand
+const COLORS = {
+  blue1: "#264e60",
+  blue2: "#427385",
+  blue3: "#81a5ae",
+  gray1: "#a9b2b9",
+  gray2: "#c3c9ce",
+  gray3: "#d9dce0",
+  gold: "#b6a269",
+  black: "#2b2b2b",
+  white: "#f4f4f4",
+};
+
+/**
+ * Returns CSS styles for email templates
+ */
+const getEmailStyles = () => `
+  @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Sora:wght@400;500;600;700&display=swap');
+  
+  body {
+    font-family: 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background-color: ${COLORS.gray3};
+    margin: 0;
+    padding: 20px;
+  }
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: ${COLORS.white};
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(38, 78, 96, 0.1);
+    overflow: hidden;
+  }
+  .header {
+    background: linear-gradient(135deg, ${COLORS.blue2} 0%, ${COLORS.blue1} 100%);
+    color: white;
+    padding: 30px 20px;
+    text-align: center;
+  }
+  .logo { margin-bottom: 10px; }
+  .logo img { max-width: 220px; height: auto; }
+  .title {
+    font-family: 'Comfortaa', sans-serif;
+    font-size: 28px;
+    font-weight: bold;
+    margin: 10px 0 0 0;
+    color: white;
+  }
+  .content { padding: 30px 20px; color: ${COLORS.black}; }
+  .greeting { font-size: 16px; margin-bottom: 20px; color: ${COLORS.black}; }
+  .message { font-size: 15px; line-height: 1.6; color: ${COLORS.gray1}; margin-bottom: 20px; }
+  .highlight { color: ${COLORS.blue2}; font-weight: bold; }
+  .products-list {
+    background-color: ${COLORS.gray3};
+    padding: 15px;
+    border-left: 4px solid ${COLORS.gold};
+    margin: 5px 0;
+    border-radius: 4px;
+    color: ${COLORS.blue2};
+  }
+  .product-name { font-weight: 500; color: ${COLORS.blue2}; }
+  .product-price { font-weight: bold; color: ${COLORS.blue2}; float: right; }
+  .info-section {
+    background-color: ${COLORS.gray3};
+    padding: 15px;
+    border-left: 4px solid ${COLORS.gold};
+    margin: 15px 0;
+    border-radius: 4px;
+  }
+  .info-label { color: ${COLORS.gray1}; font-size: 12px; text-transform: uppercase; font-weight: 600; margin-bottom: 5px; }
+  .info-value { color: ${COLORS.blue2}; font-size: 14px; font-weight: 600; }
+  .alert-box {
+    background-color: #fff3cd;
+    border-left: 4px solid ${COLORS.gold};
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    color: #856404;
+    font-weight: 500;
+  }
+  .totals {
+    background-color: ${COLORS.gray3};
+    padding: 15px;
+    border-left: 4px solid ${COLORS.gold};
+    margin: 15px 0;
+    border-radius: 4px;
+  }
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    color: ${COLORS.blue2};
+  }
+  .total-amount { font-weight: bold; font-size: 16px; color: ${COLORS.gold}; }
+  .footer {
+    background-color: ${COLORS.gray3};
+    padding: 20px;
+    text-align: center;
+    font-size: 12px;
+    color: ${COLORS.gray1};
+    border-top: 1px solid ${COLORS.gray2};
+  }
+  .divider { height: 1px; background-color: ${COLORS.gray2}; margin: 20px 0; }
+`;
+
+/**
+ * Generates products HTML
+ */
+const generateProductsHTML = (items) => {
+  if (!items || items.length === 0) return "";
+
+  return items
+    .map(
+      (product) => `
+      <div class="products-list">
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="text-align: left; padding-right: 10px; width: 85%;">
+              <div class="product-name">${product.name || "Producto"}${product.size ? " · " + product.size : ""} · x${product.quantity || 1}</div>
+            </td>
+            <td style="text-align: right; width: 15%; white-space: nowrap;">
+              <div class="product-price">$${(product.price || product.unitPrice || 0).toFixed(2)}</div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    `,
+    )
+    .join("");
+};
+
+/**
+ * Base email template
+ */
+const getBaseTemplate = (logoUrl, title, content, footer) => `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>${getEmailStyles()}</style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="logo">
+          <img src="${logoUrl}" alt="Aluna Logo" />
+        </div>
+        <div class="title">${title}</div>
+      </div>
+      <div class="content">
+        ${content}
+      </div>
+      <div class="footer">
+        ${footer}
+      </div>
+    </div>
+  </body>
+  </html>
+`;
+
 /**
  * Email templates for different order statuses
  */
@@ -75,175 +236,8 @@ const getEmailTemplate = (
   items = [],
   deliveryMethod = DELIVERY_METHODS.SHIPPING,
 ) => {
-  // Color palette from brand
-  const colors = {
-    blue1: "#264e60",
-    blue2: "#427385",
-    blue3: "#81a5ae",
-    gray1: "#a9b2b9",
-    gray2: "#c3c9ce",
-    gray3: "#d9dce0",
-    gold: "#b6a269",
-    black: "#2b2b2b",
-    white: "#f4f4f4",
-  };
-
-  const baseTemplate = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <style>
-        @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Sora:wght@400;500;600;700&display=swap');
-        
-        body {
-          font-family: 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-          background-color: ${colors.gray3};
-          margin: 0;
-          padding: 20px;
-        }
-        .container {
-          max-width: 600px;
-          margin: 0 auto;
-          background-color: ${colors.white};
-          border-radius: 12px;
-          box-shadow: 0 4px 6px rgba(38, 78, 96, 0.1);
-          overflow: hidden;
-        }
-        .header {
-          background: linear-gradient(135deg, ${colors.blue2} 0%, ${colors.blue1} 100%);
-          color: white;
-          padding: 30px 20px;
-          text-align: center;
-        }
-        .logo {
-          margin-bottom: 10px;
-        }
-        .logo img {
-          max-width: 220px;
-          height: auto;
-        }
-        .title {
-          font-family: 'Comfortaa', sans-serif;
-          font-size: 28px;
-          font-weight: bold;
-          margin: 10px 0 0 0;
-          color: white;
-        }
-        .content {
-          padding: 30px 20px;
-          color: ${colors.black};
-        }
-        .greeting {
-          font-family: 'Sora', sans-serif;
-          font-size: 16px;
-          margin-bottom: 20px;
-          color: ${colors.black};
-        }
-        .message {
-          font-family: 'Sora', sans-serif;
-          font-size: 15px;
-          line-height: 1.6;
-          color: ${colors.gray1};
-          margin-bottom: 20px;
-        }
-        .highlight {
-          color: ${colors.blue2};
-          font-weight: bold;
-        }
-        * {
-          font-family: 'Sora', sans-serif !important;
-        }
-        .products-list {
-          background-color: ${colors.gray3};
-          padding: 15px;
-          border-left: 4px solid ${colors.gold};
-          margin: 5px 0;
-          border-radius: 4px;
-          color: ${colors.blue2};
-        }
-        .product-item {
-          font-family: 'Sora', sans-serif;
-          font-size: 14px;
-          width: 100%;
-        }
-        .product-name {
-          font-weight: 500;
-          color: ${colors.blue2};
-          display: inline-block;
-          vertical-align: middle;
-        }
-        .product-qty {
-          color: ${colors.gray1};
-          display: inline-block;
-          margin: 0 10px;
-          vertical-align: middle;
-        }
-        .product-price {
-          font-weight: bold;
-          color: ${colors.blue2};
-          display: inline-block;
-          float: right;
-          vertical-align: middle;
-        }
-        .order-number {
-          background-color: ${colors.gray3};
-          padding: 15px;
-          border-left: 4px solid ${colors.gold};
-          margin: 20px 0;
-          border-radius: 4px;
-          font-family: monospace;
-          color: ${colors.blue2};
-        }
-        .footer {
-          background-color: ${colors.gray3};
-          padding: 20px;
-          text-align: center;
-          font-size: 12px;
-          color: ${colors.gray1};
-          border-top: 1px solid ${colors.gray2};
-          font-family: 'Sora', sans-serif;
-        }
-        .divider {
-          height: 1px;
-          background-color: ${colors.gray2};
-          margin: 20px 0;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <div class="logo">
-            <img src="{LOGO_URL}" alt="Aluna Logo" />
-          </div>
-          <div class="title">{TITLE}</div>
-        </div>
-        <div class="content">
-          <div class="greeting">Hola <span class="highlight">${customerName}</span>,</div>
-          <div class="message">
-            {MESSAGE}
-          </div>
-          {PRODUCTS}
-          <div class="divider"></div>
-          <div class="message" style="text-align: center; font-size: 13px;">
-            {FOOTER_MESSAGE}
-          </div>
-        </div>
-        <div class="footer">
-          <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
-          <p>© 2026 Aluna - Lámparas con impresión 3D</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-
-  // Get message based on status and delivery method
   let messageData;
   if (status === "dispatched") {
-    // For dispatched status, use delivery method to select variant
     const method = deliveryMethod || "shipping";
     messageData =
       ORDER_STATUS_MESSAGES.dispatched[method] ||
@@ -263,47 +257,29 @@ const getEmailTemplate = (
     cancelled: "Cancelado",
   };
 
-  // Build products HTML
-  let productsHTML = "";
-  if (items && items.length > 0) {
-    const productItems = items
-      .map(
-        (product) => `
-      <div class="products-list">
-        <table style="width: 100%; border-collapse: collapse;">
-          <tr>
-            <td style="text-align: left; padding-right: 10px; width: 85%;">
-              <div class="product-name">${product.name || "Producto"}${product.size ? " · " + product.size : ""} · x${product.quantity || 1}</div>
-            </td>
-            <td style="text-align: right; width: 15%; white-space: nowrap;">
-              <div class="product-price">$${(product.price || 0).toFixed(2)}</div>
-            </td>
-          </tr>
-        </table>
-      </div>
-    `,
-      )
-      .join("");
+  const logoUrl =
+    "https://firebasestorage.googleapis.com/v0/b/aluna-1af1f.firebasestorage.app/o/brand%2Flogotipo.png?alt=media";
+  const content = `
+    <div class="greeting">Hola <span class="highlight">${customerName}</span>,</div>
+    <div class="message">Tu pedido <span class="highlight">#${orderNumber}</span> ${messageData.message}</div>
+    ${generateProductsHTML(items)}
+    <div class="divider"></div>
+    <div class="message" style="text-align: center; font-size: 13px;">${messageData.footer}</div>
+  `;
 
-    productsHTML = productItems;
-  }
+  const footer = `
+    <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
+    <p>© 2026 Aluna - Lámparas con impresión 3D</p>
+  `;
 
   return {
     subject: `Pedido #${orderNumber} - ${statusLabels[status] || "Actualización"}`,
-    html: baseTemplate
-      .replace(
-        "{LOGO_URL}",
-        "https://firebasestorage.googleapis.com/v0/b/aluna-1af1f.firebasestorage.app/o/brand%2Flogotipo.png?alt=media",
-      )
-      .replace("{TITLE}", messageData.title)
-      .replace(
-        "{MESSAGE}",
-        `Tu pedido <span class="highlight">#${orderNumber}</span> ${messageData.message}`,
-      )
-      .replace("{PRODUCTS}", productsHTML)
-      .replace("{FOOTER_MESSAGE}", messageData.footer),
+    html: getBaseTemplate(logoUrl, messageData.title, content, footer),
   };
 };
+
+/**
+ */
 
 /**
  * Creates a nodemailer transporter using Gmail
@@ -437,3 +413,93 @@ exports.sendEmail = async (to, subject, html) => {
     };
   }
 };
+
+/**
+ * Sends notification to admins about order cancellation
+ * @param {Object} orderData - Order information
+ * @param {string} customerEmail - Customer email
+ * @param {string} customerName - Customer name
+ * @returns {Promise<Object>} Email send result
+ */
+exports.sendAdminCancellationNotification = async (
+  orderData,
+  customerEmail,
+  customerName,
+) => {
+  try {
+    const adminEmail = emailUser.value() || "admin@aluna.com";
+    const logoUrl =
+      "https://firebasestorage.googleapis.com/v0/b/aluna-1af1f.firebasestorage.app/o/brand%2Flogotipo.png?alt=media";
+
+    const content = `
+      <div class="alert-box">Un cliente ha cancelado su pedido</div>
+      <div class="info-section">
+        <div class="info-label">Cliente</div>
+        <div class="info-value">${customerName}</div>
+        <div class="info-label" style="margin-top: 10px;">Email</div>
+        <div class="info-value">${customerEmail}</div>
+        <div class="info-label" style="margin-top: 10px;">Orden</div>
+        <div class="info-value">#${orderData.orderNumber || "N/A"}</div>
+      </div>
+      <div class="divider"></div>
+      <div style="font-weight: 600; color: ${COLORS.blue2}; margin: 15px 0;">Productos Cancelados</div>
+      ${generateProductsHTML(
+        (orderData.items || []).map((item) => ({
+          name: item.productName || item.name || "Producto",
+          quantity: item.quantity || 1,
+          price: item.unitPrice || item.price || 0,
+          size: item.size,
+        })),
+      )}
+      <div class="totals">
+        <div class="total-row">
+          <span>Subtotal:</span>
+          <span>$${(orderData.summary?.subtotal || 0).toLocaleString("es-AR")}</span>
+        </div>
+        <div class="total-row">
+          <span>Envío:</span>
+          <span>$${(orderData.summary?.shipping || 0).toLocaleString("es-AR")}</span>
+        </div>
+        <div class="total-row total-amount">
+          <span>Total Cancelado:</span>
+          <span>$${(orderData.totalAmount || orderData.summary?.total || 0).toLocaleString("es-AR")}</span>
+        </div>
+      </div>
+    `;
+
+    const footer = `
+      <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
+      <p>© 2026 Aluna - Lámparas impresas en 3D, hechas con intención.</p>
+    `;
+
+    const transporter = createTransporter();
+    const mailOptions = {
+      from: `Aluna <${emailUser.value() || "noreply@aluna.com"}>`,
+      to: adminEmail,
+      subject: `Cancelación de Pedido - Orden #${orderData.orderNumber || "N/A"}`,
+      html: getBaseTemplate(
+        logoUrl,
+        "Notificación de Cancelación",
+        content,
+        footer,
+      ),
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+
+    console.log("Admin cancellation notification sent:", result.messageId);
+    return {
+      success: true,
+      messageId: result.messageId,
+    };
+  } catch (error) {
+    console.error("Error sending admin cancellation notification:", error);
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+};
+
+// Export constants
+exports.ORDER_STATUS_MESSAGES = ORDER_STATUS_MESSAGES;

@@ -57,7 +57,10 @@ const OrdersTable = ({
         </thead>
         <tbody>
           {filteredOrders.map((order) => {
-            const itemCount = order.items ? order.items.length : 0;
+            // Sum total quantity of all items
+            const itemCount = order.items
+              ? order.items.reduce((sum, item) => sum + (item.quantity || 1), 0)
+              : 0;
             const deliveryInfo =
               order.deliveryType === "pickup"
                 ? "Pickup"

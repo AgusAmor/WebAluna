@@ -17,7 +17,10 @@ const {
   handleError,
   sendError,
 } = require("./utils/responseHandler.js");
-const { sendOrderStatusEmail } = require("./utils/emailService.js");
+const {
+  sendOrderStatusEmail,
+  sendAdminCancellationNotification,
+} = require("./utils/emailService.js");
 
 /**
  * Creates a new order in Firestore
@@ -68,12 +71,26 @@ exports.createOrder = async (req, res) => {
     });
 
     const createdOrder = await docRef.get();
+    const orderData = createdOrder.data();
+
+    // Send pending order notification email to customer
+    try {
+      await sendOrderStatusEmail(
+        orderData,
+        body.customerInfo.email,
+        "pending",
+        body.delivery?.method,
+      );
+    } catch (emailError) {
+      console.error("Error sending order creation email:", emailError);
+      // Don't fail the order creation if email fails
+    }
 
     sendSuccess(
       res,
       {
         id: docRef.id,
-        ...createdOrder.data(),
+        ...orderData,
       },
       201,
     );
@@ -284,6 +301,27 @@ exports.updateOrderStatus = async (req, res) => {
           `Failed to send email for order ${body.orderId}: ${emailResult.error}`,
         );
         // Don't fail the request if email fails, just log it
+      }
+
+      // If order was cancelled by the customer (not admin), notify admins
+      if (body.newStatus === "cancelled" && decoded.uid === orderData.userId) {
+        const customerName =
+          orderData.customerInfo.firstName ||
+          orderData.customerInfo.fullName ||
+          orderData.customerInfo.name ||
+          "Cliente";
+
+        const adminEmailResult = await sendAdminCancellationNotification(
+          orderData,
+          orderData.customerInfo.email,
+          customerName,
+        );
+
+        if (!adminEmailResult.success) {
+          console.warn(
+            `Failed to send admin cancellation notification for order ${body.orderId}: ${adminEmailResult.error}`,
+          );
+        }
       }
     }
 
