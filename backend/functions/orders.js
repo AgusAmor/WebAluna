@@ -245,6 +245,43 @@ exports.updateOrderStatus = async (req, res) => {
 
     const orderData = orderDoc.data();
 
+    // Validate status transitions
+    const currentStatus = orderData.status;
+    const deliveryMethod = orderData.delivery?.method || "shipping";
+
+    // Cannot change status if order is already cancelled or delivered
+    if (currentStatus === "cancelled" || currentStatus === "delivered") {
+      return sendError(
+        res,
+        400,
+        `Cannot change status of a ${currentStatus} order`,
+      );
+    }
+
+    // For admin cancellation, only allow from pending, confirmed, printing, dispatched
+    if (
+      body.newStatus === "cancelled" &&
+      decoded.uid !== orderData.userId &&
+      !["pending", "confirmed", "printing", "dispatched"].includes(
+        currentStatus,
+      )
+    ) {
+      return sendError(
+        res,
+        400,
+        "Order can only be cancelled from pending, confirmed, printing, or dispatched status",
+      );
+    }
+
+    // Cannot set to withdrawn (retirado) if delivery method is shipping
+    if (body.newStatus === "withdrawn" && deliveryMethod === "shipping") {
+      return sendError(
+        res,
+        400,
+        "Cannot mark as withdrawn for shipping delivery method",
+      );
+    }
+
     // Create status history entry with proper structure
     const statusHistoryEntry = {
       status: body.newStatus,

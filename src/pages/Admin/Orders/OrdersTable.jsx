@@ -125,13 +125,26 @@ const OrdersTable = ({
                     </button>
                     {/* Cancel button */}
                     <button
-                      className={`bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-700 transition-colors w-24 flex items-center justify-center ${
+                      className={`text-white px-3 py-1 rounded-lg text-xs font-bold transition-colors w-24 flex items-center justify-center ${
                         isCancellingOrder && orderToCancel?.id === order.id
-                          ? "opacity-60 cursor-not-allowed"
-                          : ""
+                          ? "bg-red-500 opacity-60 cursor-not-allowed"
+                          : [
+                              ORDER_STATUS.PENDING,
+                              ORDER_STATUS.CONFIRMED,
+                              ORDER_STATUS.PRINTING,
+                              ORDER_STATUS.DISPATCHED,
+                            ].includes(order.status)
+                            ? "bg-red-500 hover:bg-red-700"
+                            : "bg-gray-400 cursor-not-allowed"
                       }`}
                       disabled={
-                        isCancellingOrder && orderToCancel?.id === order.id
+                        isCancellingOrder && orderToCancel?.id === order.id ||
+                        ![
+                          ORDER_STATUS.PENDING,
+                          ORDER_STATUS.CONFIRMED,
+                          ORDER_STATUS.PRINTING,
+                          ORDER_STATUS.DISPATCHED,
+                        ].includes(order.status)
                       }
                       onClick={() => onDeleteOrder(order.id)}
                     >

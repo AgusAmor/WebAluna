@@ -269,9 +269,14 @@ const OrderDetailsModal = ({
                 <option value={ORDER_STATUS.CONFIRMED}>Confirmado</option>
                 <option value={ORDER_STATUS.PRINTING}>Imprimiendo</option>
                 <option value={ORDER_STATUS.DISPATCHED}>Despachado</option>
-                <option value={ORDER_STATUS.DELIVERED}>Entregado</option>
-                <option value={ORDER_STATUS.WITHDRAWN}>Retirado</option>
-                <option value={ORDER_STATUS.CANCELLED}>Cancelado</option>
+                {selectedOrder.deliveryType === "pickup" ? (
+                  <option value={ORDER_STATUS.WITHDRAWN}>Retirado</option>
+                ) : (
+                  <option value={ORDER_STATUS.DELIVERED}>Entregado</option>
+                )}
+                {selectedOrder.status !== ORDER_STATUS.DELIVERED && (
+                  <option value={ORDER_STATUS.CANCELLED}>Cancelado</option>
+                )}
               </select>
             </div>
             <button
