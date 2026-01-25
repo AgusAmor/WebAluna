@@ -28,10 +28,10 @@ const ShippingInfoModal = ({ isOpen, onClose }) => {
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute right-6 top-6 text-blue-2 hover:text-gold transition-colors z-10"
+            className="absolute right-3 top-3 cursor-pointer text-blue-2 hover:text-gold hover:scale-150 transition-all z-10"
             title="Cerrar"
           >
-            <IoIosClose className="h-8 w-8" />
+            <IoIosClose size={26} />
           </button>
 
           {/* Content */}

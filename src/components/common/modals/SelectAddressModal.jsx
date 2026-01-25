@@ -144,10 +144,10 @@ const SelectAddressModal = ({
             <button
               onClick={handleClose}
               disabled={isLoading}
-              className="text-blue-2 hover:text-red-500 transition-colors disabled:opacity-50"
+              className="cursor-pointer text-blue-2 hover:text-gold hover:scale-150 transition-all z-10 disabled:opacity-50"
               aria-label="Cerrar modal"
             >
-              <IoIosClose size={28} />
+              <IoIosClose size={26} />
             </button>
           </div>
 

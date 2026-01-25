@@ -41,11 +41,11 @@ const ProductModal = ({
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          className="absolute top-3 right-3 text-blue-2 hover:text-gold"
+          className="absolute top-3 right-3 cursor-pointer text-blue-2 hover:text-gold hover:scale-150 transition-all z-10"
           onClick={onClose}
           aria-label="Close"
         >
-          <IoIosClose className="w-6 h-6" />
+          <IoIosClose size={26} />
         </button>
         <h2 className="text-2xl font-bold text-blue-2 mb-4 font-family-comfortaa">
           {product ? "Editar producto" : "Agregar producto"}

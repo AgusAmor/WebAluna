@@ -1,4 +1,5 @@
 import React from "react";
+import { IoIosClose } from "react-icons/io";
 
 /**
  * UserModal Component
@@ -37,11 +38,11 @@ const UserModal = ({
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          className="absolute top-3 right-3 text-blue-2 hover:text-gold text-xl font-bold"
+          className="absolute top-3 right-3 cursor-pointer text-blue-2 hover:text-gold hover:scale-150 transition-all z-10"
           onClick={onClose}
           aria-label="Close"
         >
-          ×
+          <IoIosClose size={26} />
         </button>
         <h2 className="text-2xl font-bold text-blue-2 mb-4 font-family-comfortaa">
           {user ? "Editar usuario" : "Agregar usuario"}

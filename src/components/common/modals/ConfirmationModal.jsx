@@ -62,10 +62,10 @@ const ConfirmationModal = ({
           <button
             onClick={onCancel}
             disabled={isLoading}
-            className="absolute top-4 right-4 text-blue-2 cursor-pointer hover:text-gray-2 transition-colors disabled:opacity-50"
+            className="absolute top-3 right-3 cursor-pointer text-blue-2 hover:text-gold hover:scale-150 transition-all z-10 disabled:opacity-50"
             title="Cerrar"
           >
-            <IoIosClose className="h-6 w-6" />
+            <IoIosClose size={26} />
           </button>
 
           {/* Header */}

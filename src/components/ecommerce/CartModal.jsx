@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import { FaMinus, FaPlus, FaTrash } from "react-icons/fa";
+import { IoIosClose } from "react-icons/io";
 import { useCartModal } from "../../hooks";
 import { getCartItemKey } from "../../utils/cartItemUtils";
 import {
@@ -39,6 +40,13 @@ const CartModal = ({ isOpen, onClose }) => {
           className="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden animate-fadeInScale flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
+          <button
+            className="absolute top-3 right-3 cursor-pointer text-blue-2 hover:text-gold hover:scale-150 transition-all z-10"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            <IoIosClose size={26} />
+          </button>
           {/* Header */}
           <div className="p-5 shrink-0">
             <h2 className="text-center text-xl font-bold font-family-comfortaa text-blue-1">
@@ -66,7 +74,7 @@ const CartModal = ({ isOpen, onClose }) => {
                   const itemKey = getCartItemKey(item.id, item.type);
                   // Support both imageUrl (from Firestore) and imageBase64 (legacy)
                   const imageSrc = getImageSource(
-                    item.imageUrl || item.imageBase64
+                    item.imageUrl || item.imageBase64,
                   );
 
                   return (

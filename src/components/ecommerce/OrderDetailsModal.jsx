@@ -37,11 +37,11 @@ const OrderDetailsModal = ({ isOpen, order, onClose, onCancel }) => {
         >
           {/* Close Button - Absolute positioned */}
           <button
-            className="absolute top-4 right-4 text-blue-2 hover:text-gold hover:scale-110 transition-all z-10"
+            className="absolute top-3 right-3 cursor-pointer text-blue-2 hover:text-gold hover:scale-150 transition-all z-10"
             onClick={onClose}
             aria-label="Close"
           >
-            <IoIosClose className="w-8 h-8" />
+            <IoIosClose size={26} />
           </button>
 
           {/* Header */}

@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import { useEffect } from "react";
 import { FiMail, FiLock, FiUser } from "react-icons/fi";
+import { IoIosClose } from "react-icons/io";
 import { toast } from "react-toastify";
 import { GoogleLoginButton } from "../../ui";
 import { useLoginModal } from "../../../hooks";
@@ -46,7 +47,7 @@ const LoginModal = ({ isOpen, onClose }) => {
         "email domain",
         "mail server",
         "domain could not be verified",
-        "failed to create user document"
+        "failed to create user document",
       )
     ) {
       return "La dirección de correo no existe o no es válida.";
@@ -63,7 +64,7 @@ const LoginModal = ({ isOpen, onClose }) => {
       includes(
         "auth/user-not-found",
         "user-not-found",
-        "email is not registered"
+        "email is not registered",
       )
     ) {
       return "No existe una cuenta con este correo.";
@@ -88,7 +89,7 @@ const LoginModal = ({ isOpen, onClose }) => {
         "auth/popup-closed-by-user",
         "auth/cancelled-popup-request",
         "popup-closed",
-        "cancelled"
+        "cancelled",
       )
     ) {
       return "Inicio de sesión cancelado.";
@@ -141,6 +142,13 @@ const LoginModal = ({ isOpen, onClose }) => {
           className="relative bg-white rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden animate-fadeInScale"
           onClick={(e) => e.stopPropagation()}
         >
+          <button
+            className="absolute top-3 right-3 cursor-pointer text-blue-2 hover:text-gold hover:scale-150 transition-all z-10"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            <IoIosClose size={26} />
+          </button>
           {/* Header */}
           <div className="p-5">
             <h2 className="text-center text-xl font-bold font-family-comfortaa text-blue-1">
@@ -322,8 +330,8 @@ const LoginModal = ({ isOpen, onClose }) => {
                     {loading
                       ? "Cargando..."
                       : isLogin
-                      ? "Iniciar Sesión"
-                      : "Registrarse"}
+                        ? "Iniciar Sesión"
+                        : "Registrarse"}
                   </button>
                 </form>
                 {/* Divider */}
