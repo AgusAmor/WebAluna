@@ -1,8 +1,12 @@
 import React from "react";
 import { Hero } from "../../components/common";
 import { Link } from "react-router-dom";
+import { useDashboardStats } from "../../hooks/admin";
+import { ImSpinner2 } from "react-icons/im";
 
 const Admin = () => {
+  const { stats, loading, error } = useDashboardStats();
+
   return (
     <div className="min-h-screen bg-gray-3">
       <div className="container mx-auto px-4 py-2">
@@ -17,35 +21,62 @@ const Admin = () => {
             <h3 className="text-xs md:text-sm font-medium text-gray-1 font-family-sora">
               Total Productos
             </h3>
-            <p className="text-xl md:text-2xl font-bold text-blue-1 font-family-comfortaa mt-1 md:mt-2">
-              127
-            </p>
+            {loading ? (
+              <ImSpinner2 className="animate-spin h-6 w-6 text-blue-1 mt-2" />
+            ) : (
+              <p className="text-xl md:text-2xl font-bold text-blue-1 font-family-comfortaa mt-1 md:mt-2">
+                {stats.totalProducts}
+              </p>
+            )}
           </div>
           <div className="bg-white p-4 md:p-6 rounded-lg shadow">
             <h3 className="text-xs md:text-sm font-medium text-gray-1 font-family-sora">
               Pedidos Hoy
             </h3>
-            <p className="text-xl md:text-2xl font-bold text-blue-1 font-family-comfortaa mt-1 md:mt-2">
-              8
-            </p>
+            {loading ? (
+              <ImSpinner2 className="animate-spin h-6 w-6 text-blue-1 mt-2" />
+            ) : (
+              <p className="text-xl md:text-2xl font-bold text-blue-1 font-family-comfortaa mt-1 md:mt-2">
+                {stats.ordersToday}
+              </p>
+            )}
           </div>
           <div className="bg-white p-4 md:p-6 rounded-lg shadow">
             <h3 className="text-xs md:text-sm font-medium text-gray-1 font-family-sora">
               Usuarios Registrados
             </h3>
-            <p className="text-xl md:text-2xl font-bold text-blue-1 font-family-comfortaa mt-1 md:mt-2">
-              342
-            </p>
+            {loading ? (
+              <ImSpinner2 className="animate-spin h-6 w-6 text-blue-1 mt-2" />
+            ) : (
+              <p className="text-xl md:text-2xl font-bold text-blue-1 font-family-comfortaa mt-1 md:mt-2">
+                {stats.registeredUsers}
+              </p>
+            )}
           </div>
           <div className="bg-white p-4 md:p-6 rounded-lg shadow">
             <h3 className="text-xs md:text-sm font-medium text-gray-1 font-family-sora">
               Ingresos del Mes
             </h3>
-            <p className="text-xl md:text-2xl font-bold text-gold font-family-comfortaa mt-1 md:mt-2">
-              $12,450
-            </p>
+            {loading ? (
+              <ImSpinner2 className="animate-spin h-6 w-6 text-gold mt-2" />
+            ) : (
+              <p className="text-xl md:text-2xl font-bold text-gold font-family-comfortaa mt-1 md:mt-2">
+                $
+                {stats.monthlyRevenue.toLocaleString("es-AR", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </p>
+            )}
           </div>
         </div>
+
+        {/* Error message if any */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+            {error}
+          </div>
+        )}
 
         {/* Admin Shortcut Cards */}
         <div className="flex flex-wrap justify-center gap-4 md:gap-8 mb-8 md:mb-10 px-2">

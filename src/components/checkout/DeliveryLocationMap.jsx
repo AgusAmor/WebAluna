@@ -4,10 +4,11 @@
  * Shows warehouse location for pickup or both locations for shipping
  */
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import isotipoLogo from "../../assets/logos/isotipo.png";
+import { MdCenterFocusStrong } from "react-icons/md";
 
 // Warehouse/Store Location
 const WAREHOUSE_LOCATION = {
@@ -19,6 +20,7 @@ const WAREHOUSE_LOCATION = {
 const DeliveryLocationMap = ({ clientAddress, deliveryMethod }) => {
   const mapContainer = useRef(null);
   const map = useRef(null);
+  const [clientCoordinates, setClientCoordinates] = useState(null);
 
   useEffect(() => {
     // Initialize map only if container exists
@@ -147,6 +149,9 @@ const DeliveryLocationMap = ({ clientAddress, deliveryMethod }) => {
   const createAndAddClientMarker = (coordinates, address) => {
     if (!map.current) return;
 
+    // Store client coordinates for the center button
+    setClientCoordinates(coordinates);
+
     // Create client marker element with home icon
     const clientMarkerEl = document.createElement("div");
     clientMarkerEl.className =
@@ -181,9 +186,35 @@ const DeliveryLocationMap = ({ clientAddress, deliveryMethod }) => {
     map.current.fitBounds(bounds, { padding: 50, maxZoom: 14 });
   };
 
+  const handleCenterMap = () => {
+    if (!map.current) return;
+
+    if (deliveryMethod === "shipping" && clientCoordinates) {
+      // Fit both locations
+      const bounds = new mapboxgl.LngLatBounds();
+      bounds.extend(WAREHOUSE_LOCATION.coordinates);
+      bounds.extend(clientCoordinates);
+      map.current.fitBounds(bounds, { padding: 50, maxZoom: 14 });
+    } else if (deliveryMethod === "pickup") {
+      // Center on warehouse
+      map.current.setCenter(WAREHOUSE_LOCATION.coordinates);
+      map.current.setZoom(15);
+    }
+  };
+
   return (
-    <div className="w-full h-80 rounded-lg overflow-hidden shadow-md border border-gray-2">
+    <div className="relative w-full h-80 rounded-lg overflow-hidden shadow-md border border-gray-2">
       <div ref={mapContainer} className="w-full h-full" />
+
+      {/* Center Map Button */}
+      <button
+        onClick={handleCenterMap}
+        className="absolute top-4 left-4 bg-white text-blue-2 hover:bg-blue-2 hover:text-white p-2 rounded-lg shadow-md transition-colors z-10"
+        title="Centrar mapa"
+        aria-label="Centrar mapa"
+      >
+        <MdCenterFocusStrong size={20} />
+      </button>
     </div>
   );
 };

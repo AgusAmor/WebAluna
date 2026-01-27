@@ -47,6 +47,8 @@ export function normalizeUserData(user) {
     phoneCountry,
     phoneLocal,
     accountStatus: user.accountStatus || "active",
+    createdAt: user.createdAt || null,
+    lastLoginAt: user.lastLoginAt || null,
     addresses:
       Array.isArray(user.addresses) && user.addresses.length > 0
         ? user.addresses.map((a, i) => {
@@ -76,11 +78,8 @@ export function normalizeUserData(user) {
               region: String(mappedAddress.region || ""),
               postalCode: String(mappedAddress.postalCode || ""),
               recipientName: String(mappedAddress.recipientName || ""),
-              recipientPhoneCountry:
-                mappedAddress.recipientPhoneCountry || recipientPhoneCountry,
-              recipientPhoneLocal: String(
-                mappedAddress.recipientPhoneLocal || recipientPhoneLocal || "",
-              ),
+              recipientPhoneCountry: recipientPhoneCountry,
+              recipientPhoneLocal: String(recipientPhoneLocal || ""),
               id: a.id || `addr_${i}_${Date.now()}`,
               isDefault: Boolean(mappedAddress.isDefault),
             };

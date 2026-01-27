@@ -10,3 +10,4 @@ export { useUserManagement } from "./useUserManagement.js";
 export { useUserForm } from "./useUserForm.js";
 export { default as useOrderManagement } from "./useOrderManagement.js";
 export { default as useOrderFiltering } from "./useOrderFiltering.js";
+export { useDashboardStats } from "./useDashboardStats.js";

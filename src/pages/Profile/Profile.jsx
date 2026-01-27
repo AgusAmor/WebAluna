@@ -251,74 +251,43 @@ const Profile = () => {
                 </div>
               ) : (
                 // View Mode
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Name */}
-                  <div>
-                    <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-2">
-                      Nombre Completo
-                    </label>
-                    <div className="px-4 py-3 border border-gray-2 rounded-lg bg-gray-3/50 font-medium text-blue-1">
-                      {userData?.displayName || "No especificado"}
+                <div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    {/* Name */}
+                    <div>
+                      <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-2">
+                        Nombre Completo
+                      </label>
+                      <div className="px-4 py-3 border border-gray-2 rounded-lg bg-gray-3/50 font-medium text-blue-1">
+                        {userData?.displayName || "No especificado"}
+                      </div>
+                    </div>
+
+                    {/* Email */}
+                    <div>
+                      <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-2">
+                        Correo Electrónico
+                      </label>
+                      <div className="px-4 py-3 border border-gray-2 rounded-lg bg-gray-3/50 font-medium text-blue-1">
+                        {userData?.email}
+                      </div>
+                    </div>
+
+                    {/* Phone */}
+                    <div>
+                      <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-2">
+                        Teléfono
+                      </label>
+                      <div className="px-4 py-3 border border-gray-2 rounded-lg bg-gray-3/50 font-medium">
+                        {userData?.phone || "No especificado"}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Email */}
-                  <div>
-                    <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-2">
-                      Correo Electrónico
-                    </label>
-                    <div className="px-4 py-3 border border-gray-2 rounded-lg bg-gray-3/50 font-medium text-blue-1">
-                      {userData?.email}
-                    </div>
-                  </div>
-
-                  {/* Phone */}
-                  <div>
-                    <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-2">
-                      Teléfono
-                    </label>
-                    <div className="px-4 py-3 border border-gray-2 rounded-lg bg-gray-3/50 font-medium">
-                      {userData?.phone || "No especificado"}
-                    </div>
-                  </div>
-
-                  {/* Account Status */}
-                  <div>
-                    <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-2">
-                      Estado de Cuenta
-                    </label>
-                    <div
-                      className={`px-4 py-3 border rounded-lg font-medium text-center ${
-                        userData?.accountStatus === "active"
-                          ? "bg-green-100 text-green-700 border-green-300"
-                          : "bg-red-100 text-red-700 border-red-300"
-                      }`}
-                    >
-                      {userData?.accountStatus === "active"
-                        ? "Activa"
-                        : "Suspendida"}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Account Metadata */}
-              {!isEditingProfile && (
-                <div className="mt-6 pt-6 border-t border-gray-2 grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-xs text-gray-1 uppercase font-semibold mb-1">
-                      Miembro desde
-                    </p>
-                    <p className="text-sm font-medium text-blue-2">
-                      {formatDate(userData?.createdAt)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-1 uppercase font-semibold mb-1">
-                      Último ingreso
-                    </p>
-                    <p className="text-sm font-medium text-blue-2">
-                      {formatDate(userData?.lastLoginAt || userData?.createdAt)}
+                  {/* Account Metadata */}
+                  <div className="pt-6 border-t border-gray-2 flex justify-end">
+                    <p className="text-xs text-gray-1 whitespace-nowrap">
+                      Miembro desde {formatDate(userData?.createdAt)}
                     </p>
                   </div>
                 </div>
