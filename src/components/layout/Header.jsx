@@ -41,18 +41,18 @@ const Header = () => {
   return (
     <>
       <header className="bg-blue-1 border-blue-2 dark:bg-blue-1 sticky top-0 z-50 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6 transition-all duration-300">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 transition-all duration-300">
           {/* Mobile Layout: Always the same (no scroll animation) */}
-          <div className="flex lg:hidden items-center justify-between py-4">
+          <div className="flex lg:hidden items-center justify-between py-2 sm:py-3 md:py-4">
             <Link to="/" className="shrink-0">
               <img
                 src={logo}
                 alt="LogoAluna"
-                style={{ height: `${logoSizeMobile}px` }}
+                style={{ height: `${Math.max(logoSizeMobile, 40)}px` }}
               />
             </Link>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               {/* User button mobile */}
               {isAuthenticated ? (
                 <div className="relative user-menu-container">

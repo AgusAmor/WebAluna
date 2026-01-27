@@ -105,37 +105,37 @@ const Checkout = () => {
   const orderSummary = createOrderSummary(items, shippingCost);
 
   return (
-    <div className="min-h-screen py-8 bg-white">
+    <div className="min-h-screen py-4 sm:py-6 md:py-8 bg-white">
       {/* Shipping Info Modal - appears when navigating to checkout */}
       <ShippingInfoBanner
         isOpen={showShippingInfoModal}
         setIsOpen={setShowShippingInfoModal}
       />
 
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8 flex items-center gap-4">
+        <div className="mb-6 md:mb-8 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
           <button
             onClick={() => navigate("/productos")}
-            className="flex items-center gap-2 text-blue-2 hover:text-gold transition-colors"
+            className="flex items-center gap-2 text-blue-2 hover:text-gold transition-colors text-sm md:text-base"
           >
-            <FaArrowLeft size={20} />
+            <FaArrowLeft size={18} className="md:w-5 md:h-5" />
             <span className="font-family-sora">Volver</span>
           </button>
-          <h1 className="text-3xl font-bold font-family-comfortaa text-blue-1">
+          <h1 className="text-2xl sm:text-3xl font-bold font-family-comfortaa text-blue-1">
             Resumen del Pedido
           </h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Main Content - Left Side */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6">
             {/* Products Section */}
-            <div className="bg-white rounded-lg shadow-md p-6 border border-gray-2">
-              <h2 className="text-xl font-bold font-family-comfortaa text-blue-1 mb-4">
+            <div className="bg-white rounded-lg shadow-md p-4 md:p-6 border border-gray-2">
+              <h2 className="text-lg md:text-xl font-bold font-family-comfortaa text-blue-1 mb-3 md:mb-4">
                 Productos
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-3 md:space-y-4">
                 {items.map((item, idx) => {
                   // Ensure all values are primitives
                   const id = String(item.id || idx);
@@ -160,15 +160,15 @@ const Checkout = () => {
                         <img
                           src={String(item.image)}
                           alt={name}
-                          className="w-20 h-20 object-cover rounded"
+                          className="w-20 h-20 object-cover rounded shrink-0"
                         />
                       )}
-                      <div className="flex-1">
-                        <h3 className="font-bold text-blue-1 font-family-sora">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-blue-1 font-family-sora line-clamp-1">
                           {name}
                         </h3>
                         {type && (
-                          <p className="text-sm text-blue-2">Tipo: {type}</p>
+                          <p className="text-sm text-blue-2">Tamaño: {type}</p>
                         )}
                         {item.family && (
                           <p className="text-sm text-blue-2">
@@ -176,36 +176,7 @@ const Checkout = () => {
                           </p>
                         )}
                       </div>
-                      <div className="flex items-center gap-3">
-                        {/* Controls */}
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => {
-                              const itemKey = getCartItemKey(id, type);
-                              if (quantity > 1) {
-                                updateQuantity(itemKey, quantity - 1);
-                              }
-                            }}
-                            className="text-blue-1 hover:bg-gold hover:text-black rounded-full p-2 transition-all duration-300"
-                            title="Disminuir cantidad"
-                          >
-                            <FaMinus size={14} />
-                          </button>
-                          <span className="text-lg font-bold text-blue-1 min-w-8 text-center">
-                            {quantity}
-                          </span>
-                          <button
-                            onClick={() => {
-                              const itemKey = getCartItemKey(id, type);
-                              updateQuantity(itemKey, quantity + 1);
-                            }}
-                            className="text-blue-1 hover:bg-gold hover:text-black rounded-full p-2 transition-all duration-300"
-                            title="Aumentar cantidad"
-                          >
-                            <FaPlus size={14} />
-                          </button>
-                        </div>
-
+                      <div className="flex items-center gap-3 flex-wrap">
                         {/* Delete Button */}
                         <button
                           onClick={() => {
@@ -215,17 +186,45 @@ const Checkout = () => {
                               "Producto eliminado del carrito",
                             );
                           }}
-                          className="text-gold hover:text-red-500 hover:bg-gray-2 rounded-full p-2 transition-all duration-300"
-                          title="Eliminar producto"
+                          className="text-gold hover:text-red-500 p-1 transition-all duration-300"
+                          title="Eliminar"
                         >
-                          <FaTrash size={14} />
+                          <FaTrash size={12} />
                         </button>
+                        {/* Controls */}
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => {
+                              const itemKey = getCartItemKey(id, type);
+                              if (quantity > 1) {
+                                updateQuantity(itemKey, quantity - 1);
+                              }
+                            }}
+                            className="text-blue-1 hover:text-gold p-1 transition-all duration-300"
+                            title="Menos"
+                          >
+                            <FaMinus size={12} />
+                          </button>
+                          <span className="text-sm font-bold text-blue-1 min-w-6 text-center">
+                            {quantity}
+                          </span>
+                          <button
+                            onClick={() => {
+                              const itemKey = getCartItemKey(id, type);
+                              updateQuantity(itemKey, quantity + 1);
+                            }}
+                            className="text-blue-1 hover:text-gold p-1 transition-all duration-300"
+                            title="Más"
+                          >
+                            <FaPlus size={12} />
+                          </button>
+                        </div>
                       </div>
-                      <div className="text-right min-w-24">
-                        <p className="text-sm text-blue-2 mb-1">
+                      <div className="text-right min-w-20">
+                        <p className="text-xs text-blue-2 mb-1">
                           ${formatPrice(price)}
                         </p>
-                        <p className="font-bold text-gold font-family-comfortaa">
+                        <p className="font-bold text-gold font-family-comfortaa text-sm">
                           ${formatPrice(itemTotal)}
                         </p>
                       </div>
@@ -277,7 +276,7 @@ const Checkout = () => {
               <div className="space-y-3">
                 {/* Shipping Option */}
                 <label
-                  className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                  className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors gap-3 ${
                     deliveryMethod === "shipping"
                       ? "border-gold"
                       : "border-gray-2 hover:border-gold"
@@ -289,16 +288,16 @@ const Checkout = () => {
                     value="shipping"
                     checked={deliveryMethod === "shipping"}
                     onChange={(e) => handleDeliveryMethodChange(e.target.value)}
-                    className="mr-4"
+                    className="shrink-0"
                   />
                   <div className="flex items-center gap-3 flex-1">
-                    <FaTruck className="text-blue-2 text-xl" />
-                    <div>
-                      <p className="font-bold text-blue-1 font-family-sora">
+                    <FaTruck className="text-blue-2 text-xl shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-bold text-blue-1 font-family-sora text-base">
                         Envío a domicilio
                       </p>
-                      <p className="text-sm text-blue-2">
-                        Envío gratis en pedidos mayores a $80000
+                      <p className="text-sm text-blue-2 line-clamp-2">
+                        Gratis en pedidos mayores a $80.000
                       </p>
                     </div>
                   </div>
@@ -307,8 +306,8 @@ const Checkout = () => {
                       e.preventDefault();
                       setShowShippingInfoModal(true);
                     }}
-                    className="ml-auto text-blue-2 hover:text-gold transition-colors p-2 cursor-pointer"
-                    title="Ver información de envío"
+                    className="text-blue-2 hover:text-gold transition-colors p-2 cursor-pointer shrink-0"
+                    title="Info"
                   >
                     <FaInfoCircle className="h-5 w-5" />
                   </button>
@@ -316,7 +315,7 @@ const Checkout = () => {
 
                 {/* Pickup Option */}
                 <label
-                  className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                  className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors gap-3 ${
                     deliveryMethod === "pickup"
                       ? "border-gold"
                       : "border-gray-2 hover:border-gold"
@@ -328,16 +327,16 @@ const Checkout = () => {
                     value="pickup"
                     checked={deliveryMethod === "pickup"}
                     onChange={(e) => handleDeliveryMethodChange(e.target.value)}
-                    className="mr-4"
+                    className="shrink-0"
                   />
                   <div className="flex items-center gap-3 flex-1">
-                    <FaStore className="text-blue-2 text-xl" />
-                    <div>
-                      <p className="font-bold text-blue-1 font-family-sora">
+                    <FaStore className="text-blue-2 text-xl shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-bold text-blue-1 font-family-sora text-base">
                         Retiro en local
                       </p>
-                      <p className="text-sm text-blue-2">
-                        Retira tu pedido en nuestro local sin cargo
+                      <p className="text-sm text-blue-2 line-clamp-2">
+                        Retira tu pedido sin cargo
                       </p>
                     </div>
                   </div>
@@ -469,7 +468,7 @@ const Checkout = () => {
                   userProfile &&
                   !hasDefaultAddress(userProfile))
               }
-              className="w-full bg-gold text-white font-bold font-family-sora py-3 rounded-lg hover:bg-blue-2  hover:scale-105 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gold text-white font-bold font-family-sora py-2 md:py-3 text-sm md:text-base rounded-lg hover:bg-blue-2 hover:scale-105 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loadingOrder || loading ? "Procesando..." : "Pagar"}
             </button>

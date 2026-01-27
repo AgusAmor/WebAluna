@@ -111,7 +111,7 @@ const Profile = () => {
             Mi Perfil
           </h1>
           <p className="text-gray-1">
-            Gestiona tu información personal y direcciones
+            Gestiona tu información personal, direcciones y pedidos
           </p>
         </div>
 

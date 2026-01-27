@@ -22,7 +22,7 @@ const OrderDetailsModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-2 sm:p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -30,7 +30,7 @@ const OrderDetailsModal = ({
       }}
     >
       <div
-        className="bg-white rounded-xl shadow-lg w-full max-w-6xl min-w-[350px] relative flex animate-fadeInScale max-h-[90vh]"
+        className="bg-white rounded-xl shadow-lg w-full max-w-sm sm:max-w-md md:max-w-2xl lg:max-w-5xl xl:max-w-6xl relative flex flex-col md:flex-row animate-fadeInScale max-h-[90vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -42,12 +42,12 @@ const OrderDetailsModal = ({
         </button>
 
         {/* Left Panel - Status History */}
-        <div className="w-64 border-r border-gray-2 flex flex-col shrink-0 bg-gray-3/30">
-          <div className="p-6 flex-1 flex flex-col overflow-hidden">
-            <h3 className="text-lg font-bold text-blue-1 font-family-comfortaa mb-4 shrink-0">
+        <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-gray-2 flex flex-row md:flex-col shrink-0 bg-gray-3/30 overflow-x-auto md:overflow-x-visible">
+          <div className="p-3 md:p-6 flex-1 md:flex md:flex-col overflow-hidden">
+            <h3 className="text-base md:text-lg font-bold text-blue-1 font-family-comfortaa mb-2 md:mb-4 shrink-0 whitespace-nowrap md:whitespace-normal">
               Historial
             </h3>
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto hidden md:block">
               <StatusHistoryPanel
                 statusHistory={selectedOrder.statusHistory}
                 userId={selectedOrder.userId}
@@ -56,15 +56,15 @@ const OrderDetailsModal = ({
           </div>
 
           {/* Left Footer - Status Selection */}
-          <div className="p-6 border-t border-gray-2 shrink-0">
-            <label className="font-bold text-blue-2 font-family-sora text-xs uppercase tracking-wide block mb-2">
+          <div className="p-3 md:p-6 border-l md:border-l-0 md:border-t border-gray-2 shrink-0 w-48 md:w-auto">
+            <label className="font-bold text-blue-2 font-family-sora text-xs uppercase tracking-wide block mb-2 whitespace-nowrap">
               Cambiar Estado
             </label>
             <select
               value={selectedStatus || ""}
               onChange={(e) => onStatusChange(e.target.value)}
               disabled={updatingId === selectedOrder.id}
-              className={`w-full px-3 py-2 rounded-lg border border-gray-2 focus:outline-none focus:border-gold transition-colors font-family-sora text-sm ${
+              className={`w-full px-2 md:px-3 py-2 rounded-lg border border-gray-2 focus:outline-none focus:border-gold transition-colors font-family-sora text-xs md:text-sm ${
                 updatingId === selectedOrder.id
                   ? "bg-gray-100 cursor-not-allowed opacity-60"
                   : "bg-white hover:border-gold"
@@ -88,15 +88,15 @@ const OrderDetailsModal = ({
         </div>
 
         {/* Right Panel - Order Details */}
-        <div className="flex-1 flex flex-col">
-          <h2 className="text-2xl font-bold text-blue-1 font-family-comfortaa mb-4 px-8 pt-8 shrink-0">
+        <div className="flex-1 flex flex-col min-w-0">
+          <h2 className="text-lg md:text-2xl font-bold text-blue-1 font-family-comfortaa mb-2 md:mb-4 px-4 md:px-8 pt-4 md:pt-8 shrink-0">
             Detalles del Pedido
           </h2>
 
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto px-8 space-y-4">
+          <div className="flex-1 overflow-y-auto px-4 md:px-8 space-y-3 md:space-y-4">
             {/* Header Info */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4">
               <div>
                 <label className="font-bold text-blue-2 font-family-sora text-xs uppercase tracking-wide block mb-2">
                   Número de Pedido
