@@ -3,7 +3,7 @@ import {
   calculateRoute,
   calculateShippingCost,
 } from "../../services/mapbox/directionsService";
-import { SHIPPING_CONFIG } from "../../constants/config";
+import { SHIPPING_CONFIG } from "../../constants/shippingConfig";
 
 /**
  * Custom hook for calculating shipping costs based on delivery address

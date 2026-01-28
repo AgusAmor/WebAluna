@@ -23,6 +23,7 @@ export function useLoginModal(isOpen, onClose) {
   const [resetSuccess, setResetSuccess] = useState("");
   const [formData, setFormData] = useState(createEmptyFormData());
   const [errors, setErrors] = useState({});
+  const [loginSuccessHandled, setLoginSuccessHandled] = useState(false);
   const lastErrorShownRef = useRef(null);
   const loginAttemptTimeRef = useRef(null);
 
@@ -39,53 +40,28 @@ export function useLoginModal(isOpen, onClose) {
 
   const navigate = useNavigate();
 
-  // Reset error tracking when modal opens
+  console.log(
+    "useLoginModal render - isOpen:",
+    isOpen,
+    "loading:",
+    loading,
+    "user:",
+    user?.email,
+    "isAuthenticated:",
+    isAuthenticated,
+    "error:",
+    error,
+  );
+
+  // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
+      console.log("Modal abierto, reseteando flags");
       lastErrorShownRef.current = null;
       loginAttemptTimeRef.current = null;
+      setLoginSuccessHandled(false);
     }
   }, [isOpen]);
-
-  // Handle login result (success or error)
-  useEffect(() => {
-    if (!isOpen || loading) return; // Wait for loading to finish
-
-    // Check if there was a recent login attempt
-    const wasRecentLoginAttempt =
-      loginAttemptTimeRef.current &&
-      Date.now() - loginAttemptTimeRef.current < 3000;
-
-    // If there's an error from a recent login attempt, just mark it as shown
-    // The error will be displayed in the modal automatically
-    if (error && wasRecentLoginAttempt) {
-      lastErrorShownRef.current = error;
-      return; // Keep modal open, don't do anything else
-    }
-
-    // If login was successful (user exists and is authenticated with no error)
-    if (user && isAuthenticated && !error) {
-      // Show success message regardless of recent attempt
-      const welcomeMessage = `¡Bienvenido${
-        user.displayName ? " " + user.displayName.split(" ")[0] : ""
-      }!`;
-
-      showCustomToast.success(welcomeMessage);
-
-      // Navigate to admin panel if user is admin
-      if (isUserAdmin(user)) {
-        navigate("/admin");
-      } else {
-        navigate("/");
-      }
-
-      // Close modal and reset form
-      onClose();
-      setFormData(createEmptyFormData());
-      setErrors({});
-      loginAttemptTimeRef.current = null;
-    }
-  }, [loading, error, user, isAuthenticated, isOpen, onClose, navigate]);
 
   /**
    * Handles input changes for login/register form
@@ -160,13 +136,45 @@ export function useLoginModal(isOpen, onClose) {
     loginAttemptTimeRef.current = Date.now();
 
     try {
+      let result;
       if (isLogin) {
-        await login(formData.email, formData.password);
+        result = await login(formData.email, formData.password);
       } else {
-        await register(formData.email, formData.password, formData.name);
+        result = await register(
+          formData.email,
+          formData.password,
+          formData.name,
+        );
       }
-      // Modal closes automatically via useEffect
+
+      console.log("Login/registro exitoso, resultado:", result);
+
+      // Show welcome toast immediately after successful login
+      const welcomeMessage = `¡Bienvenido${
+        result?.displayName ? " " + result.displayName.split(" ")[0] : ""
+      }!`;
+
+      showCustomToast.success(welcomeMessage);
+
+      // Small delay then navigate and close
+      setTimeout(() => {
+        // Navigate based on user role
+        if (isUserAdmin(result)) {
+          console.log("Navegando a /admin");
+          navigate("/admin");
+        } else {
+          console.log("Navegando a /");
+          navigate("/");
+        }
+
+        // Close modal and reset
+        onClose();
+        setFormData(createEmptyFormData());
+        setErrors({});
+        loginAttemptTimeRef.current = null;
+      }, 300);
     } catch (err) {
+      console.error("Error en login/registro:", err);
       // Error is already displayed by the context
     }
   };
@@ -178,9 +186,33 @@ export function useLoginModal(isOpen, onClose) {
     loginAttemptTimeRef.current = Date.now();
 
     try {
-      await loginWithGoogle();
-      // Modal closes automatically via useEffect
+      const result = await loginWithGoogle();
+      console.log("Google login exitoso, resultado:", result);
+
+      // Show welcome toast
+      const welcomeMessage = `¡Bienvenido${
+        result?.displayName ? " " + result.displayName.split(" ")[0] : ""
+      }!`;
+
+      showCustomToast.success(welcomeMessage);
+
+      // Navigate and close
+      setTimeout(() => {
+        if (isUserAdmin(result)) {
+          console.log("Navegando a /admin");
+          navigate("/admin");
+        } else {
+          console.log("Navegando a /");
+          navigate("/");
+        }
+
+        onClose();
+        setFormData(createEmptyFormData());
+        setErrors({});
+        loginAttemptTimeRef.current = null;
+      }, 300);
     } catch (err) {
+      console.error("Error en Google login:", err);
       // Error is already displayed by the context
     }
   };

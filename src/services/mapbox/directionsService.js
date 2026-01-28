@@ -6,7 +6,7 @@
  */
 
 import { MAPBOX_CONFIG, validateMapboxToken } from "./mapboxConfig.js";
-import { SHIPPING_CONFIG } from "../../constants/config.js";
+import { SHIPPING_CONFIG } from "../../constants/shippingConfig.js";
 
 /**
  * Calculates route between two coordinates
