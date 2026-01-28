@@ -1,7 +1,10 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ImSpinner2 } from "react-icons/im";
+import { useAuth } from "../context/AuthContext";
+import { isUserAdmin } from "../utils/adminUtils";
 import Header from "../components/layout/Header";
+import AdminSidebar from "../components/layout/AdminSidebar";
 import Footer from "../components/layout/Footer";
 import { FloatingCartButton, ProtectedRoute } from "../components/common";
 
@@ -11,14 +14,14 @@ const Profile = lazy(() => import("../pages/Profile"));
 const Checkout = lazy(() => import("../pages/Checkout/Checkout.jsx"));
 const Admin = lazy(() => import("../pages/Admin"));
 
-const ProductManagement = lazy(() =>
-  import("../pages/Admin/Products/ProductManagement.jsx")
+const ProductManagement = lazy(
+  () => import("../pages/Admin/Products/ProductManagement.jsx"),
 );
-const UserManagement = lazy(() =>
-  import("../pages/Admin/Users/UserManagement.jsx")
+const UserManagement = lazy(
+  () => import("../pages/Admin/Users/UserManagement.jsx"),
 );
-const OrderManagement = lazy(() =>
-  import("../pages/Admin/Orders/OrderManagement.jsx")
+const OrderManagement = lazy(
+  () => import("../pages/Admin/Orders/OrderManagement.jsx"),
 );
 
 const LoadingFallback = () => (
@@ -30,11 +33,27 @@ const LoadingFallback = () => (
   </div>
 );
 
+/**
+ * Navigation Header Wrapper
+ * Shows AdminSidebar for admins, regular Header for users
+ */
+const NavigationWrapper = () => {
+  const { user, loading } = useAuth();
+
+  // Show Header while loading to prevent layout shift
+  if (loading) {
+    return <Header />;
+  }
+
+  const isAdmin = isUserAdmin(user);
+  return isAdmin ? <AdminSidebar /> : <Header />;
+};
+
 const AppRouter = () => {
   return (
     <Router basename={import.meta.env.BASE_URL}>
       <div className="flex flex-col min-h-screen">
-        <Header />
+        <NavigationWrapper />
         <main className="flex-1">
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
@@ -51,10 +70,6 @@ const AppRouter = () => {
                 element={<div className="p-8">Contacto en construcción</div>}
               />
               <Route
-                path="/pedidos"
-                element={<div className="p-8">Mis Pedidos en construcción</div>}
-              />
-              <Route
                 path="/checkout"
                 element={
                   <ProtectedRoute>
@@ -64,14 +79,6 @@ const AppRouter = () => {
               />
               <Route
                 path="/perfil"
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/profile"
                 element={
                   <ProtectedRoute>
                     <Profile />

@@ -6,10 +6,10 @@
 export const ROUTES = {
   HOME: "/",
   PRODUCTS: "/productos",
-  PRODUCT_DETAIL: "/productos/:id",
-  CART: "/carrito",
-  AUTH: "/auth",
+  ABOUT: "/sobre-nosotros",
+  CONTACT: "/contacto",
   PROFILE: "/perfil",
+  CHECKOUT: "/checkout",
   ADMIN: "/admin",
   ADMIN_PRODUCTS: "/admin/productos",
   ADMIN_ORDERS: "/admin/pedidos",

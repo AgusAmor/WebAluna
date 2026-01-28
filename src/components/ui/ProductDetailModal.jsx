@@ -19,7 +19,7 @@ const ProductDetailModal = ({ product, isOpen, onClose, onAddToCart }) => {
         <IoIosClose size={20} />
       </button>
       {/* Left: Product Image or Placeholder */}
-      <div className="flex-shrink-0 flex justify-center items-center w-full md:w-72">
+      <div className="shrink-0 flex justify-center items-center w-full md:w-72">
         {product.imageUrl ? (
           <img
             src={product.imageUrl}

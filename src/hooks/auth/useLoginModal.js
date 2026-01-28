@@ -65,53 +65,25 @@ export function useLoginModal(isOpen, onClose) {
 
     // If login was successful (user exists and is authenticated with no error)
     if (user && isAuthenticated && !error) {
-      // If there was a recent login attempt, wait a bit to ensure no error comes
-      if (wasRecentLoginAttempt) {
-        const timer = setTimeout(() => {
-          // After delay, check again if there's still no error
-          if (!error) {
-            showCustomToast.success(
-              `¡Bienvenido${
-                user.displayName ? " " + user.displayName.split(" ")[0] : ""
-              }!`
-            );
+      // Show success message regardless of recent attempt
+      const welcomeMessage = `¡Bienvenido${
+        user.displayName ? " " + user.displayName.split(" ")[0] : ""
+      }!`;
 
-            // Navigate to admin panel if user is admin
-            if (isUserAdmin(user)) {
-              navigate("/admin");
-            } else {
-              navigate("/");
-            }
+      showCustomToast.success(welcomeMessage);
 
-            // Close modal and reset form
-            onClose();
-            setFormData(createEmptyFormData());
-            setErrors({});
-            loginAttemptTimeRef.current = null;
-          }
-        }, 500);
-
-        return () => clearTimeout(timer);
+      // Navigate to admin panel if user is admin
+      if (isUserAdmin(user)) {
+        navigate("/admin");
       } else {
-        // No recent attempt, show success immediately
-        showCustomToast.success(
-          `¡Bienvenido${
-            user.displayName ? " " + user.displayName.split(" ")[0] : ""
-          }!`
-        );
-
-        // Navigate to admin panel if user is admin
-        if (isUserAdmin(user)) {
-          navigate("/admin");
-        } else {
-          navigate("/");
-        }
-
-        // Close modal and reset form
-        onClose();
-        setFormData(createEmptyFormData());
-        setErrors({});
+        navigate("/");
       }
+
+      // Close modal and reset form
+      onClose();
+      setFormData(createEmptyFormData());
+      setErrors({});
+      loginAttemptTimeRef.current = null;
     }
   }, [loading, error, user, isAuthenticated, isOpen, onClose, navigate]);
 
@@ -153,7 +125,7 @@ export function useLoginModal(isOpen, onClose) {
       await requestPasswordReset(resetEmail);
       setResetSuccess("Se ha enviado el correo de recuperación");
       showCustomToast.success(
-        "Correo de recuperación enviado. Revisa tu bandeja de entrada."
+        "Correo de recuperación enviado. Revisa tu bandeja de entrada.",
       );
       // Reset form after short delay
       setTimeout(() => {
@@ -161,7 +133,7 @@ export function useLoginModal(isOpen, onClose) {
       }, 2000);
     } catch (err) {
       setResetError(
-        err.message || "No se pudo enviar el correo. Verifica el email."
+        err.message || "No se pudo enviar el correo. Verifica el email.",
       );
     }
   };

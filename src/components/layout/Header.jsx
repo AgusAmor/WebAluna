@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { FiUser } from "react-icons/fi";
 import { HiMenu } from "react-icons/hi";
+import { MdLogin } from "react-icons/md";
 import logo from "../../assets/logos/logotipo.png";
 import {
   LoginModal,
@@ -53,33 +54,17 @@ const Header = () => {
             </Link>
 
             <div className="flex items-center gap-1 sm:gap-2">
-              {/* User button mobile */}
-              {isAuthenticated ? (
-                <div className="relative user-menu-container">
-                  <button
-                    onClick={toggleUserMenu}
-                    className="p-2 text-white hover:text-gold transition-colors"
-                    aria-label="User menu"
-                  >
-                    <FiUser size={20} />
-                  </button>
-                  {showUserMenu && (
-                    <UserMenuDropdown
-                      user={user}
-                      onAdminClick={() => handleNavigate("/admin")}
-                      onProfileClick={() => handleNavigate("/profile")}
-                      onLogout={handleLogout}
-                      onClose={closeUserMenu}
-                    />
-                  )}
-                </div>
-              ) : (
+              {/* Login button - only visible when not authenticated */}
+              {!isAuthenticated && (
                 <button
                   onClick={openLoginModal}
-                  className="p-2 text-white hover:text-gold transition-colors"
+                  className="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-2 text-white hover:text-gold transition-colors text-xs sm:text-sm rounded-lg hover:bg-blue-2"
                   aria-label="Login"
                 >
-                  <FiUser size={20} />
+                  <MdLogin size={20} />
+                  <span className="hidden sm:inline font-family-comfortaa">
+                    Iniciar Sesión
+                  </span>
                 </button>
               )}
 
@@ -100,13 +85,13 @@ const Header = () => {
           <div
             className="hidden lg:flex items-center"
             style={{
-              transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
               justifyContent:
                 scrollProgress > 0.5 ? "space-between" : "flex-start",
               flexDirection: scrollProgress > 0.5 ? "row" : "column",
               paddingTop: 24 + (16 - 24) * scrollProgress,
               paddingBottom: 24 + (16 - 24) * scrollProgress,
               gap: 16 - (16 - 24) * scrollProgress,
+              willChange: "padding, gap, flex-direction, justify-content",
             }}
           >
             <Link to="/" className="shrink-0">
@@ -119,22 +104,18 @@ const Header = () => {
             </Link>
 
             {/* Navigation - visible in both states but positioned differently */}
-            <div
-              style={{
-                transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-              }}
-            >
+            <div>
               <NavigationLinks currentPath={location.pathname} />
             </div>
 
             {/* User menu - repositions based on scroll progress */}
             <div
               style={{
-                transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
                 position: scrollProgress > 0.5 ? "relative" : "absolute",
                 right: scrollProgress > 0.5 ? "auto" : "50px",
                 top: scrollProgress > 0.5 ? "auto" : "50%",
                 transform: scrollProgress > 0.5 ? "none" : "translateY(-50%)",
+                willChange: "position, right, top, transform",
               }}
             >
               {isAuthenticated ? (
@@ -152,7 +133,7 @@ const Header = () => {
                     <UserMenuDropdown
                       user={user}
                       onAdminClick={() => handleNavigate("/admin")}
-                      onProfileClick={() => handleNavigate("/profile")}
+                      onProfileClick={() => handleNavigate("/perfil")}
                       onLogout={handleLogout}
                       onClose={closeUserMenu}
                     />
@@ -177,6 +158,11 @@ const Header = () => {
         isOpen={isMenuOpen}
         currentPath={location.pathname}
         onLinkClick={toggleMobileMenu}
+        user={user}
+        isAuthenticated={isAuthenticated}
+        onNavigate={handleNavigate}
+        onLogout={handleLogout}
+        onClose={toggleMobileMenu}
       />
 
       {/* Login Modal */}
