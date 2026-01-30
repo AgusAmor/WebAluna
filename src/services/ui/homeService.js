@@ -39,8 +39,8 @@ export function getCarouselConfig(productCount) {
 /**
  * Duplicates product array for infinite carousel effect
  * @param {Array} products - Original products array
- * @returns {Array} - Duplicated products array
+ * @returns {Array} - Duplicated products array (tripled for seamless infinite loop)
  */
 export function duplicateProductsForCarousel(products) {
-  return [...products, ...products];
+  return [...products, ...products, ...products];
 }
