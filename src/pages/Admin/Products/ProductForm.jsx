@@ -18,14 +18,11 @@ const ProductForm = ({
 
   return (
     <form
-      className="space-y-4 flex-1"
+      className="space-y-4 flex-1 flex flex-col overflow-hidden"
       id="add-product-form"
       onSubmit={onSubmit}
     >
-      <div
-        className="flex flex-col gap-4 overflow-y-auto"
-        style={{ maxHeight: "60vh" }}
-      >
+      <div className="flex flex-col gap-4 overflow-y-auto flex-1 pr-2">
         {/* Product name input */}
         <div>
           <label className="font-bold text-blue-2 mb-1 flex items-center gap-1">
@@ -209,7 +206,7 @@ const ProductForm = ({
           <div className="text-red-500 font-bold text-center mt-2">{error}</div>
         )}
       </div>
-      <div className="flex justify-end gap-2 mt-4">
+      <div className="flex justify-end gap-2 mt-4 shrink-0 pt-2 border-t border-gray-2">
         <button
           type="button"
           className="px-4 py-2 rounded-lg bg-gray-2 text-blue-2 font-bold hover:bg-blue-2 hover:text-white cursor-pointer transition-colors"

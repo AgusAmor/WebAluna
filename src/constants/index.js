@@ -20,6 +20,9 @@ export * from "./validationConstants";
 // Shipping Configuration
 export { SHIPPING_CONFIG } from "./shippingConfig";
 
+// Notification Messages
+export { NOTIFICATION_MESSAGES } from "./notificationMessages";
+
 // Re-export for backward compatibility
 export { CART_ACTIONS } from "./cartConstants";
 export { ORDER_STATUS } from "./orderConstants";

@@ -6,7 +6,7 @@
 
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
-import { showCustomToast } from "../../services/ui/toastService.jsx";
+import { notifyCart } from "../../services/ui/notificationService";
 
 export function useCartModal(onClose) {
   const { items, total, updateQuantity, removeItem, clearCart } = useCart();
@@ -17,7 +17,6 @@ export function useCartModal(onClose) {
    */
   const handleCheckout = async () => {
     if (!items || items.length === 0) {
-      showCustomToast.error("El carrito está vacío");
       return;
     }
 

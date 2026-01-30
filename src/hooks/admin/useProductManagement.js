@@ -22,6 +22,8 @@ export const useProductManagement = () => {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [editProduct, setEditProduct] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
 
   /**
    * Load products on component mount
@@ -122,7 +124,7 @@ export const useProductManagement = () => {
       console.error("Error saving product:", err);
       setError(
         err.message ||
-          (editProduct ? "Error editing product" : "Error creating product")
+          (editProduct ? "Error editing product" : "Error creating product"),
       );
     } finally {
       setSaving(false);
@@ -130,25 +132,49 @@ export const useProductManagement = () => {
   };
 
   /**
-   * Handle product deletion
+   * Open delete confirmation modal
    */
-  const handleDeleteProduct = async (product) => {
-    if (deletingId) return;
+  const handleDeleteProduct = (product) => {
+    setProductToDelete(product);
+    setShowDeleteConfirm(true);
+  };
 
-    setDeletingId(product.id);
+  /**
+   * Confirm and execute product deletion
+   */
+  const confirmDeleteProduct = async () => {
+    if (deletingId || !productToDelete) return;
+
+    setDeletingId(productToDelete.id);
     setError(null);
 
     try {
-      await deleteProductWithImage(product.id, product.imageUrl, user);
+      await deleteProductWithImage(
+        productToDelete.id,
+        productToDelete.imageUrl,
+        user,
+      );
 
       // Remove from local state
-      setProducts((prev) => prev.filter((p) => p.id !== product.id));
+      setProducts((prev) => prev.filter((p) => p.id !== productToDelete.id));
+
+      // Close confirmation modal
+      setShowDeleteConfirm(false);
+      setProductToDelete(null);
     } catch (err) {
       console.error("Error deleting product:", err);
       setError(err.message || "Error deleting product");
     } finally {
       setDeletingId(null);
     }
+  };
+
+  /**
+   * Cancel product deletion
+   */
+  const cancelDeleteProduct = () => {
+    setShowDeleteConfirm(false);
+    setProductToDelete(null);
   };
 
   return {
@@ -161,6 +187,8 @@ export const useProductManagement = () => {
     saving,
     deletingId,
     editProduct,
+    showDeleteConfirm,
+    productToDelete,
 
     // Handlers
     setImagePreview,
@@ -169,5 +197,7 @@ export const useProductManagement = () => {
     handleCloseModal,
     handleSubmitProduct,
     handleDeleteProduct,
+    confirmDeleteProduct,
+    cancelDeleteProduct,
   };
 };

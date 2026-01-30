@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { showCustomToast } from "../../services/ui/toastService.jsx";
+import {
+  notifyAuth,
+  notifyOrders,
+  notifyProfile,
+} from "../../services/ui/notificationService";
 import { useAuth } from "../../context/AuthContext";
 import {
   loadUserProfile,
@@ -204,6 +209,18 @@ export const useProfile = () => {
   };
 
   /**
+   * Start editing profile and add empty address form
+   */
+  const handleStartEditWithAddress = () => {
+    setIsEditingProfile(true);
+    // Add empty address immediately after activating edit mode
+    setEditFormData((prev) => ({
+      ...prev,
+      addresses: [...(prev.addresses || []), createEmptyAddress()],
+    }));
+  };
+
+  /**
    * Request password reset
    */
   const handleResetPassword = async () => {
@@ -211,11 +228,9 @@ export const useProfile = () => {
     setIsResettingPassword(true);
     try {
       await requestPasswordResetService(userData?.email);
-      showCustomToast.success(
-        "Correo de recuperación enviado. Revisa tu bandeja de entrada (también el correo no deseado o SPAM).",
-      );
+      notifyAuth.passwordResetSent();
     } catch (err) {
-      showCustomToast.error("Error al enviar el email. Intenta nuevamente.");
+      notifyProfile.emailError();
     } finally {
       setIsResettingPassword(false);
     }
@@ -295,12 +310,12 @@ export const useProfile = () => {
         ),
       );
 
-      showCustomToast.success("Pedido cancelado exitosamente");
+      notifyOrders.cancelSuccess();
       setShowCancelOrderConfirm(false);
       setOrderToCancel(null);
     } catch (err) {
       console.error("Error cancelling order:", err);
-      showCustomToast.error("Error al cancelar el pedido. Intenta de nuevo.");
+      notifyOrders.cancelError(err.message);
     } finally {
       setIsCancellingOrder(false);
     }
@@ -340,6 +355,7 @@ export const useProfile = () => {
     handleSaveProfile,
     handleCancelEdit,
     handleStartEdit,
+    handleStartEditWithAddress,
     handleResetPassword,
     handleDeleteAccount,
     updateEditField,

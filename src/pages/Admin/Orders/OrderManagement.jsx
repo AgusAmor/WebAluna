@@ -8,6 +8,7 @@ import {
   updateOrderStatus,
 } from "../../../services/firebase/firebaseOrderService";
 import { showCustomToast } from "../../../services/ui/toastService";
+import { notifyOrders } from "../../../services/ui/notificationService";
 import { formatDefaultAddress } from "../../../services/users/userManagementService";
 import { ORDER_STATUS } from "../../../constants";
 
@@ -117,7 +118,7 @@ const OrderManagement = () => {
       } catch (err) {
         console.error("Error fetching orders:", err);
         setError(err.message || "No se pudieron cargar los pedidos");
-        showCustomToast.error(err.message || "Error al cargar los pedidos");
+        notifyOrders.loadError(err.message);
       } finally {
         setLoading(false);
       }
@@ -166,10 +167,10 @@ const OrderManagement = () => {
       );
       setSelectedOrder({ ...selectedOrder, status: newStatus });
       setSelectedStatus(newStatus);
-      showCustomToast.success("Estado actualizado exitosamente");
+      notifyOrders.statusUpdated();
     } catch (error) {
       console.error("Error updating order status:", error);
-      showCustomToast.error(error.message || "Error al actualizar el estado");
+      notifyOrders.updateError(error.message);
     }
   };
 

@@ -25,6 +25,10 @@ import {
   hasDefaultAddress,
 } from "../../services/orders/orderService";
 import { showCustomToast } from "../../services/ui/toastService.jsx";
+import {
+  notifyCheckout,
+  notifyOrders,
+} from "../../services/ui/notificationService";
 
 export function useCheckout() {
   const navigate = useNavigate();
@@ -196,7 +200,7 @@ export function useCheckout() {
       setShowAddressModal(false);
       setLoading(false);
 
-      showCustomToast.success("Dirección agregada exitosamente");
+      notifyCheckout.addressAdded();
 
       // Return the address with the generated ID
       return addressWithId;
@@ -204,7 +208,7 @@ export function useCheckout() {
       const errorMessage = err.message || "Error al agregar dirección";
       setError(errorMessage);
       setLoading(false);
-      showCustomToast.error(errorMessage);
+      notifyCheckout.error(errorMessage);
       throw new Error(errorMessage);
     }
   };
@@ -221,9 +225,6 @@ export function useCheckout() {
       userProfile &&
       !hasDefaultAddress(userProfile)
     ) {
-      showCustomToast.error(
-        "Por favor agrega una dirección antes de finalizar el pedido",
-      );
       setShowAddressModal(true);
       return;
     }
@@ -307,7 +308,7 @@ export function useCheckout() {
     } catch (err) {
       const errorMessage = err.message || "Error al procesar el pedido";
       setError(errorMessage);
-      showCustomToast.error(errorMessage);
+      notifyCheckout.error(errorMessage);
       throw new Error(errorMessage);
     } finally {
       setLoadingOrder(false);
@@ -320,9 +321,7 @@ export function useCheckout() {
    */
   const handleOrderConfirmation = () => {
     if (createdOrder) {
-      showCustomToast.success(
-        `Pronto serás notificad@ por mail sobre el estado de tu pedido...`,
-      );
+      notifyCheckout.orderConfirmation();
     }
 
     // Clear cart

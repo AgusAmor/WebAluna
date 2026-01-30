@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { showCustomToast } from "../services/ui/toastService.jsx";
+import { notifyAuth } from "../services/ui/notificationService";
 import { useAutoLogout } from "../hooks";
 import PropTypes from "prop-types";
 import authService from "../services/firebase/firebaseAuthService";
@@ -32,9 +32,21 @@ export const AuthProvider = ({ children }) => {
 
             // Verify that user document exists in Firestore before setting user
             // This prevents showing user as logged in if registration failed
-            const userDocExists = await authService.checkUserDocExists(
-              currentUser.uid
-            );
+            // For newly registered users, retry a few times to handle race conditions
+            let userDocExists = false;
+            let retries = 3;
+
+            while (!userDocExists && retries > 0) {
+              userDocExists = await authService.checkUserDocExists(
+                currentUser.uid,
+              );
+
+              if (!userDocExists && retries > 1) {
+                // Wait a bit before retrying (only for new users)
+                await new Promise((resolve) => setTimeout(resolve, 500));
+              }
+              retries--;
+            }
 
             if (userDocExists) {
               // Check if account is suspended BEFORE setting user as authenticated
@@ -43,7 +55,7 @@ export const AuthProvider = ({ children }) => {
                 // Account is suspended - sign out and set error
                 await authService.logout();
                 setError(
-                  "Tu cuenta ha sido suspendida. Contacta con el administrador."
+                  "Tu cuenta ha sido suspendida. Contacta con el administrador.",
                 );
                 setUser(null);
               } else {
@@ -66,18 +78,21 @@ export const AuthProvider = ({ children }) => {
           cartStorageService.clearCart();
         }
         setLoading(false);
-      }
+      },
     );
     return () => unsubscribe();
   }, []);
 
   // Automatically log out the user after a period of inactivity
-  useAutoLogout(() => {
-    if (user) {
-      logout();
-      showCustomToast.info("Sesión cerrada por inactividad");
-    }
-  }, 5 * 60 * 1000);
+  useAutoLogout(
+    () => {
+      if (user) {
+        logout();
+        notifyAuth.sessionExpired();
+      }
+    },
+    5 * 60 * 1000,
+  );
 
   /**
    * Logs in a user using email and password credentials
@@ -87,7 +102,7 @@ export const AuthProvider = ({ children }) => {
       () => authService.login(email, password),
       setError,
       setLoading,
-      setUser
+      setUser,
     );
   };
 
@@ -99,7 +114,7 @@ export const AuthProvider = ({ children }) => {
       () => authService.loginWithGoogle(),
       setError,
       setLoading,
-      setUser
+      setUser,
     );
   };
 
@@ -111,7 +126,7 @@ export const AuthProvider = ({ children }) => {
       () => authService.register({ email, password, name }),
       setError,
       setLoading,
-      setUser
+      setUser,
     );
   };
 
@@ -164,7 +179,7 @@ export const AuthProvider = ({ children }) => {
     if (currentUser) {
       const userWithRole = await refreshUserToken(
         currentUser,
-        authService.adminVerify
+        authService.adminVerify,
       );
       setUser(userWithRole);
     }

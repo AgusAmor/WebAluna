@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { showCustomToast } from "../../services/ui/toastService.jsx";
+import { notifyAuth } from "../../services/ui/notificationService";
 import { useAuth } from "../../context/AuthContext";
 import { isUserAdmin } from "../../utils/adminUtils";
 
@@ -35,9 +35,9 @@ export function useHeader() {
           const progress = Math.min(
             Math.max(
               (scrollPosition - SCROLL_START) / (SCROLL_END - SCROLL_START),
-              0
+              0,
             ),
-            1
+            1,
           );
           setScrollProgress(progress);
 
@@ -71,10 +71,10 @@ export function useHeader() {
       await logout();
       setShowUserMenu(false);
       navigate("/");
-      showCustomToast.success("Sesión cerrada correctamente");
+      notifyAuth.logoutSuccess();
     } catch (error) {
       console.error("Logout error:", error);
-      showCustomToast.error("Error al cerrar sesión");
+      notifyAuth.logoutError();
     }
   };
 

@@ -24,12 +24,31 @@ export async function deleteProduct(id, token) {
  * @throws {Error} If path cannot be extracted
  */
 export async function deleteProductImage(imageUrl) {
+  if (!imageUrl) {
+    console.warn("No image URL provided for deletion");
+    return;
+  }
+
+  console.log("Attempting to delete image:", imageUrl);
+
+  // Extract path from Firebase Storage URL
   const match = imageUrl.match(/\/o\/([^?]+)/);
   if (!match || !match[1]) {
+    console.error("Could not extract image path from URL:", imageUrl);
     throw new Error("Could not extract image path from URL");
   }
+
   const filePath = decodeURIComponent(match[1]);
-  await deleteObject(ref(storage, filePath));
+  console.log("Extracted file path:", filePath);
+
+  try {
+    const imageRef = ref(storage, filePath);
+    await deleteObject(imageRef);
+    console.log("Image successfully deleted from Storage:", filePath);
+  } catch (error) {
+    console.error("Error deleting image from Storage:", error);
+    throw error;
+  }
 }
 
 /**

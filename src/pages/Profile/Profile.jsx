@@ -3,7 +3,7 @@ import { MdEdit } from "react-icons/md";
 import { FaTrash, FaKey } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { useNavigate } from "react-router-dom";
-import { showCustomToast } from "../../services/ui/toastService.jsx";
+import { notifyAuth } from "../../services/ui/notificationService";
 import { ConfirmationModal, AddressForm } from "../../components/common";
 import {
   OrderCard,
@@ -44,6 +44,7 @@ const Profile = () => {
     handleSaveProfile,
     handleCancelEdit,
     handleStartEdit,
+    handleStartEditWithAddress,
     handleResetPassword,
     handleDeleteAccount,
     updateEditField,
@@ -70,9 +71,12 @@ const Profile = () => {
 
     if (success) {
       setShowFinalDeleteConfirm(false);
-      showCustomToast.success("Tu cuenta ha sido eliminada exitosamente");
-      // Navigate immediately to show toast on home page
-      navigate("/", { replace: true });
+      // Show toast before navigation
+      notifyAuth.accountDeleted();
+      // Small delay to ensure toast is visible before navigating
+      setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 500);
     }
   };
 
@@ -449,6 +453,13 @@ const Profile = () => {
                       <p className="text-gray-1 mb-4">
                         No tienes direcciones de envío registradas
                       </p>
+                      <button
+                        type="button"
+                        onClick={handleStartEditWithAddress}
+                        className="text-blue-2 hover:text-blue-1 font-semibold text-sm transition-colors"
+                      >
+                        + Agregar dirección
+                      </button>
                     </div>
                   )}
                 </>

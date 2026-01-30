@@ -7,7 +7,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { showCustomToast } from "../../services/ui/toastService.jsx";
+import { notifyAuth } from "../../services/ui/notificationService";
 
 export function useAdminSidebar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -31,10 +31,10 @@ export function useAdminSidebar() {
       await logout();
       closeSidebar();
       navigate("/");
-      showCustomToast.success("Sesión cerrada correctamente");
+      notifyAuth.logoutSuccess();
     } catch (error) {
       console.error("Logout error:", error);
-      showCustomToast.error("Error al cerrar sesión");
+      notifyAuth.logoutError();
     }
   };
 

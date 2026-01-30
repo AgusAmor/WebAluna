@@ -1,6 +1,6 @@
 import React from "react";
 import { MdAdd } from "react-icons/md";
-import { Hero } from "../../../components/common";
+import { Hero, ConfirmationModal } from "../../../components/common";
 import ProductModal from "./ProductModal";
 import ProductsTable from "./ProductsTable";
 import { useProductManagement } from "../../../hooks";
@@ -20,12 +20,16 @@ const ProductManagement = () => {
     saving,
     deletingId,
     editProduct,
+    showDeleteConfirm,
+    productToDelete,
     setImagePreview,
     handleCreateProduct,
     handleEditProduct,
     handleCloseModal,
     handleSubmitProduct,
     handleDeleteProduct,
+    confirmDeleteProduct,
+    cancelDeleteProduct,
   } = useProductManagement();
 
   return (
@@ -68,6 +72,20 @@ const ProductManagement = () => {
             onDelete={handleDeleteProduct}
           />
         </div>
+
+        {/* Delete Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={showDeleteConfirm}
+          title="Eliminar Producto"
+          message={`¿Estás seguro de que deseas eliminar "${productToDelete?.name}"?`}
+          description="Esta acción es irreversible y el producto será eliminado permanentemente del catálogo."
+          onConfirm={confirmDeleteProduct}
+          onCancel={cancelDeleteProduct}
+          isLoading={!!deletingId}
+          confirmText="Eliminar"
+          cancelText="Cancelar"
+          variant="danger"
+        />
       </div>
     </div>
   );

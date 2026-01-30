@@ -61,7 +61,7 @@ const AdminSidebar = () => {
       icon: FiHome,
     },
     {
-      label: "Catálogo",
+      label: "Productos",
       path: "/productos",
       icon: FiShoppingBag,
     },

@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { ORDER_STATUS } from "../../constants";
 import { showCustomToast } from "../../services/ui/toastService";
+import { notifyOrders } from "../../services/ui/notificationService";
 import { updateOrderStatus } from "../../services/firebase/firebaseOrderService";
 
 /**
@@ -49,7 +50,6 @@ const useOrderManagement = (user) => {
       const nextStatus = statusFlow[currentStatus] || currentStatus;
 
       if (nextStatus === currentStatus) {
-        showCustomToast.info("Este pedido ya está en estado final");
         return;
       }
 
@@ -73,10 +73,10 @@ const useOrderManagement = (user) => {
             order.id === orderId ? { ...order, status: nextStatus } : order,
           ),
         );
-        showCustomToast.success("Estado actualizado exitosamente");
+        notifyOrders.statusUpdated();
       } catch (error) {
         console.error("Error updating order status:", error);
-        showCustomToast.error(error.message || "Error al actualizar el estado");
+        notifyOrders.updateError(error.message);
       } finally {
         setUpdatingId(null);
       }
@@ -116,12 +116,12 @@ const useOrderManagement = (user) => {
           order.id === orderToCancel.id ? { ...order, ...updatedOrder } : order,
         ),
       );
-      showCustomToast.success("Pedido cancelado exitosamente");
+      notifyOrders.cancelSuccess();
       setShowCancelConfirm(false);
       setOrderToCancel(null);
     } catch (error) {
       console.error("Error cancelling order:", error);
-      showCustomToast.error(error.message || "Error al cancelar el pedido");
+      notifyOrders.cancelError(error.message);
     } finally {
       setIsCancellingOrder(false);
     }

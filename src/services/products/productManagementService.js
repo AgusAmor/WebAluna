@@ -66,14 +66,14 @@ export const buildProductObject = (formData, imageUrl) => {
  */
 export const handleProductImageUpload = async (
   file,
-  existingProduct = null
+  existingProduct = null,
 ) => {
   if (!file) {
     throw new Error("Image file is required");
   }
 
   const uniqueName = `products/${Date.now()}_${Math.floor(
-    Math.random() * 10000
+    Math.random() * 10000,
   )}_${file.name}`;
 
   if (existingProduct?.imageUrl) {
@@ -81,7 +81,7 @@ export const handleProductImageUpload = async (
     return await replaceProductImage(
       file,
       uniqueName,
-      existingProduct.imageUrl
+      existingProduct.imageUrl,
     );
   } else {
     // Upload new image
@@ -147,19 +147,28 @@ export const saveProduct = async ({
  * @returns {Promise<void>}
  */
 export const deleteProductWithImage = async (productId, imageUrl, user) => {
+  console.log("Deleting product:", productId, "with image:", imageUrl);
+
   const token = await getAuthToken(user);
 
   // Delete product from Firestore
   await deleteProduct(productId, token);
+  console.log("Product deleted from Firestore");
 
   // Delete image from Storage if exists
   if (imageUrl) {
     try {
       await deleteProductImage(imageUrl);
+      console.log("Image deleted from Storage successfully");
     } catch (imgErr) {
       console.error("Error deleting image from storage:", imgErr);
-      // Don't throw - product is already deleted
+      // Don't throw - product is already deleted, but log the error
+      throw new Error(
+        `Product deleted but failed to delete image: ${imgErr.message}`,
+      );
     }
+  } else {
+    console.warn("No image URL provided, skipping image deletion");
   }
 };
 

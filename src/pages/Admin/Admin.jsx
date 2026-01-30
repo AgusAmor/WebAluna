@@ -111,14 +111,14 @@ const Admin = () => {
           </Link>
           <Link
             to="/admin/pedidos"
-            className="bg-white rounded-xl shadow-lg px-8 py-7 min-w-[260px] max-w-xs transition-all duration-300 cursor-pointer group hover:shadow-2xl hover:-translate-y-1 relative flex flex-col justify-center"
+            className="bg-white rounded-xl shadow-lg px-4 md:px-8 py-5 md:py-7 w-full sm:w-auto sm:min-w-60 md:min-w-[260px] max-w-xs transition-all duration-300 cursor-pointer group hover:shadow-2xl hover:-translate-y-1 relative flex flex-col justify-center"
           >
             <span className="absolute left-0 top-0 h-full w-2.5 rounded-tl-xl rounded-bl-xl bg-gold group-hover:bg-blue-1 transition-all duration-300"></span>
-            <div className="pl-4">
-              <h2 className="text-2xl font-bold text-gold font-family-comfortaa mb-2 text-left group-hover:text-blue-1 transition-colors duration-300">
+            <div className="pl-3 md:pl-4">
+              <h2 className="text-xl md:text-2xl font-bold text-gold font-family-comfortaa mb-1 md:mb-2 text-left group-hover:text-blue-1 transition-colors duration-300">
                 Pedidos
               </h2>
-              <p className="text-gold text-base font-family-sora text-left group-hover:text-blue-1 transition-colors duration-300">
+              <p className="text-gold text-sm md:text-base font-family-sora text-left group-hover:text-blue-1 transition-colors duration-300">
                 Gestionar y revisar pedidos
               </p>
             </div>

@@ -4,5 +4,4 @@
  * Form validation and handling hooks
  */
 
-export { useFormValidation } from "./useFormValidation.js";
 export { useAddressValidation } from "./useAddressValidation.js";

@@ -25,9 +25,7 @@ export const reauthenticateUser = async (email, password) => {
   const credential = EmailAuthProvider.credential(email, password);
   try {
     await reauthenticateWithCredential(auth.currentUser, credential);
-    console.log("[reauthenticateUser] User re-authenticated successfully");
   } catch (error) {
-    console.error("[reauthenticateUser] Error:", error);
     if (error.code === "auth/wrong-password") {
       throw new Error("La contraseña es incorrecta");
     } else if (error.code === "auth/user-not-found") {
@@ -58,7 +56,7 @@ export const deleteCurrentAccount = async (user) => {
     try {
       await signOut(auth);
     } catch (err) {
-      console.error("Error during final sign out:", err);
+      // Silent fail - session will be cleared anyway
     }
   }
 

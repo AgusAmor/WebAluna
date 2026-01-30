@@ -7,6 +7,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { showCustomToast } from "../../services/ui/toastService.jsx";
+import { notifyCart } from "../../services/ui/notificationService";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -63,7 +64,7 @@ export function useProducts(onLoginRequired) {
   const filteredProducts = filterAndSortProducts(
     allProducts,
     selectedFamily,
-    priceSort
+    priceSort,
   );
 
   // Extract unique families for filter dropdown
@@ -76,9 +77,7 @@ export function useProducts(onLoginRequired) {
   const handleAddToCart = (product) => {
     if (!user) {
       // User not logged in - show toast and trigger login modal
-      showCustomToast.info(
-        "Debes iniciar sesión para agregar productos al carrito."
-      );
+      notifyCart.loginRequiredToAdd();
       if (onLoginRequired) {
         onLoginRequired();
       }
@@ -87,7 +86,7 @@ export function useProducts(onLoginRequired) {
     // User is logged in - add to cart
     addItem(product);
     // Show success toast
-    showCustomToast.info(`"${product.name}" se agregó al carrito.`);
+    notifyCart.productAdded(product.name);
   };
 
   /**

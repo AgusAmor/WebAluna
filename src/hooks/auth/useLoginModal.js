@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { showCustomToast } from "../../services/ui/toastService.jsx";
+import { notifyAuth } from "../../services/ui/notificationService";
 import { useAuth } from "../../context/AuthContext";
 import { isUserAdmin } from "../../utils/adminUtils";
 import {
@@ -40,23 +40,9 @@ export function useLoginModal(isOpen, onClose) {
 
   const navigate = useNavigate();
 
-  console.log(
-    "useLoginModal render - isOpen:",
-    isOpen,
-    "loading:",
-    loading,
-    "user:",
-    user?.email,
-    "isAuthenticated:",
-    isAuthenticated,
-    "error:",
-    error,
-  );
-
   // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
-      console.log("Modal abierto, reseteando flags");
       lastErrorShownRef.current = null;
       loginAttemptTimeRef.current = null;
       setLoginSuccessHandled(false);
@@ -100,9 +86,7 @@ export function useLoginModal(isOpen, onClose) {
     try {
       await requestPasswordReset(resetEmail);
       setResetSuccess("Se ha enviado el correo de recuperación");
-      showCustomToast.success(
-        "Correo de recuperación enviado. Revisa tu bandeja de entrada.",
-      );
+      notifyAuth.passwordResetSent();
       // Reset form after short delay
       setTimeout(() => {
         handleBackToLogin();
@@ -147,23 +131,18 @@ export function useLoginModal(isOpen, onClose) {
         );
       }
 
-      console.log("Login/registro exitoso, resultado:", result);
-
       // Show welcome toast immediately after successful login
-      const welcomeMessage = `¡Bienvenido${
-        result?.displayName ? " " + result.displayName.split(" ")[0] : ""
-      }!`;
-
-      showCustomToast.success(welcomeMessage);
+      const firstName = result?.displayName
+        ? result.displayName.split(" ")[0]
+        : "";
+      notifyAuth.loginSuccess(firstName);
 
       // Small delay then navigate and close
       setTimeout(() => {
         // Navigate based on user role
         if (isUserAdmin(result)) {
-          console.log("Navegando a /admin");
           navigate("/admin");
         } else {
-          console.log("Navegando a /");
           navigate("/");
         }
 
@@ -174,7 +153,6 @@ export function useLoginModal(isOpen, onClose) {
         loginAttemptTimeRef.current = null;
       }, 300);
     } catch (err) {
-      console.error("Error en login/registro:", err);
       // Error is already displayed by the context
     }
   };
@@ -187,22 +165,18 @@ export function useLoginModal(isOpen, onClose) {
 
     try {
       const result = await loginWithGoogle();
-      console.log("Google login exitoso, resultado:", result);
 
       // Show welcome toast
-      const welcomeMessage = `¡Bienvenido${
-        result?.displayName ? " " + result.displayName.split(" ")[0] : ""
-      }!`;
-
-      showCustomToast.success(welcomeMessage);
+      const firstName = result?.displayName
+        ? result.displayName.split(" ")[0]
+        : "";
+      notifyAuth.loginSuccess(firstName);
 
       // Navigate and close
       setTimeout(() => {
         if (isUserAdmin(result)) {
-          console.log("Navegando a /admin");
           navigate("/admin");
         } else {
-          console.log("Navegando a /");
           navigate("/");
         }
 
@@ -212,7 +186,6 @@ export function useLoginModal(isOpen, onClose) {
         loginAttemptTimeRef.current = null;
       }, 300);
     } catch (err) {
-      console.error("Error en Google login:", err);
       // Error is already displayed by the context
     }
   };

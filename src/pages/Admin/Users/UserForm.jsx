@@ -33,8 +33,11 @@ const UserForm = ({
   };
 
   return (
-    <form className="space-y-4 flex-1" onSubmit={handleSubmit}>
-      <div className="flex flex-col h-[60vh] overflow-y-auto">
+    <form
+      className="space-y-4 flex-1 flex flex-col overflow-hidden"
+      onSubmit={handleSubmit}
+    >
+      <div className="flex flex-col flex-1 overflow-y-auto pr-2">
         <div className="mb-3">
           <label className="font-bold text-blue-2 mb-1.5 block">Nombre</label>
           <input
@@ -145,7 +148,7 @@ const UserForm = ({
           <div className="text-red-500 font-bold text-center mt-2">{error}</div>
         )}
       </div>
-      <div className="flex justify-end gap-2 mt-4">
+      <div className="flex justify-end gap-2 mt-4 shrink-0 pt-2 border-t border-gray-2">
         <button
           type="button"
           className="px-4 py-2 rounded-lg bg-gray-2 text-blue-2 font-bold hover:bg-blue-2 hover:text-white cursor-pointer transition-colors"

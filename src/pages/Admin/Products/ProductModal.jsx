@@ -29,7 +29,7 @@ const ProductModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -37,7 +37,7 @@ const ProductModal = ({
       }}
     >
       <div
-        className="bg-white rounded-xl shadow-lg p-8 w-full max-w-3xl min-w-[350px] relative h-[600px] flex flex-col animate-fadeInScale"
+        className="bg-white rounded-xl shadow-lg p-6 md:p-8 w-full max-w-3xl min-w-[350px] relative max-h-[90vh] flex flex-col animate-fadeInScale"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -47,7 +47,7 @@ const ProductModal = ({
         >
           <IoIosClose size={26} />
         </button>
-        <h2 className="text-2xl font-bold text-blue-2 mb-4 font-family-comfortaa">
+        <h2 className="text-xl md:text-2xl font-bold text-blue-2 mb-4 font-family-comfortaa shrink-0 pr-8">
           {product ? "Editar producto" : "Agregar producto"}
         </h2>
         <ProductForm
