@@ -75,6 +75,11 @@ const AdminSidebar = () => {
       path: "/contacto",
       icon: FiMail,
     },
+    {
+      label: "Mi Perfil",
+      path: "/perfil",
+      icon: FiUser,
+    },
   ];
 
   return (

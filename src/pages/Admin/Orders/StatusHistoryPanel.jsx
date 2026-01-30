@@ -33,29 +33,21 @@ const StatusHistoryPanel = ({ statusHistory, userId }) => {
     <div className="space-y-3 max-h-full overflow-y-auto pr-2">
       {sortedHistory.map((entry, index) => (
         <div key={index} className="relative">
-          {/* Timeline dot */}
-          <div className="absolute -left-3 top-2 w-3 h-3 bg-gold rounded-full border-2 border-white"></div>
-
-          {/* Timeline line (connects to next item) */}
-          {index < sortedHistory.length - 1 && (
-            <div className="absolute -left-1.5 top-5 w-1 h-12 bg-gold/30"></div>
-          )}
-
           {/* Content */}
-          <div className="ml-4 bg-white border border-gray-3 rounded-lg p-3">
+          <div className="ml-4 bg-white border-l-4 border-gold rounded-lg p-3 shadow-sm">
             <div className="mb-2">
               <OrderStatusBadge status={entry.status} />
             </div>
 
-            <p className="text-xs text-gray-1 mb-2">
+            <p className="text-xs text-blue-2 mb-2 font-semibold">
               {formatDateTime(entry.timestamp)}
             </p>
 
-            <p className="text-xs text-blue-1 font-medium mb-2 line-clamp-2">
+            <p className="text-xs text-blue-1 font-medium mb-2 wrap-break-word whitespace-normal">
               {entry.note || `Estado actualizado a ${entry.status}`}
             </p>
 
-            <p className="text-xs text-gray-1 italic">
+            <p className="text-xs text-blue-2 italic font-semibold">
               {getActorLabel(entry.updatedBy)}
             </p>
           </div>

@@ -18,17 +18,17 @@
 
 @theme inline {
   --color-blue-1: #264e60;
-  --color-blue-2: #427385;
+  --color-blue-2: #427385; /*Principal*/
   --color-blue-3: #81a5ae;
 
   --color-gray-1: #a9b2b9;
-  --color-gray-2: #c3c9ce;
+  --color-gray-2: #c3c9ce; /*Sencondary*/
   --color-gray-3: #d9dce0;
 
   --color-black: #2b2b2b;
   --color-white: #f4f4f4;
 
-  --color-gold: #b6a269;
+  --color-gold: #b6a269; /*Accents*/
 
   --font-family-comfortaa: "Comfortaa", system-ui, sans-serif;
   --font-family-sora: "Sora", system-ui, sans-serif;

@@ -1,10 +1,12 @@
 import React from "react";
 import { ImSpinner2 } from "react-icons/im";
 import { IoIosClose } from "react-icons/io";
+import { MdHistory } from "react-icons/md";
 import { formatDate } from "../../../utils/dateFormatter";
 import { ORDER_STATUS } from "../../../constants";
 import { OrderStatusBadge } from "../../../components/ecommerce";
 import StatusHistoryPanel from "./StatusHistoryPanel";
+import { useOrderDetailsModal } from "../../../hooks/admin";
 
 /**
  * OrderDetailsModal Component
@@ -18,6 +20,9 @@ const OrderDetailsModal = ({
   onClose,
   onStatusChange,
 }) => {
+  const { showHistoryModal, openHistoryModal, closeHistoryModal } =
+    useOrderDetailsModal();
+
   if (!isOpen || !selectedOrder) return null;
 
   return (
@@ -30,24 +35,29 @@ const OrderDetailsModal = ({
       }}
     >
       <div
-        className="bg-white rounded-xl shadow-lg w-full max-w-sm sm:max-w-md md:max-w-2xl lg:max-w-5xl xl:max-w-6xl relative flex flex-col md:flex-row animate-fadeInScale max-h-[90vh] overflow-hidden"
+        className="bg-white rounded-lg sm:rounded-xl shadow-lg w-full max-w-sm sm:max-w-md md:max-w-4xl lg:max-w-6xl xl:max-w-7xl relative flex flex-col md:flex-row animate-fadeInScale max-h-[95vh] sm:max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          className="absolute top-3 right-3 cursor-pointer text-blue-2 hover:text-gold hover:scale-150 transition-all z-10"
+          className="absolute top-3 right-3 cursor-pointer text-gray-3 hover:text-gold hover:scale-150 transition-all z-10"
           onClick={onClose}
           aria-label="Close"
         >
           <IoIosClose size={26} />
         </button>
 
-        {/* Left Panel - Status History */}
-        <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-gray-2 flex flex-row md:flex-col shrink-0 bg-gray-3/30 overflow-x-auto md:overflow-x-visible">
-          <div className="p-3 md:p-6 flex-1 md:flex md:flex-col overflow-hidden">
-            <h3 className="text-base md:text-lg font-bold text-blue-1 font-family-comfortaa mb-2 md:mb-4 shrink-0 whitespace-nowrap md:whitespace-normal">
-              Historial
+        {/* Badge positioned left of close button - Mobile only */}
+        <div className="absolute top-3 right-12 z-10 md:hidden">
+          <OrderStatusBadge status={selectedOrder.status} />
+        </div>
+
+        {/* Left Panel - Status History (hidden on mobile, shown on desktop) */}
+        <div className="hidden md:flex md:w-72 lg:w-80 border-r border-gray-2 flex-col shrink-0 bg-blue-1 rounded-l-lg sm:rounded-l-xl">
+          <div className="p-6 flex-1 flex flex-col overflow-hidden">
+            <h3 className="text-lg font-bold text-white font-family-comfortaa mb-6 shrink-0">
+              Historial del Pedido
             </h3>
-            <div className="flex-1 overflow-y-auto hidden md:block">
+            <div className="flex-1 overflow-y-auto pr-2">
               <StatusHistoryPanel
                 statusHistory={selectedOrder.statusHistory}
                 userId={selectedOrder.userId}
@@ -55,19 +65,19 @@ const OrderDetailsModal = ({
             </div>
           </div>
 
-          {/* Left Footer - Status Selection */}
-          <div className="p-3 md:p-6 border-l md:border-l-0 md:border-t border-gray-2 shrink-0 w-48 md:w-auto">
-            <label className="font-bold text-blue-2 font-family-sora text-xs uppercase tracking-wide block mb-2 whitespace-nowrap">
+          {/* Left Footer - Status Selection (Desktop) */}
+          <div className="p-6 border-t border-blue-2 shrink-0 bg-blue-2">
+            <label className="font-bold text-white font-family-sora text-xs uppercase tracking-wide block mb-3">
               Cambiar Estado
             </label>
             <select
               value={selectedStatus || ""}
               onChange={(e) => onStatusChange(e.target.value)}
               disabled={updatingId === selectedOrder.id}
-              className={`w-full px-2 md:px-3 py-2 rounded-lg border border-gray-2 focus:outline-none focus:border-gold transition-colors font-family-sora text-xs md:text-sm ${
+              className={`w-full px-2 md:px-3 py-2 rounded-lg border-2 border-gold focus:outline-none focus:border-gold transition-colors font-family-sora text-xs md:text-sm ${
                 updatingId === selectedOrder.id
                   ? "bg-gray-100 cursor-not-allowed opacity-60"
-                  : "bg-white hover:border-gold"
+                  : "bg-white hover:bg-blue-3/10"
               }`}
             >
               <option value="">-- Seleccionar estado --</option>
@@ -88,139 +98,96 @@ const OrderDetailsModal = ({
         </div>
 
         {/* Right Panel - Order Details */}
-        <div className="flex-1 flex flex-col min-w-0">
-          <h2 className="text-lg md:text-2xl font-bold text-blue-1 font-family-comfortaa mb-2 md:mb-4 px-4 md:px-8 pt-4 md:pt-8 shrink-0">
-            Detalles del Pedido
-          </h2>
-
-          {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto px-4 md:px-8 space-y-3 md:space-y-4">
-            {/* Header Info */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4">
-              <div>
-                <label className="font-bold text-blue-2 font-family-sora text-xs uppercase tracking-wide block mb-2">
-                  Número de Pedido
-                </label>
-                <p className="text-lg text-gold font-bold">
-                  #{selectedOrder.orderNumber || selectedOrder.id?.slice(-8)}
-                </p>
-              </div>
-              <div>
-                <label className="font-bold text-blue-2 font-family-sora text-xs uppercase tracking-wide block mb-2">
-                  Fecha de Emisión
-                </label>
-                <p className="text-sm text-blue-1">
-                  {selectedOrder.createdAt
-                    ? formatDate(selectedOrder.createdAt)
-                    : "N/A"}
-                </p>
-              </div>
-              <div>
-                <label className="font-bold text-blue-2 font-family-sora text-xs uppercase tracking-wide block mb-2">
-                  Estado
-                </label>
-                <div className="flex-col gap-1">
-                  <OrderStatusBadge status={selectedOrder.status} />
+        <div className="flex-1 flex flex-col min-w-0 bg-white overflow-hidden rounded-lg md:rounded-l-none md:rounded-r-xl">
+          <div className="py-4 px-5 sm:py-6 sm:px-8 border-b border-gray-2 shrink-0 bg-blue-2">
+            <h2 className="text-lg sm:text-2xl font-bold font-family-comfortaa text-white mb-3">
+              Detalles del Pedido
+            </h2>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-base sm:text-lg text-gold font-bold">
+                    #{selectedOrder.orderNumber || selectedOrder.id?.slice(-8)}
+                  </p>
+                  <div className="hidden md:block">
+                    <OrderStatusBadge status={selectedOrder.status} />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-blue-3 flex-wrap">
+                  <span>Emitido {formatDate(selectedOrder.createdAt)}</span>
                   {selectedOrder.statusHistory &&
                     selectedOrder.statusHistory.length > 0 && (
-                      <p className="text-xs text-gray-1 mt-1">
-                        Actualizado{" "}
+                      <span>
+                        • Actualizado{" "}
                         {formatDate(
                           selectedOrder.statusHistory[
                             selectedOrder.statusHistory.length - 1
                           ].timestamp,
                         )}
-                      </p>
+                      </span>
                     )}
                 </div>
               </div>
             </div>
+          </div>
 
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto px-5 sm:px-8 lg:px-10 space-y-5 sm:space-y-6 py-6">
             {/* Customer Info */}
-            <div className="bg-white border border-gray-3 rounded-lg p-4">
-              <h3 className="font-bold text-blue-2 font-family-sora text-sm mb-3 flex items-center gap-2">
-                <span className="w-1 h-4 bg-gold rounded-full"></span>
+            <div className="bg-blue-3/30 border-l-4 border-gold rounded-lg p-5 sm:p-6">
+              <h3 className="font-bold text-blue-1 font-family-sora text-sm mb-3 flex items-center gap-2">
+                <span className="w-1 h-5 bg-gold rounded-full"></span>
                 Información del Cliente
               </h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="font-semibold text-gray-1 text-xs uppercase tracking-wide block mb-1">
-                    Usuario
-                  </label>
-                  <p className="text-blue-1 font-medium">
-                    {selectedOrder.userName}
-                  </p>
-                </div>
-                <div>
-                  <label className="font-semibold text-gray-1 text-xs uppercase tracking-wide block mb-1">
-                    Email
-                  </label>
-                  <p className="text-blue-1 text-sm">
-                    {selectedOrder.userEmail || "-"}
-                  </p>
-                </div>
-                <div className="col-span-2">
-                  <label className="font-semibold text-gray-1 text-xs uppercase tracking-wide block mb-1">
-                    Teléfono
-                  </label>
-                  <p className="text-blue-1">
-                    {selectedOrder.userPhone || "-"}
-                  </p>
-                </div>
+              <div className="space-y-1">
+                <p className="text-blue-1 font-bold text-base">
+                  {selectedOrder.userName}
+                </p>
+                <p className="text-blue-2 text-sm break-all">
+                  {selectedOrder.userEmail || "-"}
+                </p>
+                <p className="text-blue-2 text-sm">
+                  {selectedOrder.userPhone || "-"}
+                </p>
               </div>
             </div>
 
             {/* Delivery Info */}
-            <div className="bg-white border border-gray-3 rounded-lg p-4">
-              <h3 className="font-bold text-blue-2 font-family-sora text-sm mb-3 flex items-center gap-2">
-                <span className="w-1 h-4 bg-gold rounded-full"></span>
+            <div className="bg-blue-3/30 border-l-4 border-gold rounded-lg p-5 sm:p-6">
+              <h3 className="font-bold text-blue-1 font-family-sora text-sm mb-3 flex items-center gap-2">
+                <span className="w-1 h-5 bg-gold rounded-full"></span>
                 Información de Entrega
               </h3>
-              <div className="space-y-3">
-                <div>
-                  <label className="font-semibold text-gray-1 text-xs uppercase tracking-wide block mb-1">
-                    Tipo de Entrega
-                  </label>
-                  <p className="text-blue-1 font-medium">
-                    {selectedOrder.deliveryType === "pickup"
-                      ? "Retiro en local"
-                      : "Envío a domicilio"}
-                  </p>
-                </div>
+              <div className="space-y-1">
+                <p className="text-blue-1 font-bold text-base">
+                  {selectedOrder.deliveryType === "pickup"
+                    ? "Retiro en local"
+                    : "Envío a domicilio"}
+                </p>
                 {selectedOrder.deliveryType !== "pickup" &&
                   selectedOrder.deliveryAddress && (
-                    <div>
-                      <label className="font-semibold text-gray-1 text-xs uppercase tracking-wide block mb-1">
-                        Dirección de Entrega
-                      </label>
-                      <p className="text-blue-1 text-sm">
-                        {selectedOrder.deliveryAddress}
-                      </p>
-                    </div>
+                    <p className="text-blue-2 text-sm font-medium warp-break-word">
+                      {selectedOrder.deliveryAddress}
+                    </p>
                   )}
                 {(selectedOrder.shipping !== undefined ||
                   selectedOrder.summary?.shipping !== undefined) && (
-                  <div>
-                    <label className="font-semibold text-gray-1 text-xs uppercase tracking-wide block mb-1">
-                      Costo de Envío
-                    </label>
-                    <p className="text-gold font-bold">
-                      $
-                      {selectedOrder.shipping ??
-                        selectedOrder.summary?.shipping ??
-                        "0"}
-                    </p>
-                  </div>
+                  <p className="text-gold font-bold text-base">
+                    $
+                    {selectedOrder.shipping ??
+                      selectedOrder.summary?.shipping ??
+                      "0"}
+                  </p>
                 )}
               </div>
             </div>
 
             {/* Order Items */}
-            <div className="mb-7">
-              <label className="font-bold text-black font-family-sora text-sm block mb-2">
+            <div className="mb-0">
+              <label className="font-bold text-blue-1 font-family-sora text-sm block mb-3">
                 Productos ({selectedOrder.items?.length || 0})
               </label>
-              <div className="bg-white rounded-md border border-gray-3 p-4">
+              <div className="bg-blue-3/20 rounded-lg border-l-4 border-gold p-5 sm:p-6">
                 {selectedOrder.items && selectedOrder.items.length > 0 ? (
                   <div className="space-y-3">
                     {selectedOrder.items.map((item, index) => {
@@ -231,21 +198,20 @@ const OrderDetailsModal = ({
                       return (
                         <div
                           key={index}
-                          className="flex justify-between items-center text-sm pb-2 border-b border-gray-300 last:border-b-0"
+                          className="bg-white rounded-lg p-4 flex justify-between items-center gap-3"
                         >
-                          <div className="flex-1">
-                            <p className="font-bold text-blue-1">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-blue-1 text-sm sm:text-base truncate">
                               {item.productName}
                             </p>
-                            <p className="text-xs text-gray-1">
-                              {item.family && `${item.family} - `}
+                            <p className="text-xs text-blue-2 font-medium">
                               Tamaño: {item.size || "normal"}
                             </p>
-                            <p className="text-xs font-medium text-blue-3">
+                            <p className="text-xs text-blue-3 font-medium mt-1">
                               ${unitPrice.toFixed(2)} x {quantity}
                             </p>
                           </div>
-                          <span className="font-bold text-gold ml-4">
+                          <span className="font-bold text-gold text-sm sm:text-base shrink-0">
                             ${subtotal.toFixed(2)}
                           </span>
                         </div>
@@ -253,22 +219,33 @@ const OrderDetailsModal = ({
                     })}
                   </div>
                 ) : (
-                  <p className="text-gray-1 text-sm">
+                  <p className="text-blue-2 text-sm">
                     No hay productos en este pedido
                   </p>
                 )}
               </div>
             </div>
+
+            {/* History Button - Mobile only */}
+            <div className="md:hidden mt-5">
+              <button
+                onClick={openHistoryModal}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-2 hover:bg-blue-1 text-white rounded-lg font-semibold transition-all"
+              >
+                <MdHistory size={20} />
+                Ver Historial del Pedido
+              </button>
+            </div>
           </div>
 
           {/* Fixed Footer */}
-          <div className="flex flex-col gap-4 p-6 border-t border-gray-2 shrink-0">
+          <div className="flex flex-col gap-4 p-5 sm:p-8 border-t-2 border-blue-2 bg-blue-3/10 shrink-0">
             {/* Order Summary */}
-            <div className="bg-white rounded-lg">
-              <div className="space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-1 font-medium">Subtotal:</span>
-                  <span className="text-blue-1 font-bold">
+            <div className="bg-white rounded-lg border-l-4 border-gold p-5 sm:p-6">
+              <div className="space-y-1.5 sm:space-y-2">
+                <div className="flex justify-between text-xs sm:text-sm">
+                  <span className="text-blue-2 font-bold">Subtotal:</span>
+                  <span className="text-blue-1 font-bold text-sm sm:text-base">
                     $
                     {selectedOrder.subtotal ??
                       selectedOrder.summary?.subtotal ??
@@ -277,9 +254,9 @@ const OrderDetailsModal = ({
                 </div>
                 {(selectedOrder.shipping !== undefined ||
                   selectedOrder.summary?.shipping !== undefined) && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-1 font-medium">Envío:</span>
-                    <span className="text-blue-1 font-bold">
+                  <div className="flex justify-between text-xs sm:text-sm">
+                    <span className="text-blue-2 font-bold">Envío:</span>
+                    <span className="text-blue-1 font-bold text-sm sm:text-base">
                       $
                       {selectedOrder.shipping ??
                         selectedOrder.summary?.shipping ??
@@ -287,9 +264,11 @@ const OrderDetailsModal = ({
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between border-t border-blue-1/20 pt-2 mt-2">
-                  <span className="font-bold text-blue-2">Total:</span>
-                  <span className="text-xl text-gold font-bold">
+                <div className="flex justify-between border-t-2 border-blue-2 pt-2 mt-2">
+                  <span className="font-bold text-blue-1 text-sm sm:text-base">
+                    Total:
+                  </span>
+                  <span className="text-xl sm:text-2xl text-gold font-bold">
                     $
                     {selectedOrder.totalAmount ??
                       selectedOrder.summary?.total ??
@@ -303,6 +282,82 @@ const OrderDetailsModal = ({
           </div>
         </div>
       </div>
+
+      {/* History Modal - Mobile only */}
+      {showHistoryModal && (
+        <div
+          className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 p-4"
+          onClick={closeHistoryModal}
+        >
+          <div
+            className="bg-blue-1 rounded-xl shadow-2xl w-full max-w-lg max-h-[80vh] overflow-hidden animate-fadeInScale flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="p-5 border-b border-blue-2 shrink-0 bg-blue-2 flex items-center justify-between">
+              <h3 className="text-xl font-bold text-white font-family-comfortaa">
+                Historial del Pedido
+              </h3>
+              <button
+                className="cursor-pointer text-white hover:text-gold hover:scale-110 transition-all"
+                onClick={closeHistoryModal}
+                aria-label="Close"
+              >
+                <IoIosClose size={32} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <StatusHistoryPanel
+                statusHistory={selectedOrder.statusHistory}
+                userId={selectedOrder.userId}
+              />
+            </div>
+
+            {/* Status Selection */}
+            <div className="p-6 border-t border-blue-2 shrink-0 bg-blue-2">
+              <label className="font-bold text-white font-family-sora text-xs uppercase tracking-wide block mb-3">
+                Cambiar Estado
+              </label>
+              <select
+                value={selectedStatus || ""}
+                onChange={(e) => onStatusChange(e.target.value)}
+                disabled={updatingId === selectedOrder.id}
+                className={`w-full px-3 py-2.5 rounded-lg border-2 border-gold focus:outline-none focus:border-gold transition-colors font-family-sora text-sm ${
+                  updatingId === selectedOrder.id
+                    ? "bg-gray-100 cursor-not-allowed opacity-60"
+                    : "bg-white hover:bg-blue-3/10"
+                }`}
+              >
+                <option value="">-- Seleccionar estado --</option>
+                <option value={ORDER_STATUS.PENDING}>Pendiente</option>
+                <option value={ORDER_STATUS.CONFIRMED}>Confirmado</option>
+                <option value={ORDER_STATUS.PRINTING}>Imprimiendo</option>
+                <option value={ORDER_STATUS.DISPATCHED}>Despachado</option>
+                {selectedOrder.deliveryType === "pickup" ? (
+                  <option value={ORDER_STATUS.WITHDRAWN}>Retirado</option>
+                ) : (
+                  <option value={ORDER_STATUS.DELIVERED}>Entregado</option>
+                )}
+                {selectedOrder.status !== ORDER_STATUS.DELIVERED && (
+                  <option value={ORDER_STATUS.CANCELLED}>Cancelado</option>
+                )}
+              </select>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-blue-2 shrink-0 bg-blue-2">
+              <button
+                onClick={closeHistoryModal}
+                className="w-full py-2.5 px-4 bg-gold hover:bg-gold/90 text-white rounded-lg font-semibold transition-all"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
