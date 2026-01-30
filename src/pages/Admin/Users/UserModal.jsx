@@ -1,5 +1,6 @@
 import React from "react";
 import { IoIosClose } from "react-icons/io";
+import { useModalScroll } from "../../../hooks/ui";
 
 /**
  * UserModal Component
@@ -22,11 +23,12 @@ const UserModal = ({
   onSubmit,
   children,
 }) => {
+  useModalScroll(isOpen);
   if (!isOpen) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 overflow-hidden"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();

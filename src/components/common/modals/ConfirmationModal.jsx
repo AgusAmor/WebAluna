@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { IoIosClose } from "react-icons/io";
 import { ImSpinner2 } from "react-icons/im";
 import { FaCheckCircle } from "react-icons/fa";
+import { useModalScroll } from "../../../hooks/ui";
 
 /**
  * Reusable confirmation modal component
@@ -30,6 +31,7 @@ const ConfirmationModal = ({
   cancelText = "Cancelar",
   variant = "default",
 }) => {
+  useModalScroll(isOpen);
   if (!isOpen) return null;
 
   const getButtonColors = () => {
@@ -44,7 +46,7 @@ const ConfirmationModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto font-family-sora">
+    <div className="fixed inset-0 z-50 overflow-hidden font-family-sora">
       {/* Backdrop */}
       <div
         className="fixed inset-0 backdrop-blur-sm"
@@ -53,9 +55,9 @@ const ConfirmationModal = ({
       ></div>
 
       {/* Modal */}
-      <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="flex min-h-screen items-center justify-center p-3 sm:p-4">
         <div
-          className="relative bg-white rounded-lg shadow-xl max-w-md w-full animate-fadeInScale"
+          className="relative bg-white rounded-lg shadow-xl max-w-md w-full overflow-hidden animate-fadeInScale flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close Button */}
@@ -169,8 +171,10 @@ export const SingleButtonConfirmationModal = ({
 
   const DisplayIcon = icon || FaCheckCircle;
 
+  useModalScroll(isOpen);
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto font-family-sora">
+    <div className="fixed inset-0 z-50 overflow-hidden font-family-sora">
       {/* Backdrop */}
       <div
         className="fixed inset-0 backdrop-blur-sm"

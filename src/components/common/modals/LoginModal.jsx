@@ -5,12 +5,14 @@ import { IoIosClose } from "react-icons/io";
 import { toast } from "react-toastify";
 import { GoogleLoginButton } from "../../ui";
 import { useLoginModal } from "../../../hooks";
+import { useModalScroll } from "../../../hooks/ui";
 import {
   getModalTitle,
   getModalSubtitle,
 } from "../../../services/auth/loginService";
 
 const LoginModal = ({ isOpen, onClose }) => {
+  useModalScroll(isOpen);
   const {
     isLogin,
     showReset,
@@ -129,7 +131,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto font-family-sora">
+    <div className="fixed inset-0 z-50 overflow-hidden font-family-sora">
       {/* Backdrop */}
       <div
         className="fixed inset-0 backdrop-blur-sm"

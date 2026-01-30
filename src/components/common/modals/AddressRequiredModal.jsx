@@ -108,7 +108,7 @@ const AddressRequiredModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto font-family-sora">
+    <div className="fixed inset-0 z-50 overflow-hidden font-family-sora">
       {/* Backdrop */}
       <div
         className="fixed inset-0 backdrop-blur-sm"

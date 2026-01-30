@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import { FaMinus, FaPlus, FaTrash } from "react-icons/fa";
 import { IoIosClose } from "react-icons/io";
 import { useCartModal } from "../../hooks";
+import { useModalScroll } from "../../hooks/ui";
 import { getCartItemKey } from "../../utils/cartItemUtils";
 import {
   formatPrice,
@@ -11,6 +12,8 @@ import {
 } from "../../services/cart/cartModalService";
 
 const CartModal = ({ isOpen, onClose }) => {
+  useModalScroll(isOpen);
+
   const {
     items,
     total,
@@ -26,7 +29,7 @@ const CartModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto font-family-sora p-2 sm:p-4">
+    <div className="fixed inset-0 z-50 overflow-hidden font-family-sora p-2 sm:p-4">
       {/* Backdrop - manteniendo tu fondo actual */}
       <div
         className="fixed inset-0 backdrop-blur-sm"

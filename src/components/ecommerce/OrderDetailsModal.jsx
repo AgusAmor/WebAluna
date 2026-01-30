@@ -3,6 +3,7 @@ import { IoIosClose } from "react-icons/io";
 import { formatDate } from "../../utils/dateFormatter";
 import { ORDER_STATUS } from "../../constants";
 import { OrderStatusBadge } from "./index";
+import { useModalScroll } from "../../hooks/ui";
 
 /**
  * OrderDetailsModal Component
@@ -14,6 +15,8 @@ import { OrderStatusBadge } from "./index";
  * @param {Function} onCancel - Callback when user wants to cancel the order
  */
 const OrderDetailsModal = ({ isOpen, order, onClose, onCancel }) => {
+  useModalScroll(isOpen);
+
   if (!isOpen || !order) return null;
 
   const canCancel =
@@ -21,7 +24,7 @@ const OrderDetailsModal = ({ isOpen, order, onClose, onCancel }) => {
     order.status === ORDER_STATUS.CONFIRMED;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto font-family-sora">
+    <div className="fixed inset-0 z-50 overflow-hidden font-family-sora">
       {/* Backdrop */}
       <div
         className="fixed inset-0 backdrop-blur-sm"

@@ -7,6 +7,7 @@ import { ORDER_STATUS } from "../../../constants";
 import { OrderStatusBadge } from "../../../components/ecommerce";
 import StatusHistoryPanel from "./StatusHistoryPanel";
 import { useOrderDetailsModal } from "../../../hooks/admin";
+import { useModalScroll } from "../../../hooks/ui";
 
 /**
  * OrderDetailsModal Component
@@ -20,6 +21,7 @@ const OrderDetailsModal = ({
   onClose,
   onStatusChange,
 }) => {
+  useModalScroll(isOpen);
   const { showHistoryModal, openHistoryModal, closeHistoryModal } =
     useOrderDetailsModal();
 
@@ -27,7 +29,7 @@ const OrderDetailsModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-2 sm:p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-2 sm:p-4 overflow-hidden"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();

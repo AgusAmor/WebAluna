@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ImSpinner2 } from "react-icons/im";
 import { useAuth } from "../context/AuthContext";
 import { isUserAdmin } from "../utils/adminUtils";
+import { useScrollToTop } from "../hooks/ui";
 import Header from "../components/layout/Header";
 import AdminSidebar from "../components/layout/AdminSidebar";
 import Footer from "../components/layout/Footer";
@@ -49,9 +50,19 @@ const NavigationWrapper = () => {
   return isAdmin ? <AdminSidebar /> : <Header />;
 };
 
+/**
+ * Scroll to Top Component
+ * Uses the useScrollToTop hook to scroll when routes change
+ */
+const ScrollToTop = () => {
+  useScrollToTop();
+  return null;
+};
+
 const AppRouter = () => {
   return (
     <Router basename={import.meta.env.BASE_URL}>
+      <ScrollToTop />
       <div className="flex flex-col min-h-screen">
         <NavigationWrapper />
         <main className="flex-1">

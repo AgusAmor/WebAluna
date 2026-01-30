@@ -6,3 +6,5 @@
 
 export { useHeader } from "./useHeader.js";
 export { useCartModal } from "./useCartModal.js";
+export { useModalScroll } from "./useModalScroll.js";
+export { useScrollToTop } from "./useScrollToTop.js";

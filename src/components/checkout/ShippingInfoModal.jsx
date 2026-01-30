@@ -2,17 +2,19 @@ import React from "react";
 import PropTypes from "prop-types";
 import { IoIosClose } from "react-icons/io";
 import { FaTruck, FaMapPin, FaCheck } from "react-icons/fa";
+import { useModalScroll } from "../../hooks/ui";
 
 /**
  * Modal informativo para opciones de envío a domicilio
  * Muestra información sobre envío gratis y cobertura geográfica en layout de dos columnas
  */
 const ShippingInfoModal = ({ isOpen, onClose }) => {
+  useModalScroll(isOpen);
   if (!isOpen) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto font-family-sora"
+      className="fixed inset-0 z-50 overflow-hidden font-family-sora"
       style={{ pointerEvents: "auto" }}
     >
       {/* Backdrop */}

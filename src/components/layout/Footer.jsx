@@ -156,12 +156,6 @@ const Footer = () => {
           </p>
           <div className="flex space-x-4 mt-4 md:mt-0 font-family-sora">
             <Link
-              to="/privacidad"
-              className="text-gray-3 hover:text-gold text-sm transition-colors"
-            >
-              Política de Privacidad
-            </Link>
-            <Link
               to="/terminos"
               className="text-gray-3 hover:text-gold text-sm transition-colors"
             >
