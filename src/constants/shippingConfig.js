@@ -10,6 +10,7 @@ export const SHIPPING_CONFIG = {
   COST_PER_KM: 800, // ARS per km
   MAX_SHIPPING_DISTANCE: 100, // km
   FREE_SHIPPING_THRESHOLD: 80000, // ARS
+  MP_COMMISSION_RATE: 0.0773, // 7.73% MercadoPago commission
 
   // Warehouse location for distance calculation
   WAREHOUSE: {

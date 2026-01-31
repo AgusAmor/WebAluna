@@ -112,20 +112,29 @@ const isValidCoordinates = (coords) => {
 };
 
 /**
- * Calculates shipping cost based on distance
+ * Calculates shipping cost based on distance with MP Commission coverage
  * @param {number} distanceKm - Distance in kilometers
  * @param {number} baseCost - Base shipping cost (defaults to SHIPPING_CONFIG.BASE_COST)
  * @param {number} costPerKm - Cost per kilometer (defaults to SHIPPING_CONFIG.COST_PER_KM)
- * @returns {number} Total shipping cost
+ * @param {number} commissionRate - MercadoPago commission rate to cover (defaults to SHIPPING_CONFIG.MP_COMMISSION_RATE)
+ * @returns {number} Total shipping cost rounded up
  */
 export const calculateShippingCost = (
   distanceKm,
   baseCost = SHIPPING_CONFIG.BASE_COST,
   costPerKm = SHIPPING_CONFIG.COST_PER_KM,
+  commissionRate = SHIPPING_CONFIG.MP_COMMISSION_RATE,
 ) => {
   if (typeof distanceKm !== "number" || distanceKm < 0) {
     throw new Error("Invalid distance provided");
   }
 
-  return baseCost + distanceKm * costPerKm;
+  // Calculate pure logistical cost
+  const logisticalCost = baseCost + distanceKm * costPerKm;
+
+  // Apply "Gross Up" so the customer absorbs the commission
+  const finalPrice = logisticalCost / (1 - commissionRate);
+
+  // Round up
+  return Math.ceil(finalPrice);
 };
