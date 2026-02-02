@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { useCheckout } from "../../hooks/pages";
+import OptimizedImage from "../../components/ui/OptimizedImage";
 import {
   ShippingInfoBanner,
   DeliveryLocationMap,
@@ -148,11 +149,14 @@ const Checkout = () => {
                       key={`${id}-${type}-${idx}`}
                       className="flex items-center gap-4 pb-4 border-b border-gray-2 last:border-b-0"
                     >
-                      {item.image && (
-                        <img
-                          src={String(item.image)}
+                      {item.imageUrl && (
+                        <OptimizedImage
+                          src={String(item.imageUrl)}
                           alt={name}
                           className="w-20 h-20 object-cover rounded shrink-0"
+                          placeholder={
+                            <div className="w-20 h-20 bg-gray-2 animate-pulse rounded" />
+                          }
                         />
                       )}
                       <div className="flex-1 min-w-0">

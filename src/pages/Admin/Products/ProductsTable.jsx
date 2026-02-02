@@ -1,5 +1,6 @@
 import React from "react";
 import { ImSpinner2 } from "react-icons/im";
+import OptimizedImage from "../../../components/ui/OptimizedImage";
 
 /**
  * ProductsTable Component
@@ -69,10 +70,13 @@ const ProductsTable = ({
           >
             <td className="py-2 px-2 text-center">
               {product.imageUrl ? (
-                <img
+                <OptimizedImage
                   src={product.imageUrl}
                   alt={product.name}
                   className="w-16 h-16 object-cover rounded-lg mx-auto"
+                  placeholder={
+                    <div className="w-16 h-16 bg-gray-2 animate-pulse rounded-lg mx-auto" />
+                  }
                 />
               ) : (
                 <div className="w-16 h-16 bg-gray-2 flex items-center justify-center rounded-lg text-xs text-gray-3 mx-auto">

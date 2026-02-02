@@ -27,30 +27,16 @@ export const AuthProvider = ({ children }) => {
       async (currentUser) => {
         if (currentUser) {
           try {
-            // Force token refresh to get updated custom claims
-            await currentUser.getIdToken(true);
-
-            // Verify that user document exists in Firestore before setting user
-            // This prevents showing user as logged in if registration failed
-            // For newly registered users, retry a few times to handle race conditions
-            let userDocExists = false;
-            let retries = 3;
-
-            while (!userDocExists && retries > 0) {
-              userDocExists = await authService.checkUserDocExists(
-                currentUser.uid,
-              );
-
-              if (!userDocExists && retries > 1) {
-                // Wait a bit before retrying (only for new users)
-                await new Promise((resolve) => setTimeout(resolve, 500));
-              }
-              retries--;
-            }
+            // Parallelize validations for faster response
+            const [tokenResult, userDocExists] = await Promise.all([
+              currentUser.getIdToken(true),
+              authService.checkUserDocExists(currentUser.uid),
+            ]);
 
             if (userDocExists) {
-              // Check if account is suspended BEFORE setting user as authenticated
+              // Fetch user doc without retries initially (faster)
               const userDoc = await fetchUserById(currentUser.uid);
+
               if (userDoc.accountStatus === "suspended") {
                 // Account is suspended - sign out and set error
                 await authService.logout();
@@ -64,7 +50,26 @@ export const AuthProvider = ({ children }) => {
                 setError(null); // Clear any previous error
               }
             } else {
-              // User exists in Auth but not in Firestore - sign them out
+              // User exists in Auth but not in Firestore
+              // Retry only 1 more time (not 3 times)
+              await new Promise((resolve) => setTimeout(resolve, 200));
+              const retryExists = await authService.checkUserDocExists(
+                currentUser.uid,
+              );
+
+              if (retryExists) {
+                const userDoc = await fetchUserById(currentUser.uid);
+                if (userDoc.accountStatus !== "suspended") {
+                  const userWithRole =
+                    await authService.adminVerify(currentUser);
+                  setUser(userWithRole);
+                  setError(null);
+                  setLoading(false);
+                  return;
+                }
+              }
+
+              // Failed after retries
               await authService.logout();
               setUser(null);
             }

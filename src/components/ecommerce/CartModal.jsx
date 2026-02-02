@@ -4,6 +4,7 @@ import { IoIosClose } from "react-icons/io";
 import { useCartModal } from "../../hooks";
 import { useModalScroll } from "../../hooks/ui";
 import { getCartItemKey } from "../../utils/cartItemUtils";
+import OptimizedImage from "../ui/OptimizedImage";
 import {
   formatPrice,
   formatSubtotal,
@@ -30,7 +31,7 @@ const CartModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden font-family-sora p-2 sm:p-4">
-      {/* Backdrop - manteniendo tu fondo actual */}
+      {/* Backdrop */}
       <div
         className="fixed inset-0 backdrop-blur-sm"
         style={{ backgroundColor: "rgba(38,78,96,0.45)" }}
@@ -88,10 +89,13 @@ const CartModal = ({ isOpen, onClose }) => {
                       {/* Product Image */}
                       <div className="w-15 h-15 bg-gold rounded-md shrink-0 flex items-center justify-center border-2 border-blue-2">
                         {imageSrc ? (
-                          <img
+                          <OptimizedImage
                             src={imageSrc}
                             alt={item.name}
                             className="w-full h-full object-cover rounded-md"
+                            placeholder={
+                              <div className="w-full h-full bg-gray-2 animate-pulse rounded-md" />
+                            }
                           />
                         ) : (
                           <div className="w-full h-full bg-gray-2 rounded-md"></div>

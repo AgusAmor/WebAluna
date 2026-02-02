@@ -2,7 +2,7 @@
 
 > Single Page Application para venta de lámparas personalizadas con impresión 3D
 
-![Estado](https://img.shields.io/badge/Estado-Producción-brightgreen?style=for-the-badge) ![Rama](https://img.shields.io/badge/Rama-v2--rewrite-green?style=for-the-badge) ![Última actualización](https://img.shields.io/badge/Última%20actualización-Diciembre%202025-blue?style=for-the-badge)
+![Estado](https://img.shields.io/badge/Estado-Producción-brightgreen?style=for-the-badge) ![Rama](https://img.shields.io/badge/Rama-v2--rewrite-green?style=for-the-badge) ![Última actualización](https://img.shields.io/badge/Última%20actualización-Febrero%202026-blue?style=for-the-badge)
 
 ---
 
@@ -44,6 +44,21 @@ Plataforma de comercio electrónico que combina tecnología de impresión 3D con
 - Persistencia en sessionStorage (se mantiene al recargar, se limpia al cerrar la pestaña)
 - Cálculo automático de totales y subtotales
 
+### 💳 Pagos y Envíos
+
+- **Mercado Pago**: Checkout Pro y Wallet integrado
+- **Mapbox**: Visualización y selección de zonas de envío
+
+### 🚀 Optimización y Rendimiento
+
+- **Sistema de Carga Diferida (Lazy Loading)**: Imágenes solo cargan cuando aparecen en pantalla (IntersectionObserver)
+- **Compresión Automática**: Imágenes optimizadas antes de subir a Firebase Storage
+- **Conversión de Formatos**: Transformación automática a WebP para menor consumo de datos
+- **Caché Inteligente**: Almacenamiento local de URLs de imágenes para evitar lecturas innecesarias
+- **Separación de Código (Code Splitting)**: Configuración avanzada de Vite para cargas iniciales más rápidas
+- **Gestión de Pedidos**: Historial completo y seguimiento de estado
+- **Notificaciones**: Emails automáticos de confirmación (Nodemailer)
+
 ### 📱 Navegación y UX Optimizada
 
 - Header responsivo con animaciones de scroll
@@ -62,6 +77,13 @@ Plataforma de comercio electrónico que combina tecnología de impresión 3D con
 - Responsive design
 - Accesibilidad WCAG mejorada
 
+### ⚡ Rendimiento y Optimización
+
+- **Gestión Avanzada de Imágenes**: Componente `OptimizedImage` con soporte WebP, carga diferida (lazy loading) automática y placeholders.
+- **Compresión en Cliente**: Servicio de optimización que reduce el tamaño de imágenes antes de subir (ahorro de ancho de banda y storage).
+- **Control de Frecuencia**: Implementación de `debounce` y `throttle` en búsquedas y eventos de scroll para mejorar la respuesta de la UI.
+- **Code Splitting**: Carga diferida de rutas y componentes pesados para mejorar el First Contentful Paint (FCP).
+
 ### 🔧 Arquitectura Backend Escalable
 
 - **Cloud Functions**: Firebase Functions con región optimizada (south-america-east1)
@@ -73,11 +95,10 @@ Plataforma de comercio electrónico que combina tecnología de impresión 3D con
 ## 🔮 Próximas Funcionalidades
 
 - [x] Catálogo dinámico con filtros avanzados
-- [x] Filtro de productos
-- [ ] Pasarela de pago (Mercado Pago)
-- [ ] Perfil de usuario con historial de compras
-- [ ] Seguimiento de pedidos en tiempo real
-- [ ] Notificaciones por email
+- [x] Pasarela de pago (Mercado Pago)
+- [x] Perfil de usuario con historial de compras
+- [x] Seguimiento de estado de pedidos
+- [x] Notificaciones transaccionales por email
 - [ ] Analytics e informes de ventas
 - [ ] Reviews y calificaciones de productos
 
@@ -167,6 +188,26 @@ Plataforma de comercio electrónico que combina tecnología de impresión 3D con
 
 </tr>
 
+<tr>
+
+<td>Mapbox GL</td>
+
+<td>3.18.1</td>
+
+<td>Mapas interactivos</td>
+
+</tr>
+
+<tr>
+
+<td>Mercado Pago</td>
+
+<td>0.0.3</td>
+
+<td>SDK de Pagos</td>
+
+</tr>
+
 </table>
 
 ### Backend
@@ -195,9 +236,19 @@ Plataforma de comercio electrónico que combina tecnología de impresión 3D con
 
 <tr>
 
+<td>Node.js</td>
+
+<td>22</td>
+
+<td>Runtime Environment</td>
+
+</tr>
+
+<tr>
+
 <td>Firebase Admin SDK</td>
 
-<td>13.5.0</td>
+<td>12.6.0</td>
 
 <td>Acceso privilegiado a servicios</td>
 
@@ -205,21 +256,21 @@ Plataforma de comercio electrónico que combina tecnología de impresión 3D con
 
 <tr>
 
-<td>Firestore</td>
+<td>Mercado Pago</td>
 
-<td>Latest</td>
+<td>2.12.0</td>
 
-<td>Base de datos NoSQL</td>
+<td>Procesamiento de pagos</td>
 
 </tr>
 
 <tr>
 
-<td>Firebase Storage</td>
+<td>Nodemailer</td>
 
-<td>Latest</td>
+<td>6.9.0</td>
 
-<td>Almacenamiento de archivos</td>
+<td>Envío de correos</td>
 
 </tr>
 
@@ -296,18 +347,22 @@ Plataforma de comercio electrónico que combina tecnología de impresión 3D con
 
 ```
 backend/functions/
-├── index.js              # Exporta todas las Cloud Functions
-├── users.js              # Lógica CRUD de usuarios
-├-─ products.js           # Lógica CRUD de productos
+├── index.js              # Entry point
+├── users.js              # CRUD Usuarios
+├── products.js           # CRUD Productos
+├── orders.js             # Gestión de Pedidos
+├── mercadopago.js        # Integración de Pagos
 ├── config/
-│   ├── firebaseAdmin.js  # Inicialización Firebase Admin SDK
-│   └── serviceAccountKey.json
+│   ├── firebaseAdmin.js
+│   ├── mercadoPagoConfig.js
+│   └── serviceAccountKey.json
 ├── middlewares/
-│   └── corsMiddleware.js # Manejo CORS
+│   └── corsMiddleware.js
 └── utils/
-    ├── authUtils.js      # Verificación de tokens y roles
-    ├── validation.js     # Validación de datos
-    └── responseHandler.js # Manejo consistente de respuestas
+    ├── authUtils.js
+    ├── emailService.js   # Servicio de Email
+    ├── validation.js
+    └── responseHandler.js
 ```
 
 **Flujo de Datos:**
@@ -526,19 +581,11 @@ firebase emulators:start --only functions
 
 ```css
 /* Azules */
---blue-1: #264e60  /* Oscuro */
---blue-2: #427385  /* Principal */
---blue-3: #81a5ae  /* Claro */
-
-/* Grises */
---gray-1: #a9b2b9  /* Oscuro */
---gray-2: #c3c9ce  /* Medio */
---gray-3: #d9dce0  /* Secundario */
-
-/* Otros */
---black: #2b2b2b
---white: #f4f4f4
---gold:  #b6a269 /* Acentuaciones */
+--blue-1: #264e60   /* Oscuro */ --blue-2: #427385   /* Principal */
+  --blue-3: #81a5ae   /* Claro */ /* Grises */ --gray-1: #a9b2b9   /* Oscuro */
+  --gray-2: #c3c9ce   /* Medio */ --gray-3: #d9dce0   /* Secundario */
+  /* Otros */ --black: #2b2b2b --white: #f4f4f4 --gold:  #b6a269
+  /* Acentuaciones */;
 ```
 
 ### Tipografía
@@ -642,6 +689,16 @@ Todos los componentes usan:
 
 </tr>
 
+<tr>
+
+<td><strong>Fase 4</strong></td>
+
+<td>Pagos, Envíos y Email</td>
+
+<td>✅ Completado</td>
+
+</tr>
+
 </table>
 
 ### 🔄 En Desarrollo
@@ -660,31 +717,21 @@ Todos los componentes usan:
 
 <tr>
 
-<td>Pasarela de pago</td>
+<td>Analytics Avanzado</td>
 
-<td>Alta</td>
+<td>Media</td>
 
-<td>Q2 2026</td>
+<td>Q3 2026</td>
 
 </tr>
 
 <tr>
 
-<td>Notificaciones</td>
+<td>Sistema de Reviews</td>
 
-<td>Media</td>
+<td>Baja</td>
 
-<td>Q2 2026</td>
-
-</tr>
-
-<tr>
-
-<td>Analytics</td>
-
-<td>Media</td>
-
-<td>Q2 2026</td>
+<td>Q4 2026</td>
 
 </tr>
 
@@ -759,4 +806,4 @@ Este proyecto es privado y protegido. No está permitido:
 
 ---
 
-**💡 Última actualización**: Diciembre 2025   **👤 Propietario**: [AgusAmor](https://github.com/AgusAmor)   **📧 Soporte**: Issues en GitHub
+**💡 Última actualización**: Febrero 2026   **👤 Propietario**: [AgusAmor](https://github.com/AgusAmor)   **📧 Soporte**: Issues en GitHub

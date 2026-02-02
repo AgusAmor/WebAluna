@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { TiUpload } from "react-icons/ti";
+import { compressImage } from "../../../services/imageOptimizationService";
 
 /**
  * ProductForm component for creating and editing products.
@@ -124,12 +125,22 @@ const ProductForm = ({
               accept="image/jpeg,image/png"
               className="hidden"
               ref={imageInputRef}
-              onChange={(e) => {
+              onChange={async (e) => {
                 const file = e.target.files[0];
                 if (file) {
-                  const reader = new FileReader();
-                  reader.onload = (ev) => setImagePreview(ev.target.result);
-                  reader.readAsDataURL(file);
+                  try {
+                    // Compress image before showing preview
+                    const compressedFile = await compressImage(file, 0.8, 1200);
+                    const reader = new FileReader();
+                    reader.onload = (ev) => setImagePreview(ev.target.result);
+                    reader.readAsDataURL(compressedFile);
+                  } catch (err) {
+                    console.error("Error compressing image:", err);
+                    // If compression fails, use original file
+                    const reader = new FileReader();
+                    reader.onload = (ev) => setImagePreview(ev.target.result);
+                    reader.readAsDataURL(file);
+                  }
                 }
               }}
             />

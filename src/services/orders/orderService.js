@@ -53,6 +53,7 @@ export function formatOrderItems(items) {
     size: item.type || "normal",
     quantity: item.quantity,
     unitPrice: item.price,
+    imageUrl: item.imageUrl || item.imageBase64 || null, // Preserve image for display
   }));
 }
 

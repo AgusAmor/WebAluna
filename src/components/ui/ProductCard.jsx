@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import { useState } from "react";
+import OptimizedImage from "./OptimizedImage";
 
 const ProductCard = ({ product, onCardClick, onAddToCart }) => {
   // Track selected price type: "normal" or "small"
@@ -16,10 +17,13 @@ const ProductCard = ({ product, onCardClick, onAddToCart }) => {
     >
       {/* Product Image or Placeholder */}
       {product.imageUrl ? (
-        <img
+        <OptimizedImage
           src={product.imageUrl}
           alt={product.name}
           className="w-full aspect-square object-cover mb-4 rounded-xl"
+          placeholder={
+            <div className="w-full aspect-square bg-gray-2 animate-pulse rounded-xl" />
+          }
         />
       ) : (
         <div className="w-full aspect-square bg-linear-to-br from-blue-3 to-blue-2 mb-4 rounded-xl flex items-center justify-center">

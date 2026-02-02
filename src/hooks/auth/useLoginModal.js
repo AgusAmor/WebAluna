@@ -173,6 +173,8 @@ export function useLoginModal(isOpen, onClose) {
       notifyAuth.loginSuccess(firstName);
 
       // Navigate and close
+      // Use a slightly longer delay to ensure user sees the success state if needed,
+      // but ensure closing happens.
       setTimeout(() => {
         if (isUserAdmin(result)) {
           navigate("/admin");
@@ -186,7 +188,18 @@ export function useLoginModal(isOpen, onClose) {
         loginAttemptTimeRef.current = null;
       }, 300);
     } catch (err) {
-      // Error is already displayed by the context
+      console.error("Google login error handled in modal:", err);
+      // Explicitly tell user if something went wrong, unless it's a cancellation
+      if (
+        err.message !== "Login cancelado" &&
+        err.code !== "auth/popup-closed-by-user" &&
+        err.code !== "auth/cancelled-popup-request"
+      ) {
+        notifyAuth.error(
+          err.message ||
+            "Error al iniciar sesión con Google. Intenta nuevamente.",
+        );
+      }
     }
   };
 
