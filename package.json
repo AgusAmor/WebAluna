@@ -13,6 +13,7 @@
     "deploy_all": "vite build && firebase deploy --only functions && firebase deploy --only hosting"
   },
   "dependencies": {
+    "@mercadopago/sdk-js": "^0.0.3",
     "@tailwindcss/vite": "^4.1.16",
     "firebase": "^12.5.0",
     "mapbox-gl": "^3.18.1",

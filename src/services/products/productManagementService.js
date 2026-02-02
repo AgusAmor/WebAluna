@@ -147,19 +147,19 @@ export const saveProduct = async ({
  * @returns {Promise<void>}
  */
 export const deleteProductWithImage = async (productId, imageUrl, user) => {
-  console.log("Deleting product:", productId, "with image:", imageUrl);
+  // console.log("Deleting product:", productId, "with image:", imageUrl);
 
   const token = await getAuthToken(user);
 
   // Delete product from Firestore
   await deleteProduct(productId, token);
-  console.log("Product deleted from Firestore");
+  // console.log("Product deleted from Firestore");
 
   // Delete image from Storage if exists
   if (imageUrl) {
     try {
       await deleteProductImage(imageUrl);
-      console.log("Image deleted from Storage successfully");
+      // console.log("Image deleted from Storage successfully");
     } catch (imgErr) {
       console.error("Error deleting image from storage:", imgErr);
       // Don't throw - product is already deleted, but log the error

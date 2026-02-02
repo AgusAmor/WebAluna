@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { showCustomToast } from "../../services/ui/toastService.jsx";
 import {
   notifyAuth,
@@ -31,6 +31,15 @@ import {
  */
 export const useProfile = () => {
   const { user, updateUserProfile, refreshUser } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  // Modal & Selection States
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showOrderDetails, setShowOrderDetails] = useState(false);
+  const [showFullHistory, setShowFullHistory] = useState(false);
+  const [showFinalDeleteConfirm, setShowFinalDeleteConfirm] = useState(false);
+
   const [userData, setUserData] = useState(null);
   const [userOrders, setUserOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
@@ -49,6 +58,30 @@ export const useProfile = () => {
   const [showCancelOrderConfirm, setShowCancelOrderConfirm] = useState(false);
   const [orderToCancel, setOrderToCancel] = useState(null);
   const [isCancellingOrder, setIsCancellingOrder] = useState(false);
+
+  // Auto-open order modal if query param exists
+  useEffect(() => {
+    const orderNumberToOpen = searchParams.get("openOrder");
+    if (orderNumberToOpen && userOrders && userOrders.length > 0) {
+      const order = userOrders.find(
+        (o) =>
+          o.orderNumber === orderNumberToOpen ||
+          o.orderNumber === parseInt(orderNumberToOpen),
+      );
+
+      if (order) {
+        setSelectedOrder(order);
+        setShowOrderDetails(true);
+        // Clear param so it doesn't reopen on reload
+        setSearchParams({}, { replace: true });
+      }
+    }
+  }, [searchParams, userOrders, setSearchParams]);
+
+  const confirmDeleteAccount = () => {
+    setShowDeleteAccountConfirm(false);
+    setShowFinalDeleteConfirm(true);
+  };
 
   /**
    * Load user profile data on mount or when user changes
@@ -265,6 +298,20 @@ export const useProfile = () => {
     }
   };
 
+  const executeFinalDeleteAccount = async () => {
+    const result = await handleDeleteAccount();
+
+    if (result) {
+      setShowFinalDeleteConfirm(false);
+      // Show toast before navigation
+      notifyAuth.accountDeleted();
+      // Small delay to ensure toast is visible before navigating
+      setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 500);
+    }
+  };
+
   /**
    * Update a single field in edit form
    */
@@ -364,5 +411,17 @@ export const useProfile = () => {
     handleCancelOrderCancel,
     setShowResetPasswordConfirm,
     setShowDeleteAccountConfirm,
+
+    // New exports
+    selectedOrder,
+    setSelectedOrder,
+    showOrderDetails,
+    setShowOrderDetails,
+    showFullHistory,
+    setShowFullHistory,
+    showFinalDeleteConfirm,
+    setShowFinalDeleteConfirm,
+    confirmDeleteAccount,
+    executeFinalDeleteAccount,
   };
 };

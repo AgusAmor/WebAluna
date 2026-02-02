@@ -1,5 +1,4 @@
 const { onRequest } = require("firebase-functions/v2/https");
-const handleCors = require("./middlewares/corsMiddleware.js");
 
 // Import all handlers
 const {
@@ -28,29 +27,55 @@ const {
   deleteOrder,
 } = require("./orders.js");
 
+const { onOrderStatusChanged } = require("./utils/emailService.js");
+
+// Mercado Pago Functions
+const {
+  createMPPreference,
+  mercadopagoWebhook,
+  getMPPaymentStatus,
+} = require("./mercadopago.js");
+
 const REGION = "southamerica-east1";
 
 /**
- * Wraps an async handler with CORS support
- * Ensures CORS headers are set before and after the handler executes
- * @param {Function} handler - Async handler function
- * @returns {Function} Express middleware
+ * CORS wrapper
+ * @param {Function} handler - Handler function to wrap
+ * @returns {Function} Cloud Function wrapper
  */
 const withCors = (handler) => async (req, res) => {
-  // Handle CORS preflight and set headers
-  if (handleCors(req, res)) {
-    return; // Preflight request handled
+  // Parse JSON body if it's a string (Firebase v2 requirement)
+  if (typeof req.body === "string") {
+    try {
+      req.body = JSON.parse(req.body);
+    } catch (e) {
+      console.warn("Could not parse body as JSON:", e.message);
+      // Leave as string, let handler deal with it
+    }
   }
 
-  // Ensure CORS headers are still present for actual request
+  // Set CORS headers immediately
   res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, HEAD, POST, PUT, DELETE, OPTIONS",
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Requested-With, Accept",
+  );
+  res.setHeader("Access-Control-Max-Age", "86400");
+
+  // Handle preflight OPTIONS immediately
+  if (req.method === "OPTIONS") {
+    res.status(204).send("");
+    return;
+  }
 
   try {
     await handler(req, res);
   } catch (error) {
     console.error("Unhandled error in Cloud Function:", error);
-    // Make sure CORS headers are still present in error response
-    res.setHeader("Access-Control-Allow-Origin", "*");
     if (!res.headersSent) {
       res.status(500).json({ error: "Internal server error" });
     }
@@ -96,3 +121,17 @@ exports.getUserOrders = createCloudFunction(getUserOrders);
 exports.getAllOrders = createCloudFunction(getAllOrders);
 exports.updateOrderStatus = createCloudFunction(updateOrderStatus);
 exports.deleteOrder = createCloudFunction(deleteOrder);
+
+// ============================================
+// FIRESTORE TRIGGERS
+// ============================================
+
+exports.onOrderStatusChanged = onOrderStatusChanged;
+
+// ============================================
+// MERCADO PAGO FUNCTIONS
+// ============================================
+
+exports.createMPPreference = createCloudFunction(createMPPreference);
+exports.getMPPaymentStatus = createCloudFunction(getMPPaymentStatus);
+exports.mercadopagoWebhook = onRequest({ region: REGION }, mercadopagoWebhook);

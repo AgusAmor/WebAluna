@@ -17,10 +17,7 @@ const {
   handleError,
   sendError,
 } = require("./utils/responseHandler.js");
-const {
-  sendOrderStatusEmail,
-  sendAdminCancellationNotification,
-} = require("./utils/emailService.js");
+// Removed sendOrderStatusEmail import as trigger moved to emailService
 
 /**
  * Creates a new order in Firestore
@@ -72,19 +69,6 @@ exports.createOrder = async (req, res) => {
 
     const createdOrder = await docRef.get();
     const orderData = createdOrder.data();
-
-    // Send pending order notification email to customer
-    try {
-      await sendOrderStatusEmail(
-        orderData,
-        body.customerInfo.email,
-        "pending",
-        body.delivery?.method,
-      );
-    } catch (emailError) {
-      console.error("Error sending order creation email:", emailError);
-      // Don't fail the order creation if email fails
-    }
 
     sendSuccess(
       res,
@@ -291,76 +275,11 @@ exports.updateOrderStatus = async (req, res) => {
     };
 
     // Update order with new status and add to history
+    // Email will be sent automatically by onOrderStatusChanged Firestore trigger
     await orderRef.update({
       status: body.newStatus,
       statusHistory: admin.firestore.FieldValue.arrayUnion(statusHistoryEntry),
     });
-
-    // Send email notification to customer
-    if (orderData.customerInfo && orderData.customerInfo.email) {
-      const customerName =
-        orderData.customerInfo.firstName ||
-        orderData.customerInfo.fullName ||
-        orderData.customerInfo.name ||
-        "Estimado cliente";
-
-      // Extract items data for email
-      const items = (orderData.items || []).map((item) => ({
-        name: item.productName || item.name || "Producto",
-        size: item.size || item.variant || "",
-        quantity: item.quantity || 1,
-        price: item.unitPrice || item.price || 0,
-      }));
-
-      // Extract delivery method for dispatched status
-      const deliveryMethod = orderData.delivery?.method || "shipping";
-
-      console.log("Sending email with:", {
-        email: orderData.customerInfo.email,
-        customerName,
-        orderNumber: orderData.orderNumber,
-        status: body.newStatus,
-        deliveryMethod,
-        itemsCount: items.length,
-      });
-
-      const emailResult = await sendOrderStatusEmail(
-        orderData.customerInfo.email,
-        customerName,
-        orderData.orderNumber,
-        body.newStatus,
-        items,
-        deliveryMethod,
-      );
-
-      if (!emailResult.success) {
-        console.warn(
-          `Failed to send email for order ${body.orderId}: ${emailResult.error}`,
-        );
-        // Don't fail the request if email fails, just log it
-      }
-
-      // If order was cancelled by the customer (not admin), notify admins
-      if (body.newStatus === "cancelled" && decoded.uid === orderData.userId) {
-        const customerName =
-          orderData.customerInfo.firstName ||
-          orderData.customerInfo.fullName ||
-          orderData.customerInfo.name ||
-          "Cliente";
-
-        const adminEmailResult = await sendAdminCancellationNotification(
-          orderData,
-          orderData.customerInfo.email,
-          customerName,
-        );
-
-        if (!adminEmailResult.success) {
-          console.warn(
-            `Failed to send admin cancellation notification for order ${body.orderId}: ${adminEmailResult.error}`,
-          );
-        }
-      }
-    }
 
     const updatedOrder = await orderRef.get();
     const updatedOrderData = updatedOrder.data();

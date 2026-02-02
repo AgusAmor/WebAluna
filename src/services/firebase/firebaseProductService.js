@@ -29,7 +29,7 @@ export async function deleteProductImage(imageUrl) {
     return;
   }
 
-  console.log("Attempting to delete image:", imageUrl);
+  // console.log("Attempting to delete image:", imageUrl);
 
   // Extract path from Firebase Storage URL
   const match = imageUrl.match(/\/o\/([^?]+)/);
@@ -39,12 +39,12 @@ export async function deleteProductImage(imageUrl) {
   }
 
   const filePath = decodeURIComponent(match[1]);
-  console.log("Extracted file path:", filePath);
+  // console.log("Extracted file path:", filePath);
 
   try {
     const imageRef = ref(storage, filePath);
     await deleteObject(imageRef);
-    console.log("Image successfully deleted from Storage:", filePath);
+    // console.log("Image successfully deleted from Storage:", filePath);
   } catch (error) {
     console.error("Error deleting image from Storage:", error);
     throw error;

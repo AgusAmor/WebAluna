@@ -32,9 +32,7 @@ import { notifyCart } from "../../services/ui/notificationService";
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const [showSelectAddressModal, setShowSelectAddressModal] = useState(false);
-  const [showShippingInfoModal, setShowShippingInfoModal] = useState(false);
-  const [selectedShippingAddress, setSelectedShippingAddress] = useState(null);
+  // UI logic now managed in hook
   const {
     userProfile,
     profileLoading,
@@ -59,6 +57,17 @@ const Checkout = () => {
     setShowOrderConfirmModal,
     handleOrderConfirmation,
     createdOrder,
+    showPaymentErrorModal,
+    setShowPaymentErrorModal,
+    paymentError,
+    // New hook exports
+    showSelectAddressModal,
+    setShowSelectAddressModal,
+    showShippingInfoModal,
+    setShowShippingInfoModal,
+    selectedShippingAddress,
+    setSelectedShippingAddress,
+    handleAddressSelected,
   } = useCheckout();
 
   // Redirect to cart if empty
@@ -68,25 +77,7 @@ const Checkout = () => {
     }
   }, [items, navigate]);
 
-  // Handle address selection from modal
-  const handleAddressSelected = async (selectedAddress) => {
-    try {
-      // If it's a new address (doesn't have an ID), add it to profile
-      if (!selectedAddress.id) {
-        const addedAddressWithId = await handleAddressAdded(selectedAddress);
-        // Use the address with the generated ID for shipping
-        setSelectedShippingAddress(addedAddressWithId);
-        recalculateShippingWithAddress(addedAddressWithId);
-      } else {
-        // If it's an existing address, use it for this checkout (don't change default)
-        setSelectedShippingAddress(selectedAddress);
-        recalculateShippingWithAddress(selectedAddress);
-      }
-      setShowSelectAddressModal(false);
-    } catch (err) {
-      console.error("Error selecting address:", err);
-    }
-  };
+  // handleAddressSelected logic moved to hook
 
   if (profileLoading) {
     return (
@@ -437,13 +428,13 @@ const Checkout = () => {
                       <a
                         href="https://www.google.com/maps/place/Pje.+Beethoven+3590,+C1431+Cdad.+Aut%C3%B3noma+de+Buenos+Aires/@-34.5657891,-58.503354,17z/data=!3m1!4b1!4m6!3m5!1s0x95bcb6fbc88e33a3:0x992ce3839f477b11!8m2!3d-34.5657935!4d-58.5007791!16s%2Fg%2F11fy_f0k39?entry=ttu&g_ep=EgoyMDI2MDEyMS4wIKXMDSoASAFQAw%3D%3D"
                         target="_blank"
-                        className="text-gold font-medium hover:text-blue-3 transition-all"
+                        className="text-gold font-medium hover:text-blue-3 transition-all underline"
                       >
-                        Beethoven 3590
+                        Beethoven 3590, C1431 Cdad. Autónoma de Buenos Aires
                       </a>
                     </p>
                     <p className="text-sm text-blue-2">
-                      Podrás retirar tu pedido en nuestro local sin cargo.
+                      Podrás retirar tu pedido sin cargo.
                     </p>
                   </div>
 
@@ -503,7 +494,7 @@ const Checkout = () => {
         isLoading={loading}
       />
 
-      {/* Order Confirmation Modal */}
+      {/* Order Confirmation Modal - Now handled in Home.jsx
       <SingleButtonConfirmationModal
         isOpen={showOrderConfirmModal}
         title="Gracias por elegirnos para transformar tu espacio."
@@ -516,6 +507,18 @@ const Checkout = () => {
         onConfirm={handleOrderConfirmation}
         confirmText="Ir al Inicio"
         icon={<FaCheckCircle />}
+        isLoading={false}
+      />
+      */}
+
+      {/* Payment Error Modal */}
+      <SingleButtonConfirmationModal
+        isOpen={showPaymentErrorModal}
+        title="Error en el pago"
+        message={paymentError || "Ocurrió un error al procesar el pago"}
+        onConfirm={() => setShowPaymentErrorModal(false)}
+        confirmText="Intentar de nuevo"
+        icon={<FaInfoCircle className="text-red-600" />}
         isLoading={false}
       />
     </div>

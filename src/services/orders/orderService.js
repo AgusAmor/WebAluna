@@ -29,7 +29,7 @@ export function generateOrderNumber(date = new Date()) {
 export function createOrderSummary(items, shippingCost = 0) {
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0
+    0,
   );
   const total = subtotal + shippingCost;
 
@@ -59,14 +59,18 @@ export function formatOrderItems(items) {
 /**
  * Creates initial status history entry
  * @param {Date} createdAt - Creation timestamp
+ * @param {string} [status="pending"] - Initial status
  * @returns {Array} - Initial status history
  */
-export function createInitialStatusHistory(createdAt) {
+export function createInitialStatusHistory(createdAt, status = "pending") {
   return [
     {
-      status: "pending",
+      status: status,
       timestamp: createdAt,
-      note: "Pedido creado y pendiente de confirmación",
+      note:
+        status === "pending"
+          ? "Creando intento de pago"
+          : "Pedido creado y confirmado",
       updatedBy: "system",
     },
   ];

@@ -157,6 +157,21 @@ const OrderDetailsModal = ({ isOpen, order, onClose, onCancel }) => {
                       {order.delivery.shippingAddress.region}
                     </p>
                   )}
+
+                  {order.delivery.method === "pickup" && (
+                    <div className="text-sm sm:text-base text-blue-2 mt-2">
+                      <strong className="block mb-1">
+                        Dirección de retiro:
+                      </strong>
+                      <a
+                        href="https://www.google.com/maps/place/Pje.+Beethoven+3590,+C1431+Cdad.+Aut%C3%B3noma+de+Buenos+Aires/@-34.5657891,-58.503354,17z/data=!3m1!4b1!4m6!3m5!1s0x95bcb6fbc88e33a3:0x992ce3839f477b11!8m2!3d-34.5657935!4d-58.5007791!16s%2Fg%2F11fy_f0k39?entry=ttu&g_ep=EgoyMDI2MDEyMS4wIKXMDSoASAFQAw%3D%3D"
+                        target="_blank"
+                        className="text-gold font-medium hover:text-blue-3 transition-all underline"
+                      >
+                        Beethoven 3590, C1431 Cdad. Autónoma de Buenos Aires
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

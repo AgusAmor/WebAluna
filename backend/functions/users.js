@@ -203,14 +203,14 @@ exports.deleteSelfUser = async (req, res) => {
     const body = parseBody(req.body);
     validateId(body.uid, "uid");
 
-    console.log(
-      `[deleteSelfUser] Attempting to delete user document: ${body.uid}`
-    );
+    // console.log(
+    //   `[deleteSelfUser] Attempting to delete user document: ${body.uid}`,
+    // );
 
     // Delete from Firestore only (user already deleted from Auth by client)
     await admin.firestore().collection("users").doc(body.uid).delete();
 
-    console.log(`[deleteSelfUser] Successfully deleted user: ${body.uid}`);
+    // console.log(`[deleteSelfUser] Successfully deleted user: ${body.uid}`);
     sendSuccess(res, { success: true });
   } catch (error) {
     console.error(`[deleteSelfUser] Error deleting user:`, error);
@@ -252,7 +252,7 @@ exports.updateUserDoc = async (req, res) => {
       updateData.accountStatus = accountStatus;
     }
 
-    console.log(`[updateUserDoc] Final updateData:`, updateData);
+    // console.log(`[updateUserDoc] Final updateData:`, updateData);
 
     // At least one field must be provided
     if (Object.keys(updateData).length === 0) {

@@ -6,22 +6,20 @@
 
 const nodemailer = require("nodemailer");
 const { defineString } = require("firebase-functions/params");
+const { onDocumentWritten } = require("firebase-functions/v2/firestore");
+
+const REGION = "southamerica-east1";
 
 // Order status messages constants
 const ORDER_STATUS_MESSAGES = {
-  pending: {
-    title: "Estamos procesando tu pedido",
-    message: "ha sido recibido y está siendo procesado.",
-    footer: "Te notificaremos cuando tu pedido sea confirmado.",
-  },
   confirmed: {
     title: "¡Tu pedido ha sido confirmado!",
     message: "ha sido confirmado.",
     footer:
-      "Estamos preparando todo para comenzar a imprimir. Te mantendremos al tanto del avance de tu pedido.",
+      "Ya confirmamos tu pago y estamos preparando todo para comenzar a imprimir. Te mantendremos al tanto del avance de tu pedido.",
   },
   printing: {
-    title: "Estamos imprimiendo tu pedido",
+    title: "¡Ya estamos imprimiendo tu pedido!",
     message: "está siendo elaborado.",
     footer:
       "Este proceso se realiza con dedicación y precisión. ¡Tu pedido pronto estará listo!",
@@ -38,7 +36,7 @@ const ORDER_STATUS_MESSAGES = {
       title: "Tu pedido está esperando ser retirado",
       message: "está listo y esperando ser retirado.",
       footer:
-        "Puedes pasar a recogerlo cualquier dia de 14hs a 20hs por nuestra sucursal.",
+        "Puedes pasar a recogerlo cualquier día de 14hs a 20hs por la dirección indicada en los detalles de tu pedido.",
     },
   },
   delivered: {
@@ -183,7 +181,7 @@ const generateProductsHTML = (items) => {
         <table style="width: 100%; border-collapse: collapse;">
           <tr>
             <td style="text-align: left; padding-right: 10px; width: 85%;">
-              <div class="product-name">${product.name || "Producto"}${product.size ? " · " + product.size : ""} · x${product.quantity || 1}</div>
+              <div class="product-name">${product.productName || product.name || "Producto"}${product.size ? " · " + product.size : ""} · x${product.quantity || 1}</div>
             </td>
             <td style="text-align: right; width: 15%; white-space: nowrap;">
               <div class="product-price">$${(product.price || product.unitPrice || 0).toFixed(2)}</div>
@@ -334,15 +332,15 @@ exports.sendOrderStatusEmail = async (
       throw new Error("Customer email is required");
     }
 
-    console.log("sendOrderStatusEmail received:", {
-      customerEmail,
-      customerName,
-      orderNumber,
-      status,
-      deliveryMethod,
-      itemsCount: items.length,
-      items: items,
-    });
+    // console.log("sendOrderStatusEmail received:", {
+    //   customerEmail,
+    //   customerName,
+    //   orderNumber,
+    //   status,
+    //   deliveryMethod,
+    //   itemsCount: items.length,
+    //   items: items,
+    // });
 
     // Get email template based on status and delivery method
     const template = getEmailTemplate(
@@ -400,7 +398,7 @@ exports.sendEmail = async (to, subject, html) => {
 
     const result = await transporter.sendMail(mailOptions);
 
-    console.log("Email sent successfully:", result.messageId);
+    // console.log("Email sent successfully:", result.messageId);
     return {
       success: true,
       messageId: result.messageId,
@@ -503,3 +501,78 @@ exports.sendAdminCancellationNotification = async (
 
 // Export constants
 exports.ORDER_STATUS_MESSAGES = ORDER_STATUS_MESSAGES;
+
+/**
+ * Firestore trigger: Send email when order is created or status changes
+ * Now handles both creation (as confirmed) and status updates
+ */
+exports.onOrderStatusChanged = onDocumentWritten(
+  { document: "orders/{orderId}", region: REGION },
+  async (event) => {
+    // If document was deleted, do nothing
+    if (!event.data.after.exists) return;
+
+    const newData = event.data.after.data();
+    const oldData = event.data.before.exists ? event.data.before.data() : null;
+    const orderId = event.params.orderId;
+
+    // console.log(`[onOrderStatusChanged] Order ${orderId} processed`);
+    // console.log("Old status:", oldData?.status);
+    // console.log("New status:", newData?.status);
+
+    const isConfirmedUpdate =
+      oldData?.status !== newData?.status && newData?.status === "confirmed";
+    const isNewConfirmedOrder = !oldData && newData?.status === "confirmed";
+
+    // Process if it's a new confirmed order OR a status change to confirmed
+    if (isNewConfirmedOrder || isConfirmedUpdate) {
+      // console.log(
+      //   `[onOrderStatusChanged] Processing confirmation email for order ${orderId}`,
+      // );
+
+      try {
+        const customerEmail = newData.customerInfo?.email;
+        const customerName = newData.customerInfo?.name;
+        const orderNumber = newData.orderNumber;
+        const items = newData.items || [];
+        const deliveryMethod = newData.delivery?.method || "shipping";
+
+        if (!customerEmail) {
+          console.warn(
+            `[onOrderStatusChanged] No customer email found for order ${orderId}`,
+          );
+          return;
+        }
+
+        // console.log(
+        //   `[onOrderStatusChanged] Sending confirmation email to ${customerEmail}`,
+        // );
+
+        // Send confirmation email - calls the exported function from this same file
+        const result = await exports.sendOrderStatusEmail(
+          customerEmail,
+          customerName,
+          orderNumber,
+          "confirmed",
+          items,
+          deliveryMethod,
+        );
+
+        if (result.success) {
+          // console.log(
+          //   `[onOrderStatusChanged] ✓ Email sent successfully: ${result.messageId}`,
+          // );
+        } else {
+          console.error(
+            `[onOrderStatusChanged] ✗ Failed to send email: ${result.error}`,
+          );
+        }
+      } catch (error) {
+        console.error(
+          `[onOrderStatusChanged] Error processing order status change:`,
+          error,
+        );
+      }
+    }
+  },
+);

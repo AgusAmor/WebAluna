@@ -11,16 +11,11 @@ import {
   OrderHistory,
 } from "../../components/ecommerce";
 import { IoIosWarning } from "react-icons/io";
-import { useProfile } from "../../hooks";
+import { useProfile } from "../../hooks/pages";
 import { formatDate } from "../../utils/dateFormatter";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const [showFinalDeleteConfirm, setShowFinalDeleteConfirm] =
-    React.useState(false);
-  const [selectedOrder, setSelectedOrder] = React.useState(null);
-  const [showOrderDetails, setShowOrderDetails] = React.useState(false);
-  const [showFullHistory, setShowFullHistory] = React.useState(false);
   const {
     userData,
     userOrders,
@@ -53,32 +48,18 @@ const Profile = () => {
     handleCancelOrderCancel,
     setShowResetPasswordConfirm,
     setShowDeleteAccountConfirm,
+    // New exports from hook
+    selectedOrder,
+    setSelectedOrder,
+    showOrderDetails,
+    setShowOrderDetails,
+    showFullHistory,
+    setShowFullHistory,
+    showFinalDeleteConfirm,
+    setShowFinalDeleteConfirm,
+    confirmDeleteAccount,
+    executeFinalDeleteAccount,
   } = useProfile();
-
-  /**
-   * Handle account deletion confirmation - shows second modal
-   */
-  const confirmDeleteAccount = () => {
-    setShowDeleteAccountConfirm(false);
-    setShowFinalDeleteConfirm(true);
-  };
-
-  /**
-   * Execute account deletion after final confirmation
-   */
-  const executeFinalDeleteAccount = async () => {
-    const success = await handleDeleteAccount();
-
-    if (success) {
-      setShowFinalDeleteConfirm(false);
-      // Show toast before navigation
-      notifyAuth.accountDeleted();
-      // Small delay to ensure toast is visible before navigating
-      setTimeout(() => {
-        navigate("/", { replace: true });
-      }, 500);
-    }
-  };
 
   if (loading) {
     return (

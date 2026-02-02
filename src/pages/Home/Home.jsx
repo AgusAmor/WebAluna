@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
-import { useHome } from "../../hooks";
+import { useHome, usePaymentConfirmation } from "../../hooks/pages";
 import { ImSpinner2 } from "react-icons/im";
 import "./Carousel.css";
+// Imports for payment confirmation logic
+import { SingleButtonConfirmationModal } from "../../components/common/modals";
 
 const Home = () => {
   const {
@@ -13,8 +15,36 @@ const Home = () => {
     handleGoToCatalog,
   } = useHome();
 
+  // Payment Confirmation Logic detached to hook
+  const {
+    showSuccessModal,
+    processingOrder,
+    createdOrderNumber,
+    handleCloseModal,
+  } = usePaymentConfirmation();
+
   return (
     <main className="min-h-screen">
+      {/* Payment Success Modal */}
+      {showSuccessModal && (
+        <SingleButtonConfirmationModal
+          isOpen={showSuccessModal}
+          title="¡Pago Exitoso!"
+          message={`Tu pedido #${createdOrderNumber || ""} ha sido confirmado.`}
+          description="Te enviamos un email con los detalles. Puedes ver el estado en tu perfil."
+          confirmText="Ver Pedido"
+          onConfirm={handleCloseModal}
+        />
+      )}
+
+      {/* Processing Overlay */}
+      {processingOrder && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center flex-col text-white">
+          <ImSpinner2 className="animate-spin text-4xl mb-4" />
+          <p className="text-xl font-bold">Estamos procesando tu pedido...</p>
+        </div>
+      )}
+
       {/* Hero Section */}
       <section className="bg-linear-to-r from-blue-2 to-blue-1 text-white py-20 h-96 flex items-center justify-center">
         <div className="container mx-auto px-4 text-center">

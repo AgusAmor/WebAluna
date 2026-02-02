@@ -308,17 +308,17 @@ export async function deleteCurrentUserAccount(uid) {
     throw new Error("No user is currently authenticated");
   }
 
-  console.log(
-    `[deleteCurrentUserAccount] Starting account deletion for user: ${uid}`,
-  );
+  // console.log(
+  //   `[deleteCurrentUserAccount] Starting account deletion for user: ${uid}`,
+  // );
 
   try {
     // Delete from Firebase Auth FIRST
-    console.log(`[deleteCurrentUserAccount] Deleting from Firebase Auth...`);
+    // console.log(`[deleteCurrentUserAccount] Deleting from Firebase Auth...`);
     await deleteUser(currentUser);
-    console.log(
-      `[deleteCurrentUserAccount] User successfully deleted from Firebase Auth`,
-    );
+    // console.log(
+    //   `[deleteCurrentUserAccount] User successfully deleted from Firebase Auth`,
+    // );
   } catch (error) {
     console.error("Error deleting user from Firebase Auth:", error);
     throw new Error(
@@ -328,18 +328,18 @@ export async function deleteCurrentUserAccount(uid) {
 
   // Delete from Firestore as best-effort (token is already invalid)
   try {
-    console.log(
-      `[deleteCurrentUserAccount] Deleting from Firestore via backend...`,
-    );
+    // console.log(
+    //   `[deleteCurrentUserAccount] Deleting from Firestore via backend...`,
+    // );
     const response = await fetch(`${BASE_URL}/deleteSelfUser`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ uid }),
     });
 
-    console.log(
-      `[deleteCurrentUserAccount] Backend response status: ${response.status}`,
-    );
+    // console.log(
+    //   `[deleteCurrentUserAccount] Backend response status: ${response.status}`,
+    // );
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -348,9 +348,9 @@ export async function deleteCurrentUserAccount(uid) {
         errorData,
       );
     } else {
-      console.log(
-        `[deleteCurrentUserAccount] User successfully deleted from Firestore`,
-      );
+      // console.log(
+      //   `[deleteCurrentUserAccount] User successfully deleted from Firestore`,
+      // );
     }
   } catch (err) {
     console.error(
@@ -359,7 +359,7 @@ export async function deleteCurrentUserAccount(uid) {
     );
   }
 
-  console.log(`[deleteCurrentUserAccount] Account deletion process completed`);
+  // console.log(`[deleteCurrentUserAccount] Account deletion process completed`);
   return { message: "User account deleted successfully" };
 }
 
