@@ -83,18 +83,40 @@ const OrderDetailsModal = ({
               }`}
             >
               <option value="">-- Seleccionar estado --</option>
-              <option value={ORDER_STATUS.PENDING}>Pendiente</option>
-              <option value={ORDER_STATUS.CONFIRMED}>Confirmado</option>
-              <option value={ORDER_STATUS.PRINTING}>Imprimiendo</option>
-              <option value={ORDER_STATUS.DISPATCHED}>Despachado</option>
-              {selectedOrder.deliveryType === "pickup" ? (
-                <option value={ORDER_STATUS.WITHDRAWN}>Retirado</option>
-              ) : (
-                <option value={ORDER_STATUS.DELIVERED}>Entregado</option>
-              )}
-              {selectedOrder.status !== ORDER_STATUS.DELIVERED && (
-                <option value={ORDER_STATUS.CANCELLED}>Cancelado</option>
-              )}
+              {Object.values(ORDER_STATUS)
+                .filter((status) => status !== ORDER_STATUS.PENDING)
+                .map((status) => {
+                  // Only show 'retirado' if delivery method is pickup
+                  if (
+                    status === ORDER_STATUS.WITHDRAWN &&
+                    selectedOrder.deliveryType !== "pickup"
+                  )
+                    return null;
+                  // Only show 'entregado' if delivery method is shipping
+                  if (
+                    status === ORDER_STATUS.DELIVERED &&
+                    selectedOrder.deliveryType === "pickup"
+                  )
+                    return null;
+
+                  return (
+                    <option key={status} value={status}>
+                      {status === ORDER_STATUS.CONFIRMED
+                        ? "Confirmado"
+                        : status === ORDER_STATUS.PRINTING
+                          ? "Imprimiendo"
+                          : status === ORDER_STATUS.DISPATCHED
+                            ? "Despachado"
+                            : status === ORDER_STATUS.WITHDRAWN
+                              ? "Retirado"
+                              : status === ORDER_STATUS.DELIVERED
+                                ? "Entregado"
+                                : status === ORDER_STATUS.CANCELLED
+                                  ? "Cancelado"
+                                  : status}
+                    </option>
+                  );
+                })}
             </select>
           </div>
         </div>

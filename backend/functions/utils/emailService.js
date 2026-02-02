@@ -45,6 +45,12 @@ const ORDER_STATUS_MESSAGES = {
     footer:
       "Esperamos que disfrutes tu nueva lámpara Aluna. Gracias por elegirnos para ambientar tu espacio.",
   },
+  withdrawn: {
+    title: "Tu pedido ha sido retirado",
+    message: "ha sido retirado exitosamente.",
+    footer:
+      "Esperamos que disfrutes tu nueva lámpara Aluna. Gracias por elegirnos para ambientar tu espacio.",
+  },
   cancelled: {
     title: "Tu pedido ha sido cancelado",
     message: "ha sido cancelado.",
@@ -251,6 +257,7 @@ const getEmailTemplate = (
     confirmed: "Confirmado",
     printing: "Imprimiendo",
     dispatched: "Despachado",
+    withdrawn: "Retirado",
     delivered: "Entregado",
     cancelled: "Cancelado",
   };
@@ -520,14 +527,16 @@ exports.onOrderStatusChanged = onDocumentWritten(
     // console.log("Old status:", oldData?.status);
     // console.log("New status:", newData?.status);
 
-    const isConfirmedUpdate =
-      oldData?.status !== newData?.status && newData?.status === "confirmed";
-    const isNewConfirmedOrder = !oldData && newData?.status === "confirmed";
+    const oldStatus = oldData?.status;
+    const newStatus = newData?.status;
 
-    // Process if it's a new confirmed order OR a status change to confirmed
-    if (isNewConfirmedOrder || isConfirmedUpdate) {
+    // Check if status changed
+    const statusChanged = oldStatus !== newStatus;
+
+    // Process if status changed
+    if (statusChanged) {
       // console.log(
-      //   `[onOrderStatusChanged] Processing confirmation email for order ${orderId}`,
+      //   `[onOrderStatusChanged] Processing email for order ${orderId} with status ${newStatus}`,
       // );
 
       try {
@@ -548,12 +557,12 @@ exports.onOrderStatusChanged = onDocumentWritten(
         //   `[onOrderStatusChanged] Sending confirmation email to ${customerEmail}`,
         // );
 
-        // Send confirmation email - calls the exported function from this same file
+        // Send status update email
         const result = await exports.sendOrderStatusEmail(
           customerEmail,
           customerName,
           orderNumber,
-          "confirmed",
+          newStatus,
           items,
           deliveryMethod,
         );

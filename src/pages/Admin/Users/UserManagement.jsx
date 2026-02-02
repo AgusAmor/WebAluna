@@ -1,5 +1,5 @@
 import React from "react";
-import { Hero } from "../../../components/common";
+import { Hero, ConfirmationModal } from "../../../components/common";
 import UserModal from "./UserModal";
 import UserFilters from "./UserFilters";
 import UsersTable from "./UsersTable";
@@ -25,6 +25,10 @@ const UserManagement = () => {
     handleCloseModal,
     handleSubmitUser,
     handleDeleteUser,
+    showDeleteModal,
+    userToDelete,
+    cancelDeleteUser,
+    confirmDeleteUser,
   } = useUserManagement();
 
   // Filter states
@@ -51,6 +55,20 @@ const UserManagement = () => {
           setFilterDateFrom={setFilterDateFrom}
           filterDateTo={filterDateTo}
           setFilterDateTo={setFilterDateTo}
+        />
+
+        {/* Delete Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={showDeleteModal}
+          title="Eliminar usuario"
+          message={`¿Estás seguro que deseas eliminar al usuario ${userToDelete?.displayName || userToDelete?.email || "seleccionado"}?`}
+          description="Esta acción eliminará permanentemente la cuenta del usuario y sus datos asociados. No se puede deshacer."
+          onConfirm={confirmDeleteUser}
+          onCancel={cancelDeleteUser}
+          isLoading={!!deletingId}
+          confirmText="Eliminar"
+          cancelText="Cancelar"
+          variant="danger"
         />
 
         {/* User Modal */}

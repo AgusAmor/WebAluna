@@ -200,12 +200,6 @@ const AdminSidebar = () => {
 
         {/* User Info Section - at the bottom */}
         <div className="p-4 border-t border-blue-2 flex items-center justify-between">
-          <div className={isHovering ? "block" : "hidden"}>
-            <p className="text-sm font-semibold truncate">
-              {user?.displayName || "Admin"}
-            </p>
-            <p className="text-xs text-gray-3 truncate">{user?.email}</p>
-          </div>
           <button
             onClick={handleLogout}
             className="p-2 text-white bg-red-500 rounded-lg transition-colors cursor-pointer shrink-0"
@@ -214,6 +208,12 @@ const AdminSidebar = () => {
           >
             <FiLogOut size={18} />
           </button>
+          <div className={`text-right ${isHovering ? "block" : "hidden"}`}>
+            <p className="text-sm font-semibold truncate">
+              {user?.displayName || "Admin"}
+            </p>
+            <p className="text-xs text-gray-3 truncate">{user?.email}</p>
+          </div>
         </div>
       </aside>
 

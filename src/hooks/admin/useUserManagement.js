@@ -18,6 +18,8 @@ export function useUserManagement() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
   const [saving, setSaving] = useState(false);
   const [editUser, setEditUser] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
@@ -79,11 +81,28 @@ export function useUserManagement() {
   };
 
   /**
-   * Handles user deletion
-   * @param {Object} userToDelete - User object to delete
+   * Initiates the user deletion process by opening the confirmation modal
+   * @param {Object} user - User object to delete
    */
-  const handleDeleteUser = async (userToDelete) => {
-    if (deletingId || userToDelete.admin) return;
+  const handleDeleteUser = (user) => {
+    if (user.admin) return; // Cannot delete admins via this method normally
+    setUserToDelete(user);
+    setShowDeleteModal(true);
+  };
+
+  /**
+   * Closes the delete confirmation modal
+   */
+  const cancelDeleteUser = () => {
+    setShowDeleteModal(false);
+    setUserToDelete(null);
+  };
+
+  /**
+   * Confirms and executes user deletion
+   */
+  const confirmDeleteUser = async () => {
+    if (!userToDelete || deletingId || userToDelete.admin) return;
 
     setDeletingId(userToDelete.id);
     setError(null);
@@ -91,8 +110,13 @@ export function useUserManagement() {
     try {
       await deleteUserAccount(userToDelete.id, user);
       setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
+      setShowDeleteModal(false);
+      setUserToDelete(null);
     } catch (err) {
       setError(err.message || "Error deleting user");
+      // Keep modal open on error or close it? usually keep it or show error
+      // Ideally we might want to show error in the modal or toast
+      setShowDeleteModal(false); // Closing for now as error state is global
     } finally {
       setDeletingId(null);
     }
@@ -111,5 +135,9 @@ export function useUserManagement() {
     handleCloseModal,
     handleSubmitUser,
     handleDeleteUser,
+    showDeleteModal,
+    userToDelete,
+    cancelDeleteUser,
+    confirmDeleteUser,
   };
 }

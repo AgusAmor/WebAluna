@@ -233,8 +233,11 @@ exports.updateOrderStatus = async (req, res) => {
     const currentStatus = orderData.status;
     const deliveryMethod = orderData.delivery?.method || "shipping";
 
-    // Cannot change status if order is already cancelled or delivered
-    if (currentStatus === "cancelled" || currentStatus === "delivered") {
+    // Cannot change status if order is already cancelled or delivered (unless admin)
+    if (
+      (currentStatus === "cancelled" || currentStatus === "delivered") &&
+      !decoded.admin
+    ) {
       return sendError(
         res,
         400,
