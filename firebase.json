@@ -86,5 +86,11 @@
                 ]
             }
         ]
-    }
+    },
+    "storage": [
+        {
+            "bucket": "aluna-1af1f.firebasestorage.app",
+            "rules": "storage.rules"
+        }
+    ]
 }

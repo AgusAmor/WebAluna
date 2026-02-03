@@ -24,6 +24,7 @@ import {
   updateOrderStatus,
   deleteOrder,
 } from "../../services/firebase/firebaseOrderService";
+import { validateEmailExistence } from "../../services/validationService";
 
 /**
  * Custom hook for profile management
@@ -204,6 +205,22 @@ export const useProfile = () => {
     setIsSaving(true);
 
     try {
+      // Validate email existence if it changed
+      if (editFormData?.email && editFormData.email !== userData.email) {
+        const emailValidation = await validateEmailExistence(
+          editFormData.email,
+        );
+        if (emailValidation !== true) {
+          setError(
+            typeof emailValidation === "string"
+              ? emailValidation
+              : "Email inválido",
+          );
+          setIsSaving(false);
+          return;
+        }
+      }
+
       const updatedData = await saveProfileChanges({
         user,
         editFormData,

@@ -1,11 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import { IoIosClose } from "react-icons/io";
 import AddressForm from "../forms/AddressForm";
-import {
-  splitPhoneNumber,
-  combinePhoneNumber,
-} from "../../../services/users/userFormService";
+import { useAddressRequiredModal } from "../../../hooks/checkout/useAddressRequiredModal";
 
 /**
  * Modal for adding a default address when required for checkout
@@ -21,91 +18,13 @@ const AddressRequiredModal = ({
   onAddressAdded,
   isLoading = false,
 }) => {
-  const [address, setAddress] = useState({
-    street: "",
-    number: "",
-    apartment: "",
-    city: "",
-    region: "",
-    postalCode: "",
-    recipientName: "",
-    recipientPhoneCountry: "+549",
-    recipientPhoneLocal: "",
-    isDefault: true,
-  });
-
-  const [error, setError] = useState(null);
+  const { address, error, handleAddressChange, handleAddAddress, handleClose } =
+    useAddressRequiredModal({
+      onClose,
+      onAddressAdded,
+    });
 
   if (!isOpen) return null;
-
-  const handleAddressChange = (idx, event) => {
-    const { name, value, type, checked } = event.target;
-    setAddress((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-    setError(null);
-  };
-
-  const handleAddAddress = async () => {
-    // Validate required fields
-    if (
-      !address.street ||
-      !address.number ||
-      !address.city ||
-      !address.region ||
-      !address.recipientName ||
-      !address.recipientPhoneCountry ||
-      !address.recipientPhoneLocal
-    ) {
-      setError("Por favor completa todos los campos requeridos");
-      return;
-    }
-
-    try {
-      // Combine phone number fields
-      const recipientPhone = combinePhoneNumber(
-        address.recipientPhoneCountry,
-        address.recipientPhoneLocal,
-      );
-
-      // Prepare address object for submission
-      const addressToSubmit = {
-        street: address.street,
-        number: address.number,
-        apartment: address.apartment,
-        city: address.city,
-        region: address.region,
-        postalCode: address.postalCode,
-        recipientName: address.recipientName,
-        recipientPhone: recipientPhone,
-        isDefault: address.isDefault,
-      };
-
-      // Call the callback with the address
-      await onAddressAdded(addressToSubmit);
-      handleClose();
-    } catch (err) {
-      setError(err.message || "Error al agregar dirección");
-    }
-  };
-
-  const handleClose = () => {
-    setAddress({
-      street: "",
-      number: "",
-      apartment: "",
-      city: "",
-      region: "",
-      postalCode: "",
-      recipientName: "",
-      recipientPhoneCountry: "+549",
-      recipientPhoneLocal: "",
-      isDefault: true,
-    });
-    setError(null);
-    onClose();
-  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden font-family-sora">

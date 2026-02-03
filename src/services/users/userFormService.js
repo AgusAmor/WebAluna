@@ -106,7 +106,12 @@ export {
  * @returns {Object} - Prepared data for backend
  */
 export function prepareUserFormData(formData) {
-  const phone = combinePhoneNumber(formData.phoneCountry, formData.phoneLocal);
+  const phoneRaw = combinePhoneNumber(
+    formData.phoneCountry,
+    formData.phoneLocal,
+  );
+  // If phone is empty string, send null to allow unsetting/ignoring in backend
+  const phone = phoneRaw || null;
 
   // Clean addresses by removing the temporary 'id' field and combining phone fields
   const cleanAddresses = formData.addresses.map(
@@ -146,7 +151,7 @@ export function prepareUserFormData(formData) {
   return {
     displayName: formData.displayName,
     email: formData.email,
-    phone,
+    phone, // Will be null if empty string
     addresses: cleanAddresses,
     accountStatus: formData.accountStatus,
   };

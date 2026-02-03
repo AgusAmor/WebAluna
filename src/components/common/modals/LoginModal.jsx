@@ -10,6 +10,7 @@ import {
   getModalTitle,
   getModalSubtitle,
 } from "../../../services/auth/loginService";
+import { sanitizeInput } from "../../../services/validationService";
 
 const LoginModal = ({ isOpen, onClose }) => {
   useModalScroll(isOpen);
@@ -32,6 +33,38 @@ const LoginModal = ({ isOpen, onClose }) => {
     handleShowReset,
     handleBackToLogin,
   } = useLoginModal(isOpen, onClose);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    // Do not sanitize password fields to avoid altering valid special characters
+    if (name === "password" || name === "confirmPassword") {
+      handleChange(e);
+      return;
+    }
+    const sanitizedValue = sanitizeInput(value);
+    const newEvent = {
+      ...e,
+      target: {
+        ...e.target,
+        value: sanitizedValue,
+        name,
+      },
+    };
+    handleChange(newEvent);
+  };
+
+  const handleResetInputChange = (e) => {
+    const sanitizedValue = sanitizeInput(e.target.value);
+    const newEvent = {
+      ...e,
+      target: {
+        ...e.target,
+        value: sanitizedValue,
+        name: e.target.name,
+      },
+    };
+    handleResetChange(newEvent);
+  };
 
   // Format error message for better UX
   const getErrorMessage = (error) => {
@@ -184,7 +217,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                       type="email"
                       name="resetEmail"
                       value={resetEmail}
-                      onChange={handleResetChange}
+                      onChange={handleResetInputChange}
                       className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-2 ${
                         resetError ? "border-red-500" : "border-gray-2"
                       }`}
@@ -225,7 +258,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                   {!isLogin && (
                     <div>
                       <label className="block text-sm font-medium mb-1 text-blue-1 font-family-comfortaa">
-                        Nombre completo
+                        Nombre complet
                       </label>
                       <div className="relative">
                         <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-1" />
@@ -233,7 +266,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                           type="text"
                           name="name"
                           value={formData.name}
-                          onChange={handleChange}
+                          onChange={handleInputChange}
                           className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-2 ${
                             errors.name ? "border-red-500" : "border-gray-2"
                           }`}
@@ -258,7 +291,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                         type="email"
                         name="email"
                         value={formData.email}
-                        onChange={handleChange}
+                        onChange={handleInputChange}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-2 ${
                           errors.email ? "border-red-500" : "border-gray-2"
                         }`}
@@ -282,7 +315,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                         type="password"
                         name="password"
                         value={formData.password}
-                        onChange={handleChange}
+                        onChange={handleInputChange}
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-2 ${
                           errors.password ? "border-red-500" : "border-gray-2"
                         }`}
@@ -307,7 +340,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                           type="password"
                           name="confirmPassword"
                           value={formData.confirmPassword}
-                          onChange={handleChange}
+                          onChange={handleInputChange}
                           className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-2 ${
                             errors.confirmPassword
                               ? "border-red-500"

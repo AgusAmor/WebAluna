@@ -6,6 +6,7 @@
  */
 
 import { VALIDATION } from "../constants/validationConstants.js";
+import { validateEmailDomain } from "./firebase/firebaseEmailService.js";
 
 /**
  * Validates email format
@@ -35,6 +36,57 @@ export function validatePassword(password) {
     return `La contraseña debe tener al menos ${VALIDATION.PASSWORD_MIN_LENGTH} caracteres`;
   }
   return null;
+}
+
+/**
+ * Sanitizes input to prevent code injection
+ * @param {string} input - Input string to sanitize
+ * @returns {string} Sanitized string
+ */
+export function sanitizeInput(input) {
+  if (typeof input !== "string") return input;
+  return input.replace(/[<>]/g, "");
+}
+
+/**
+ * Validates flexible phone format (allows spaces, dashes, parens)
+ * @param {string} phone - Phone number to validate
+ * @returns {boolean} True if valid
+ */
+export function isValidContactPhone(phone) {
+  if (!phone) return true; // Optional field empty is valid
+  // Allow digits, spaces, +, -, (, )
+  return /^[\d\s+\-()]*$/.test(phone);
+}
+
+/**
+ * Validates minimum digits in phone number
+ * @param {string} phone - Phone number
+ * @param {number} min - Minimum digits (default 10)
+ * @returns {boolean} True if valid
+ */
+export function validatePhoneMinDigits(phone, min = 10) {
+  if (!phone) return true;
+  const digits = phone.replace(/\D/g, "");
+  return digits.length >= min;
+}
+
+/**
+ * Validates existence of email domain (Async)
+ * @param {string} email - Email to validate
+ * @returns {Promise<boolean|string>} True if valid, or error message
+ */
+export async function validateEmailExistence(email) {
+  if (!email) return true;
+  try {
+    const isValid = await validateEmailDomain(email);
+    return isValid || "La dirección de correo no parece válida";
+  } catch (error) {
+    console.warn("Domain validation error:", error);
+    // Fallback to strict regex if service fails
+    // or return generic error message
+    return "Error Verificando el correo";
+  }
 }
 
 /**

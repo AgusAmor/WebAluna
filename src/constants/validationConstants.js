@@ -4,7 +4,7 @@
  */
 
 export const VALIDATION = {
-  EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+  EMAIL_REGEX: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
   PASSWORD_MIN_LENGTH: 8,
   PHONE_REGEX: /^[\+]?[1-9][\d]{0,15}$/,
 };

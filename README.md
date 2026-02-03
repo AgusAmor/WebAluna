@@ -501,15 +501,37 @@ pnpm dev
 
 #### En Firebase Console:
 
-1. **Crear Proyecto**    - Ve a [Firebase Console](https://console.firebase.google.com)    - Click en "Nuevo Proyecto"    - Nombre: WebAluna    - Región: Sudamérica
+1. **Crear Proyecto**
 
-2. **Habilitar Authentication**    - Ir a Authentication → Métodos de inicio de sesión    - Habilitar Email/Password    - Habilitar Google OAuth
+- Ve a [Firebase Console](https://console.firebase.google.com)    
+- Click en "Nuevo Proyecto"
+- Nombre: WebAluna
+- Región: Sudamérica
 
-3. **Crear Firestore**    - Ir a Firestore Database    - Crear base de datos en modo "Producción"    - Región: southamerica-east1    - Configurar Security Rules
+2. **Habilitar Authentication**    
 
-4. **Configurar Storage**    - Ir a Storage    - Crear bucket    - Configurar rules de acceso
+- Ir a Authentication → Métodos de inicio de sesión
+- Habilitar Email/Password
+- Habilitar Google OAuth
 
-5. **Descargar Credenciales**    - Project Settings → Service Accounts    - Click "Generate new private key"    - Guardar en `backend/functions/config/serviceAccountKey.json`
+3. **Crear Firestore**    
+
+- Ir a Firestore Database
+- Crear base de datos en modo "Producción"
+- Región: southamerica-east1
+- Configurar Security Rules
+
+4. **Configurar Storage**    
+
+- Ir a Storage
+- Crear bucket
+- Configurar rules de acceso
+
+5. **Descargar Credenciales**    
+
+- Project Settings → Service Accounts
+- Click "Generate new private key"
+- Guardar en `backend/functions/config/serviceAccountKey.json`
 
 #### Configurar Admin CLI:
 
@@ -753,7 +775,7 @@ Todos los componentes usan:
 
 <td><strong>Demo</strong></td>
 
-<td><a href="https://agusamor.github.io/WebAluna/">https://agusamor.github.io/WebAluna/</a></td>
+<td><a href="https://aluna-1af1f.web.app/">https://aluna-1af1f.web.app/</a></td>
 
 </tr>
 

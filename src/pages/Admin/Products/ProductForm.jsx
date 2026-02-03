@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { TiUpload } from "react-icons/ti";
 import { compressImage } from "../../../services/imageOptimizationService";
+import { sanitizeInput } from "../../../services/validationService";
 
 /**
  * ProductForm component for creating and editing products.
@@ -16,6 +17,11 @@ const ProductForm = ({
   buttonLabel = "Guardar",
 }) => {
   const imageInputRef = useRef(null);
+
+  // Helper function to handle input sanitization
+  const handleInputChange = (e) => {
+    e.target.value = sanitizeInput(e.target.value);
+  };
 
   return (
     <form
@@ -35,6 +41,7 @@ const ProductForm = ({
             placeholder="Nombre"
             required
             defaultValue={initialProduct ? initialProduct.name : ""}
+            onChange={handleInputChange}
             className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
           />
         </div>
@@ -48,6 +55,7 @@ const ProductForm = ({
             placeholder="Descripción"
             required
             defaultValue={initialProduct ? initialProduct.description : ""}
+            onChange={handleInputChange}
             className="w-full px-4 py-2 border border-gray-2 rounded-lg resize-none focus:border-gold focus:outline-none min-h-24"
           />
         </div>
@@ -178,6 +186,7 @@ const ProductForm = ({
                     ? initialProduct.pricing?.normal?.size
                     : "24cm x 11,5cm x 11,5cm"
                 }
+                onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-2 rounded-md bg-white focus:border-gold focus:outline-none text-sm md:text-base"
               />
             </div>
@@ -207,6 +216,7 @@ const ProductForm = ({
                     ? initialProduct.pricing?.small?.size
                     : "17cm x 9,5cm x 9,5cm"
                 }
+                onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-2 rounded-md bg-white focus:border-gold focus:outline-none text-sm md:text-base"
               />
             </div>

@@ -13,6 +13,7 @@ import {
 import { IoIosWarning } from "react-icons/io";
 import { useProfile } from "../../hooks/pages";
 import { formatDate } from "../../utils/dateFormatter";
+import { sanitizeInput } from "../../services/validationService";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -136,30 +137,37 @@ const Profile = () => {
                   {/* Name */}
                   <div>
                     <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-2">
-                      Nombre Completo
+                      Nombre Completo <span className="text-gold">*</span>
                     </label>
                     <input
                       type="text"
                       value={editFormData?.displayName || ""}
                       onChange={(e) =>
-                        updateEditField("displayName", e.target.value)
+                        updateEditField(
+                          "displayName",
+                          sanitizeInput(e.target.value),
+                        )
                       }
                       className="w-full px-4 py-3 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
                       placeholder="Tu nombre completo"
+                      required
                     />
                   </div>
 
                   {/* Email */}
                   <div>
                     <label className="text-xs font-semibold text-gray-1 uppercase tracking-wide block mb-2">
-                      Correo Electrónico
+                      Correo Electrónico <span className="text-gold">*</span>
                     </label>
                     <input
                       type="email"
                       value={editFormData?.email || ""}
-                      onChange={(e) => updateEditField("email", e.target.value)}
+                      onChange={(e) =>
+                        updateEditField("email", sanitizeInput(e.target.value))
+                      }
                       className="w-full px-4 py-3 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
                       placeholder="tu@email.com"
+                      required
                     />
                   </div>
 
@@ -175,7 +183,10 @@ const Profile = () => {
                         type="text"
                         value={editFormData?.phoneCountry || "+549"}
                         onChange={(e) =>
-                          updateEditField("phoneCountry", e.target.value)
+                          updateEditField(
+                            "phoneCountry",
+                            e.target.value.replace(/[^0-9+]/g, ""),
+                          )
                         }
                         className="w-24 px-3 py-3 border border-gray-2 rounded-lg focus:border-gold focus:outline-none text-sm"
                         pattern="^\+\d{1,4}$"
@@ -190,7 +201,10 @@ const Profile = () => {
                         type="text"
                         value={editFormData?.phoneLocal || ""}
                         onChange={(e) =>
-                          updateEditField("phoneLocal", e.target.value)
+                          updateEditField(
+                            "phoneLocal",
+                            e.target.value.replace(/[^0-9]/g, ""),
+                          )
                         }
                         className="flex-1 px-4 py-3 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
                         pattern="^\d{6,12}$"

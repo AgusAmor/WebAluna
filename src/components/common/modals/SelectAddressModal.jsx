@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import { IoIosClose } from "react-icons/io";
 import AddressForm from "../forms/AddressForm";
+import { useSelectAddressModal } from "../../../hooks/checkout/useSelectAddressModal";
 
 /**
  * Modal for selecting or editing a delivery address in checkout
@@ -21,105 +22,24 @@ const SelectAddressModal = ({
   currentAddress = null,
   isLoading = false,
 }) => {
-  const [selectedAddressId, setSelectedAddressId] = useState(
-    currentAddress?.id || null,
-  );
-  const [showForm, setShowForm] = useState(false);
-  const [newAddress, setNewAddress] = useState({
-    street: "",
-    number: "",
-    apartment: "",
-    city: "",
-    region: "",
-    postalCode: "",
-    recipientName: "",
-    recipientPhoneCountry: "+549",
-    recipientPhoneLocal: "",
-    isDefault: false,
+  const {
+    selectedAddressId,
+    showForm,
+    newAddress,
+    error,
+    handleSelectAddress,
+    handleAddressFormChange,
+    handleAddNewAddress,
+    handleClose,
+    toggleForm,
+  } = useSelectAddressModal({
+    onClose,
+    onAddressSelected,
+    currentAddress,
+    isOpen,
   });
-  const [error, setError] = useState(null);
-
-  // Update selectedAddressId when currentAddress changes
-  useEffect(() => {
-    if (isOpen) {
-      setSelectedAddressId(currentAddress?.id || null);
-    }
-  }, [currentAddress, isOpen]);
 
   if (!isOpen) return null;
-
-  const handleSelectAddress = (address) => {
-    setSelectedAddressId(address.id);
-    onAddressSelected(address);
-    handleClose();
-  };
-
-  const handleAddressFormChange = (idx, event) => {
-    const { name, value, type, checked } = event.target;
-    setNewAddress((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-    setError(null);
-  };
-
-  const handleAddNewAddress = async () => {
-    // Validate required fields
-    if (
-      !newAddress.street ||
-      !newAddress.number ||
-      !newAddress.city ||
-      !newAddress.region ||
-      !newAddress.recipientName ||
-      !newAddress.recipientPhoneCountry ||
-      !newAddress.recipientPhoneLocal
-    ) {
-      setError("Por favor completa todos los campos requeridos");
-      return;
-    }
-
-    try {
-      // Combine phone number
-      const recipientPhone = `${newAddress.recipientPhoneCountry}${newAddress.recipientPhoneLocal}`;
-
-      // Prepare address object for submission
-      const addressToSubmit = {
-        street: newAddress.street,
-        number: newAddress.number,
-        apartment: newAddress.apartment,
-        city: newAddress.city,
-        region: newAddress.region,
-        postalCode: newAddress.postalCode,
-        recipientName: newAddress.recipientName,
-        recipientPhone: recipientPhone,
-        isDefault: false,
-      };
-
-      // Call the callback with the address
-      await onAddressSelected(addressToSubmit);
-      handleClose();
-    } catch (err) {
-      setError(err.message || "Error al agregar dirección");
-    }
-  };
-
-  const handleClose = () => {
-    setShowForm(false);
-    setNewAddress({
-      street: "",
-      number: "",
-      apartment: "",
-      city: "",
-      region: "",
-      postalCode: "",
-      recipientName: "",
-      recipientPhoneCountry: "+549",
-      recipientPhoneLocal: "",
-      isDefault: false,
-    });
-    setError(null);
-    onClose();
-  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden font-family-sora">
@@ -211,7 +131,7 @@ const SelectAddressModal = ({
 
                 {/* Add New Address Button */}
                 <button
-                  onClick={() => setShowForm(true)}
+                  onClick={toggleForm}
                   disabled={isLoading}
                   className="w-full mt-4 py-2 px-4 bg-blue-2 text-white rounded-lg font-family-sora hover:bg-blue-1 transition-colors disabled:opacity-50"
                 >
@@ -249,7 +169,7 @@ const SelectAddressModal = ({
 
                 <div className="flex gap-3 mt-6">
                   <button
-                    onClick={() => setShowForm(false)}
+                    onClick={toggleForm}
                     disabled={isLoading}
                     className="flex-1 py-2 px-4 border-2 border-gray-2 text-blue-1 rounded-lg font-family-sora hover:border-blue-2 transition-colors disabled:opacity-50"
                   >

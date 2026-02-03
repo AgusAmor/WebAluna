@@ -2,6 +2,7 @@ import React from "react";
 import { FiPlus } from "react-icons/fi";
 import { AddressForm } from "../../../components/common";
 import { useUserForm } from "../../../hooks";
+import { sanitizeInput } from "../../../services/validationService";
 
 /**
  * UserForm component for creating and editing users.
@@ -25,6 +26,29 @@ const UserForm = ({
     getFormData,
   } = useUserForm(initialUser);
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    const sanitizedValue = sanitizeInput(value);
+    const newEvent = {
+      ...e,
+      target: { ...e.target, value: sanitizedValue, name },
+    };
+    handleChange(newEvent);
+  };
+
+  const handlePhoneChange = (e) => {
+    const { name, value } = e.target;
+    const cleanValue =
+      name === "phoneCountry"
+        ? value.replace(/[^0-9+]/g, "")
+        : value.replace(/[^0-9]/g, "");
+    const newEvent = {
+      ...e,
+      target: { ...e.target, value: cleanValue, name },
+    };
+    handleChange(newEvent);
+  };
+
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -39,13 +63,15 @@ const UserForm = ({
     >
       <div className="flex flex-col flex-1 overflow-y-auto pr-2">
         <div className="mb-3">
-          <label className="font-bold text-blue-2 mb-1.5 block">Nombre</label>
+          <label className="font-bold text-blue-2 mb-1.5 block">
+            Nombre <span className="text-gold">*</span>
+          </label>
           <input
             name="displayName"
             type="text"
             placeholder="Nombre"
             value={form.displayName}
-            onChange={handleChange}
+            onChange={handleInputChange}
             className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none"
             minLength={2}
             maxLength={60}
@@ -55,14 +81,14 @@ const UserForm = ({
         <div className="flex flex-col md:flex-row gap-4 mb-3">
           <div className="flex-1">
             <label className="font-bold text-blue-2 mb-1.5">
-              Correo electrónico
+              Correo electrónico <span className="text-gold">*</span>
             </label>
             <input
               name="email"
               type="email"
               placeholder="Correo electrónico"
               value={form.email}
-              onChange={handleChange}
+              onChange={handleInputChange}
               className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none mb-2 md:mb-0"
               required
               pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$"
@@ -75,11 +101,12 @@ const UserForm = ({
                 name="phoneCountry"
                 type="text"
                 value={form.phoneCountry}
-                onChange={handleChange}
+                onChange={handlePhoneChange}
                 className="w-24 px-3 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none mb-2 md:mb-0"
                 pattern="^\+\d{1,4}$"
                 maxLength={5}
                 minLength={2}
+                placeholder="+549"
                 title="Código de país en formato internacional."
                 required={false}
               />
@@ -87,7 +114,7 @@ const UserForm = ({
                 name="phoneLocal"
                 type="text"
                 value={form.phoneLocal}
-                onChange={handleChange}
+                onChange={handlePhoneChange}
                 className="flex-1 px-3 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none mb-2 md:mb-0"
                 pattern="^\d{6,12}$"
                 maxLength={12}

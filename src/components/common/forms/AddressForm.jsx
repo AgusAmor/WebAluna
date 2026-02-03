@@ -3,6 +3,7 @@ import { FaTrash, FaCheck } from "react-icons/fa";
 import { ImSpinner2 } from "react-icons/im";
 import { MdWarning } from "react-icons/md";
 import { useAddressValidation } from "../../../hooks/forms/useAddressValidation";
+import { sanitizeInput } from "../../../services/validationService";
 
 /**
  * AddressForm component for editing a single address in the user form.
@@ -18,6 +19,37 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
     clearValidation,
   } = useAddressValidation();
   const fieldId = `address-${idx}`;
+
+  // Handle generic input change with sanitization
+  const handleInputChange = (e) => {
+    const sanitizedValue = sanitizeInput(e.target.value);
+    const newEvent = {
+      ...e,
+      target: {
+        ...e.target,
+        value: sanitizedValue,
+        name: e.target.name,
+      },
+    };
+    onChange(idx, newEvent);
+  };
+
+  // Handle phone input change - restrict to numbers (and + for country code)
+  const handlePhoneChange = (e) => {
+    const value = e.target.value;
+    // Allow only digits and + symbol
+    const cleanValue = value.replace(/[^0-9+]/g, "");
+
+    const newEvent = {
+      ...e,
+      target: {
+        ...e.target,
+        value: cleanValue,
+        name: e.target.name,
+      },
+    };
+    onChange(idx, newEvent);
+  };
 
   // Handle number field validation - restrict to max 4 digits (9999)
   const handleNumberChange = (e) => {
@@ -90,7 +122,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
             type="text"
             placeholder="Calle"
             value={addr.street || ""}
-            onChange={(e) => onChange(idx, e)}
+            onChange={handleInputChange}
             className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
             minLength={2}
             maxLength={100}
@@ -122,7 +154,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
             type="text"
             placeholder="Depto (opcional)"
             value={addr.apartment || ""}
-            onChange={(e) => onChange(idx, e)}
+            onChange={handleInputChange}
             className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
             maxLength={20}
           />
@@ -138,7 +170,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
             type="text"
             placeholder="Ciudad"
             value={addr.city || ""}
-            onChange={(e) => onChange(idx, e)}
+            onChange={handleInputChange}
             className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
             minLength={2}
             maxLength={50}
@@ -154,7 +186,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
             type="text"
             placeholder="Barrio"
             value={addr.region || ""}
-            onChange={(e) => onChange(idx, e)}
+            onChange={handleInputChange}
             className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
             minLength={2}
             maxLength={50}
@@ -170,9 +202,10 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
             type="text"
             placeholder="Código Postal"
             value={addr.postalCode || ""}
-            onChange={(e) => onChange(idx, e)}
+            onChange={handleInputChange}
             className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
             maxLength={8}
+            required
           />
         </div>
       </div>
@@ -227,7 +260,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
               type="text"
               placeholder="Nombre"
               value={addr.recipientName || ""}
-              onChange={(e) => onChange(idx, e)}
+              onChange={handleInputChange}
               className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
               minLength={2}
               maxLength={60}
@@ -242,7 +275,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
               name="recipientPhoneCountry"
               type="text"
               value={addr.recipientPhoneCountry || "+549"}
-              onChange={(e) => onChange(idx, e)}
+              onChange={handlePhoneChange}
               className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
               pattern="^\+\d{1,4}$"
               maxLength={5}
@@ -260,7 +293,7 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
               type="text"
               placeholder="Teléfono"
               value={addr.recipientPhoneLocal || ""}
-              onChange={(e) => onChange(idx, e)}
+              onChange={handlePhoneChange}
               className="w-full px-4 py-2 border border-gray-2 rounded-lg focus:border-gold focus:outline-none bg-white"
               pattern="^\d{6,12}$"
               maxLength={12}
