@@ -19,6 +19,9 @@ const Home = lazy(() => import("../pages/Home"));
 const Products = lazy(() => import("../pages/Products"));
 const Profile = lazy(() => import("../pages/Profile"));
 const Contact = lazy(() => import("../pages/Contact"));
+const About = lazy(() =>
+  import("../pages/About").then((module) => ({ default: module.About })),
+);
 const Checkout = lazy(() => import("../pages/Checkout/Checkout.jsx"));
 const Admin = lazy(() => import("../pages/Admin"));
 
@@ -102,10 +105,7 @@ const RouteContent = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/productos" element={<Products />} />
-        <Route
-          path="/sobre-nosotros"
-          element={<div className="p-8">Sobre Nosotros en construcción</div>}
-        />
+        <Route path="/sobre-nosotros" element={<About />} />
         <Route path="/contacto" element={<Contact />} />
         <Route
           path="/checkout"

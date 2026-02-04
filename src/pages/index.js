@@ -4,3 +4,4 @@ export { Profile } from "./Profile";
 export { Checkout } from "./Checkout";
 export { Contact } from "./Contact";
 export { Admin } from "./Admin";
+export { About } from "./About";
