@@ -12,6 +12,8 @@ import { ORDER_STATUS } from "../../constants";
 const OrderStatusBadge = ({ status, className = "" }) => {
   const getStatusColor = (status) => {
     switch (status) {
+      case ORDER_STATUS.PENDING:
+        return "bg-yellow-100 text-yellow-700";
       case ORDER_STATUS.CONFIRMED:
         return "bg-blue-100 text-blue-700";
       case ORDER_STATUS.PRINTING:
@@ -31,6 +33,7 @@ const OrderStatusBadge = ({ status, className = "" }) => {
 
   const getStatusLabel = (status) => {
     const statusMap = {
+      [ORDER_STATUS.PENDING]: "Pendiente",
       [ORDER_STATUS.CONFIRMED]: "Confirmado",
       [ORDER_STATUS.PRINTING]: "Imprimiendo",
       [ORDER_STATUS.DISPATCHED]: "Despachado",

@@ -416,19 +416,7 @@ exports.mercadopagoWebhook = async (req, res) => {
 
       console.log(`Order cancelled: ${orderId}`);
     } else if (MP_CONFIG.PENDING_STATUSES.includes(paymentInfo.status)) {
-      // Payment pending - update order status to pending_payment
-      const timestamp = new Date().toISOString();
-      await orderRef.update({
-        paymentStatus: "pending",
-        mercadopagoPaymentId: paymentInfo.id,
-        statusHistory: admin.firestore.FieldValue.arrayUnion({
-          status: "pending_payment",
-          timestamp: timestamp,
-          note: `Pago pendiente en Mercado Pago`,
-          updatedBy: "system",
-        }),
-      });
-
+      // Payment pending - just log, don't update (order stays in pending)
       console.log(`Payment pending: ${orderId}`);
     }
 

@@ -1,90 +1,96 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
-import { useAuth } from "../../context/AuthContext";
-import { createOrder } from "../../services/firebase/firebaseOrderService";
 
 /**
  * Hook to handle payment confirmation logic on the Home page.
- * Checks for MercadoPago query params and creates the order if approved.
+ * Detects Mercado Pago redirect and shows appropriate modal.
  */
 export const usePaymentConfirmation = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { clearCart } = useCart();
-  const { user } = useAuth();
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
   const [processingOrder, setProcessingOrder] = useState(false);
   const [createdOrderNumber, setCreatedOrderNumber] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    const checkPaymentStatus = async () => {
-      const status = searchParams.get("collection_status");
-      const paymentId = searchParams.get("payment_id");
-      const savedPayload = localStorage.getItem("pendingOrderPayload");
+    const collectionStatus = searchParams.get("collection_status");
+    const pendingOrderId = localStorage.getItem("pendingOrderId");
+    const pendingOrderData = localStorage.getItem("pendingOrderData");
 
-      // Only process if approved and we have a pending order payload
-      if (status === "approved" && savedPayload && !processingOrder) {
-        try {
-          setProcessingOrder(true);
-          const orderData = JSON.parse(savedPayload);
+    // Only process if we came from Mercado Pago and have a pending order
+    if (!collectionStatus || !pendingOrderId || !pendingOrderData) {
+      return;
+    }
 
-          // Prepare final order data
-          // Remove temp IDs so Firestore generates a real ID
-          delete orderData.id;
-          delete orderData.tempId;
+    if (processingOrder) {
+      return;
+    }
 
-          const finalOrderData = {
-            ...orderData,
-            status: "confirmed", // Force confirmed status
-            paymentStatus: "approved",
-            mercadopagoPaymentId: paymentId,
-            createdAt: new Date(), // Update timestamp
-            statusHistory: [
-              {
-                status: "confirmed",
-                timestamp: new Date(),
-                note: `Pedido confirmado. Pago ID: ${paymentId}`,
-                updatedBy: "system",
-              },
-            ],
-          };
+    try {
+      setProcessingOrder(true);
+      const orderData = JSON.parse(pendingOrderData);
 
-          if (user) {
-            const token = await user.getIdToken();
-            const newOrder = await createOrder(finalOrderData, token);
+      console.log("[Payment Confirmation] Mercado Pago redirect detected");
+      console.log(
+        "[Payment Confirmation] Collection status:",
+        collectionStatus,
+      );
 
-            setCreatedOrderNumber(newOrder.orderNumber);
-            setShowSuccessModal(true);
-            clearCart();
-            localStorage.removeItem("pendingOrderPayload");
-
-            // Clear URL params without reloading
-            setSearchParams({});
-          }
-        } catch (error) {
-          console.error("Error creating order after payment:", error);
-          // Optional: Handle error
-        } finally {
-          setProcessingOrder(false);
-        }
+      // Handle based on collection_status from Mercado Pago
+      if (collectionStatus === "approved") {
+        console.log("[Payment Confirmation] Payment approved");
+        setCreatedOrderNumber(orderData.orderNumber);
+        setShowSuccessModal(true);
+        clearCart();
+      } else if (collectionStatus === "pending") {
+        console.log("[Payment Confirmation] Payment pending");
+        setShowErrorModal(true);
+        setErrorMessage(
+          "Tu pago está en proceso. Te notificaremos cuando se confirme.",
+        );
+      } else if (collectionStatus === "rejected") {
+        console.log("[Payment Confirmation] Payment rejected");
+        setShowErrorModal(true);
+        setErrorMessage(
+          "El pago fue rechazado. Intenta con otro método de pago.",
+        );
       }
-    };
 
-    checkPaymentStatus();
-  }, [searchParams, user, clearCart, setSearchParams, processingOrder]);
+      // Clean up localStorage and URL params
+      localStorage.removeItem("pendingOrderId");
+      localStorage.removeItem("pendingOrderData");
+      setSearchParams({});
 
-  const handleCloseModal = () => {
+      setProcessingOrder(false);
+    } catch (error) {
+      console.error("[Payment Confirmation] Error processing payment:", error);
+      setShowErrorModal(true);
+      setErrorMessage("Error al procesar el pago.");
+      setProcessingOrder(false);
+    }
+  }, [searchParams, processingOrder, clearCart, setSearchParams]);
+
+  const handleCloseSuccessModal = () => {
     setShowSuccessModal(false);
-    // Redirect to profile with query param to open the specific order
     navigate(`/perfil?openOrder=${createdOrderNumber}`);
+  };
+
+  const handleCloseErrorModal = () => {
+    setShowErrorModal(false);
   };
 
   return {
     showSuccessModal,
+    showErrorModal,
     processingOrder,
     createdOrderNumber,
-    handleCloseModal,
+    errorMessage,
+    handleCloseSuccessModal,
+    handleCloseErrorModal,
   };
 };

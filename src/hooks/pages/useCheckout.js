@@ -453,38 +453,56 @@ export function useCheckout() {
         throw new Error(`Validación fallida: ${validation.errors.join(", ")}`);
       }
 
-      // NO CREAMOS LA ORDEN AÚN (Para evitar documentos basura si no pagan)
-      // Guardamos la intención de compra en localStorage
-      // Step 1: Save order intent to localStorage
-      // Generamos un ID temporal solo para referencia de MP
-      const tempOrderId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-      // Add the temp ID to the order data for reference
-      const orderPayload = {
-        ...orderData,
-        id: tempOrderId,
-        status: "confirmed", // Preparamos el estado para cuando se confirme
-        tempId: tempOrderId,
-      };
-
-      // Save to localStorage so Home.jsx can retrieve it on return
-      localStorage.setItem("pendingOrderPayload", JSON.stringify(orderPayload));
-
-      // Step 2: Redirect to Mercado Pago for payment
+      // Step 1: Create order in Firebase with "pending" status BEFORE redirecting to MP
+      // This ensures the order exists even if MP doesn't send webhook
       try {
-        // Pasamos el objeto orderPayload con el ID temporal
-        // El backend usará este ID como external_reference
-        const mpPaymentUrl = await redirectToMercadoPago(orderPayload, token);
+        const createdOrderData = await createOrderViaCloudFunction(
+          orderData,
+          token,
+        );
 
-        // Redirect to Mercado Pago
-        window.location.href = mpPaymentUrl;
-      } catch (mpError) {
-        // If MP redirect fails, show error modal and keep user in checkout
-        const errorMessage =
-          mpError.message || "Error al redirigir a Mercado Pago";
-        setPaymentError(errorMessage);
-        setShowPaymentErrorModal(true);
-        setLoadingOrder(false);
+        // console.log(
+        //   "[Checkout] ✓ Order created in pending status:",
+        //   createdOrderData.id,
+        // );
+
+        // Save created order to state for later reference
+        setCreatedOrder(createdOrderData);
+
+        // Also save to localStorage as backup
+        localStorage.setItem(
+          "pendingOrderData",
+          JSON.stringify(createdOrderData),
+        );
+        localStorage.setItem("pendingOrderId", createdOrderData.id);
+
+        // Step 2: Redirect to Mercado Pago for payment
+        // Pass the order data WITH the actual Firebase ID
+        try {
+          const orderDataWithId = {
+            ...orderData,
+            id: createdOrderData.id, // Use the actual Firebase ID
+          };
+
+          const mpPaymentUrl = await redirectToMercadoPago(
+            orderDataWithId,
+            token,
+          );
+
+          // Redirect to Mercado Pago
+          window.location.href = mpPaymentUrl;
+        } catch (mpError) {
+          // If MP redirect fails, show error modal and keep user in checkout
+          const errorMessage =
+            mpError.message || "Error al redirigir a Mercado Pago";
+          setPaymentError(errorMessage);
+          setShowPaymentErrorModal(true);
+          setLoadingOrder(false);
+        }
+      } catch (createErr) {
+        throw new Error(
+          `Error al crear el pedido: ${createErr.message || "Error desconocido"}`,
+        );
       }
     } catch (err) {
       const errorMessage = err.message || "Error al procesar el pedido";
@@ -505,16 +523,21 @@ export function useCheckout() {
       notifyCheckout.orderConfirmation();
     }
 
-    // Clear cart
+    // Clear cart immediately
     clearCart();
 
     // Clear localStorage after confirming
     localStorage.removeItem("pendingOrderId");
     localStorage.removeItem("pendingOrderData");
 
-    // Close modal and redirect
+    // Close modal
     setShowOrderConfirmModal(false);
+
+    // Reset state
     setCreatedOrder(null);
+    setPollingActive(false);
+
+    // Redirect to home
     navigate("/");
   };
 

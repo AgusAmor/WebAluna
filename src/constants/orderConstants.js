@@ -5,6 +5,7 @@
 
 // Order Status
 export const ORDER_STATUS = {
+  PENDING: "pending",
   CONFIRMED: "confirmed",
   PRINTING: "printing",
   DISPATCHED: "dispatched",

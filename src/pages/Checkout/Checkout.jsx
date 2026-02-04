@@ -498,22 +498,7 @@ const Checkout = () => {
         isLoading={loading}
       />
 
-      {/* Order Confirmation Modal - Now handled in Home.jsx
-      <SingleButtonConfirmationModal
-        isOpen={showOrderConfirmModal}
-        title="Gracias por elegirnos para transformar tu espacio."
-        message="Tu pedido ha sido realizado exitosamente"
-        description={
-          createdOrder
-            ? `Número de orden: ${createdOrder.orderNumber}`
-            : "Procesando orden..."
-        }
-        onConfirm={handleOrderConfirmation}
-        confirmText="Ir al Inicio"
-        icon={<FaCheckCircle />}
-        isLoading={false}
-      />
-      */}
+      {/* Order Confirmation Modal - Now handled in Home.jsx */}
 
       {/* Payment Error Modal */}
       <SingleButtonConfirmationModal

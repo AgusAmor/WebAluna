@@ -52,15 +52,15 @@ exports.createOrder = async (req, res) => {
       orderNumber: body.orderNumber,
       userId: body.userId,
       customerInfo: body.customerInfo,
-      status: body.status || "pending",
+      status: "pending",
       items: body.items,
       summary: body.summary,
       delivery: body.delivery,
-      statusHistory: body.statusHistory || [
+      statusHistory: [
         {
           status: "pending",
           timestamp: admin.firestore.Timestamp.now(),
-          note: "Pedido creado",
+          note: "Pedido creado, esperando confirmación de pago",
           updatedBy: "system",
         },
       ],
