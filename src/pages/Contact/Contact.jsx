@@ -5,6 +5,7 @@ import { ImWhatsapp } from "react-icons/im";
 import { FaInstagram, FaTiktok } from "react-icons/fa";
 import { Hero } from "../../components/common";
 import { showCustomToast } from "../../services/ui/toastService";
+import { sendContactMessage } from "../../services/contactService";
 import {
   sanitizeInput,
   isValidContactPhone,
@@ -22,10 +23,9 @@ const Contact = () => {
 
   const onSubmit = async (data) => {
     try {
-      // Simulation of sending data
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await sendContactMessage(data);
 
-      console.log("Form data:", data);
+      console.log("Form data sent:", data);
       showCustomToast.success(
         "Mensaje enviado con éxito. Te responderemos a la brevedad.",
       );

@@ -36,6 +36,8 @@ const {
   getMPPaymentStatus,
 } = require("./mercadopago.js");
 
+const { sendContactMessage } = require("./utils/contactHandler.js");
+
 const REGION = "southamerica-east1";
 
 /**
@@ -135,3 +137,9 @@ exports.onOrderStatusChanged = onOrderStatusChanged;
 exports.createMPPreference = createCloudFunction(createMPPreference);
 exports.getMPPaymentStatus = createCloudFunction(getMPPaymentStatus);
 exports.mercadopagoWebhook = onRequest({ region: REGION }, mercadopagoWebhook);
+
+// ============================================
+// CONTACT FUNCTIONS
+// ============================================
+
+exports.sendContactMessage = createCloudFunction(sendContactMessage);

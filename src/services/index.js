@@ -45,5 +45,8 @@ export * from "./products/productsService.js";
 export * from "./ui/headerService.js";
 export * from "./ui/homeService.js";
 
+// ===== CONTACT SERVICES =====
+export * from "./contactService.js";
+
 // ===== USER SERVICES =====
 export * from "./users/index.js";

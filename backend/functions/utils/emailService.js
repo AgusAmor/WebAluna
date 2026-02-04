@@ -506,6 +506,49 @@ exports.sendAdminCancellationNotification = async (
   }
 };
 
+/**
+ * Sends a contact form email
+ * @param {Object} data - { name, email, phone, message, subject }
+ * @returns {Promise<Object>} Email send result
+ */
+exports.sendContactEmail = async (data) => {
+  const { name, email, phone, message, subject } = data;
+  try {
+    const transporter = createTransporter();
+
+    const mailOptions = {
+      from: `${name} | ${email} <${emailUser.value()}>`,
+      to: "aluna.3d.design@gmail.com",
+      replyTo: email,
+      subject: subject
+        ? `Contacto Web: ${subject}`
+        : `Nuevo mensaje de contacto Web: ${name}`,
+      html: `
+            <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                <h2 style="color: #264e60;">Nuevo mensaje de contacto</h2>
+                <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px;">
+                    <p><strong>De:</strong> ${name}</p>
+                    <p><strong>Email:</strong> ${email}</p>
+                    <p><strong>Teléfono:</strong> ${phone || "No indicado"}</p>
+                    ${subject ? `<p><strong>Asunto:</strong> ${subject}</p>` : ""}
+                </div>
+                <div style="margin-top: 20px;">
+                    <h3 style="color: #264e60;">Mensaje:</h3>
+                    <p style="white-space: pre-line; background-color: #fff; padding: 15px; border: 1px solid #eee; border-radius: 5px;">${message}</p>
+                </div>
+            </div>
+        `,
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+    console.log("Contact email sent:", result.messageId);
+    return { success: true, messageId: result.messageId };
+  } catch (error) {
+    console.error("Error sending contact email:", error);
+    return { success: false, error: error.message };
+  }
+};
+
 // Export constants
 exports.ORDER_STATUS_MESSAGES = ORDER_STATUS_MESSAGES;
 
