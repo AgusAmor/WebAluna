@@ -1,6 +1,7 @@
 import React from "react";
 import { ImSpinner2 } from "react-icons/im";
 import { Hero, ConfirmationModal } from "../../../components/common";
+import Pagination from "../../../components/common/Pagination";
 import { formatDateTime } from "../../../utils/dateFormatter";
 import { useAuth } from "../../../context/AuthContext";
 import {
@@ -18,6 +19,7 @@ import OrderDetailsModal from "./OrderDetailsModal";
 import OrdersTable from "./OrdersTable";
 import useOrderManagement from "../../../hooks/admin/useOrderManagement";
 import useOrderFiltering from "../../../hooks/admin/useOrderFiltering";
+import usePagination from "../../../hooks/admin/usePagination";
 
 /**
  * OrderManagement Component
@@ -54,8 +56,7 @@ const OrderManagement = () => {
   } = useOrderManagement(user);
 
   // Filtering hook
-  const { getFilteredOrders, getOrderDate, getLocalDateString } =
-    useOrderFiltering();
+  const { getFilteredOrders } = useOrderFiltering();
 
   // Initialize: Load orders from backend
   React.useEffect(() => {
@@ -182,6 +183,19 @@ const OrderManagement = () => {
     filterDateTo,
   );
 
+  // Paginación
+  const {
+    paginatedItems: paginatedOrders,
+    currentPage,
+    setCurrentPage,
+    totalItems: totalOrders,
+  } = usePagination(filteredOrders, 10, [
+    filterUser,
+    filterStatus,
+    filterDateFrom,
+    filterDateTo,
+  ]);
+
   return (
     <div className="min-h-screen bg-gray-3 px-4 py-2 pb-20">
       <Hero
@@ -228,15 +242,23 @@ const OrderManagement = () => {
             </p>
           </div>
         ) : (
-          <OrdersTable
-            filteredOrders={filteredOrders}
-            updatingId={updatingId}
-            isCancellingOrder={isCancellingOrder}
-            orderToCancel={orderToCancel}
-            onViewOrder={handleViewOrder}
-            onUpdateStatus={handleUpdateStatus}
-            onDeleteOrder={handleCancelOrder}
-          />
+          <div className="bg-white rounded-xl shadow-md mt-2 overflow-x-auto">
+            <OrdersTable
+              filteredOrders={paginatedOrders}
+              updatingId={updatingId}
+              isCancellingOrder={isCancellingOrder}
+              orderToCancel={orderToCancel}
+              onViewOrder={handleViewOrder}
+              onUpdateStatus={handleUpdateStatus}
+              onDeleteOrder={handleCancelOrder}
+            />
+            <Pagination
+              totalItems={totalOrders}
+              itemsPerPage={10}
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+            />
+          </div>
         )}
 
         {/* Order Details Modal */}

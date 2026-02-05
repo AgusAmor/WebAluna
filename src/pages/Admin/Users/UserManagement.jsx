@@ -1,10 +1,12 @@
 import React from "react";
 import { Hero, ConfirmationModal } from "../../../components/common";
+import Pagination from "../../../components/common/Pagination";
 import UserModal from "./UserModal";
 import UserFilters from "./UserFilters";
 import UsersTable from "./UsersTable";
 import UserForm from "./UserForm";
 import { useUserManagement } from "../../../hooks";
+import usePagination from "../../../hooks/admin/usePagination";
 
 /**
  * UserManagement Component
@@ -37,6 +39,39 @@ const UserManagement = () => {
   const [filterDateFrom, setFilterDateFrom] = React.useState("");
   const [filterDateTo, setFilterDateTo] = React.useState("");
 
+  // Filter users based on filters
+  const filteredUsers = React.useMemo(() => {
+    return users.filter((user) => {
+      const matchesName =
+        !filterName ||
+        user.displayName?.toLowerCase().includes(filterName.toLowerCase()) ||
+        user.email?.toLowerCase().includes(filterName.toLowerCase());
+
+      const matchesStatus = !filterStatus || user.status === filterStatus;
+
+      const userDate = user.createdAt ? new Date(user.createdAt) : new Date();
+      const matchesDateFrom =
+        !filterDateFrom || userDate >= new Date(filterDateFrom);
+
+      const matchesDateTo = !filterDateTo || userDate <= new Date(filterDateTo);
+
+      return matchesName && matchesStatus && matchesDateFrom && matchesDateTo;
+    });
+  }, [users, filterName, filterStatus, filterDateFrom, filterDateTo]);
+
+  // Paginación
+  const {
+    paginatedItems: paginatedUsers,
+    currentPage,
+    setCurrentPage,
+    totalItems: totalUsers,
+  } = usePagination(filteredUsers, 10, [
+    filterName,
+    filterStatus,
+    filterDateFrom,
+    filterDateTo,
+  ]);
+
   return (
     <div className="min-h-screen bg-gray-3 px-4 py-2 pb-20">
       <Hero
@@ -61,7 +96,9 @@ const UserManagement = () => {
         <ConfirmationModal
           isOpen={showDeleteModal}
           title="Eliminar usuario"
-          message={`¿Estás seguro que deseas eliminar al usuario ${userToDelete?.displayName || userToDelete?.email || "seleccionado"}?`}
+          message={`¿Estás seguro que deseas eliminar al usuario ${
+            userToDelete?.displayName || userToDelete?.email || "seleccionado"
+          }?`}
           description="Esta acción eliminará permanentemente la cuenta del usuario y sus datos asociados. No se puede deshacer."
           onConfirm={confirmDeleteUser}
           onCancel={cancelDeleteUser}
@@ -93,7 +130,7 @@ const UserManagement = () => {
         {/* Users Table */}
         <div className="bg-white rounded-xl shadow-md mt-2 overflow-x-auto">
           <UsersTable
-            users={users}
+            users={paginatedUsers}
             currentUser={currentUser}
             loading={loading}
             error={error}
@@ -104,6 +141,12 @@ const UserManagement = () => {
             filterDateTo={filterDateTo}
             onEdit={handleEditUser}
             onDelete={handleDeleteUser}
+          />
+          <Pagination
+            totalItems={totalUsers}
+            itemsPerPage={10}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
           />
         </div>
       </div>

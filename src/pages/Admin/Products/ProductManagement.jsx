@@ -1,9 +1,11 @@
 import React from "react";
 import { MdAdd } from "react-icons/md";
 import { Hero, ConfirmationModal } from "../../../components/common";
+import Pagination from "../../../components/common/Pagination";
 import ProductModal from "./ProductModal";
 import ProductsTable from "./ProductsTable";
 import { useProductManagement } from "../../../hooks";
+import usePagination from "../../../hooks/admin/usePagination";
 
 /**
  * ProductManagement Component
@@ -31,6 +33,14 @@ const ProductManagement = () => {
     confirmDeleteProduct,
     cancelDeleteProduct,
   } = useProductManagement();
+
+  // Paginación
+  const {
+    paginatedItems: paginatedProducts,
+    currentPage,
+    setCurrentPage,
+    totalItems: totalProducts,
+  } = usePagination(products, 10, [products.length]);
 
   return (
     <div className="min-h-screen bg-gray-3 px-4 py-2 pb-20">
@@ -64,12 +74,18 @@ const ProductManagement = () => {
         {/* Products Table */}
         <div className="bg-white rounded-xl shadow-md mt-2 overflow-x-auto">
           <ProductsTable
-            products={products}
+            products={paginatedProducts}
             loading={loading}
             error={error}
             deletingId={deletingId}
             onEdit={handleEditProduct}
             onDelete={handleDeleteProduct}
+          />
+          <Pagination
+            totalItems={totalProducts}
+            itemsPerPage={10}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
           />
         </div>
 
