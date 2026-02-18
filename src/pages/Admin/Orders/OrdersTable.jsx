@@ -1,5 +1,9 @@
 import React from "react";
 import { ImSpinner2 } from "react-icons/im";
+import { FaEye } from "react-icons/fa";
+import { TbPlayerTrackNextFilled } from "react-icons/tb";
+import { TiCancel } from "react-icons/ti";
+
 import { formatDateTime } from "../../../utils/dateFormatter";
 import { ORDER_STATUS } from "../../../constants";
 import { OrderStatusBadge } from "../../../components/ecommerce";
@@ -88,17 +92,17 @@ const OrdersTable = ({
                   <OrderStatusBadge status={order.status} />
                 </td>
                 <td className="py-2 px-2 text-center">
-                  <div className="flex flex-col items-center gap-2">
+                  <div className="flex flex-row items-center gap-2 justify-center">
                     {/* View button */}
                     <button
-                      className="bg-blue-2 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-gold transition-colors w-24"
+                      className="bg-blue-2 text-white p-2 rounded-lg font-bold transition-colors flex items-center justify-center gap-1.5 hover:bg-gold cursor-pointer"
                       onClick={() => onViewOrder(order)}
                     >
-                      Ver
+                      <FaEye className="w-4 h-4" />
                     </button>
                     {/* Update Status button */}
                     <button
-                      className={`text-white px-3 py-1 rounded-lg text-xs font-bold transition-colors w-24 flex items-center justify-center ${
+                      className={`text-white p-2 rounded-lg font-bold transition-colors flex items-center justify-center gap-1.5 ${
                         updatingId === order.id
                           ? "bg-gray-400 cursor-not-allowed opacity-60"
                           : order.status === ORDER_STATUS.DELIVERED ||
@@ -120,12 +124,12 @@ const OrdersTable = ({
                           <ImSpinner2 className="animate-spin h-4 w-4" />
                         </span>
                       ) : (
-                        "Avanzar"
+                        <TbPlayerTrackNextFilled className="h-4 w-4" />
                       )}
                     </button>
                     {/* Cancel button */}
                     <button
-                      className={`text-white px-3 py-1 rounded-lg text-xs font-bold transition-colors w-24 flex items-center justify-center ${
+                      className={`text-white p-1.5 rounded-lg font-bold transition-colors flex items-center justify-center gap-1.5  ${
                         isCancellingOrder && orderToCancel?.id === order.id
                           ? "bg-red-500 opacity-60 cursor-not-allowed"
                           : [
@@ -153,7 +157,7 @@ const OrdersTable = ({
                           <ImSpinner2 className="animate-spin h-5 w-5 mx-auto text-white" />
                         </span>
                       ) : (
-                        "Cancelar"
+                        <TiCancel className="h-5 w-5" />
                       )}
                     </button>
                   </div>

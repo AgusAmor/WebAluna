@@ -122,7 +122,7 @@ export const saveProfileChanges = async ({
     phone: combinePhoneNumber(
       editFormData.phoneCountry,
       editFormData.phoneLocal,
-    ),
+    ) || "", // Send empty string if phone is empty, not null
     addresses: cleanAddresses,
   };
 

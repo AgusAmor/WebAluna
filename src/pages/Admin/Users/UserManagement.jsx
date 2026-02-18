@@ -41,22 +41,25 @@ const UserManagement = () => {
 
   // Filter users based on filters
   const filteredUsers = React.useMemo(() => {
-    return users.filter((user) => {
-      const matchesName =
-        !filterName ||
-        user.displayName?.toLowerCase().includes(filterName.toLowerCase()) ||
-        user.email?.toLowerCase().includes(filterName.toLowerCase());
+    return users
+      .filter((user) => !user.admin) // Exclude admin users
+      .filter((user) => {
+        const matchesName =
+          !filterName ||
+          user.displayName?.toLowerCase().includes(filterName.toLowerCase()) ||
+          user.email?.toLowerCase().includes(filterName.toLowerCase());
 
-      const matchesStatus = !filterStatus || user.status === filterStatus;
+        const matchesStatus = !filterStatus || user.status === filterStatus;
 
-      const userDate = user.createdAt ? new Date(user.createdAt) : new Date();
-      const matchesDateFrom =
-        !filterDateFrom || userDate >= new Date(filterDateFrom);
+        const userDate = user.createdAt ? new Date(user.createdAt) : new Date();
+        const matchesDateFrom =
+          !filterDateFrom || userDate >= new Date(filterDateFrom);
 
-      const matchesDateTo = !filterDateTo || userDate <= new Date(filterDateTo);
+        const matchesDateTo =
+          !filterDateTo || userDate <= new Date(filterDateTo);
 
-      return matchesName && matchesStatus && matchesDateFrom && matchesDateTo;
-    });
+        return matchesName && matchesStatus && matchesDateFrom && matchesDateTo;
+      });
   }, [users, filterName, filterStatus, filterDateFrom, filterDateTo]);
 
   // Paginación
@@ -92,18 +95,34 @@ const UserManagement = () => {
           setFilterDateTo={setFilterDateTo}
         />
 
-        {/* Delete Confirmation Modal */}
+        {/* Account Status Modal */}
         <ConfirmationModal
           isOpen={showDeleteModal}
-          title="Eliminar usuario"
-          message={`¿Estás seguro que deseas eliminar al usuario ${
+          title={
+            userToDelete?.accountStatus === "suspended"
+              ? "Activar usuario"
+              : "Suspender usuario"
+          }
+          message={`¿Estás seguro que deseas ${
+            userToDelete?.accountStatus === "suspended"
+              ? "activar"
+              : "suspender"
+          } la cuenta del usuario ${
             userToDelete?.displayName || userToDelete?.email || "seleccionado"
           }?`}
-          description="Esta acción eliminará permanentemente la cuenta del usuario y sus datos asociados. No se puede deshacer."
+          description={
+            userToDelete?.accountStatus === "suspended"
+              ? "El usuario podrá acceder nuevamente a su cuenta."
+              : "El usuario no podrá acceder a su cuenta. Podrás reactivarla más tarde."
+          }
           onConfirm={confirmDeleteUser}
           onCancel={cancelDeleteUser}
           isLoading={!!deletingId}
-          confirmText="Eliminar"
+          confirmText={
+            userToDelete?.accountStatus === "suspended"
+              ? "Activar"
+              : "Suspender"
+          }
           cancelText="Cancelar"
           variant="danger"
         />

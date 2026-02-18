@@ -3,6 +3,7 @@ import { FiUser } from "react-icons/fi";
 import { HiMenu } from "react-icons/hi";
 import { MdLogin } from "react-icons/md";
 import logo from "../../assets/logos/logotipo.png";
+import isotipo from "../../assets/logos/isotipo.png";
 import {
   LoginModal,
   UserMenuDropdown,
@@ -33,7 +34,7 @@ const Header = () => {
     closeUserMenu,
   } = useHeader();
 
-  const logoSizeMobile = getLogoSize(false, true);
+  const logoSizeMobile = getLogoSize(false, true) - 20;
 
   // Calculate intermediate logo size based on scroll progress for smooth transition
   // Smooth transition from 80px to 48px as scrollProgress goes from 0 to 1
@@ -47,7 +48,7 @@ const Header = () => {
           <div className="flex lg:hidden items-center justify-between py-2 sm:py-3 md:py-4">
             <Link to="/" className="shrink-0">
               <img
-                src={logo}
+                src={isotipo}
                 alt="LogoAluna"
                 style={{ height: `${Math.max(logoSizeMobile, 40)}px` }}
               />

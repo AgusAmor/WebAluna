@@ -272,7 +272,10 @@ exports.updateUserDoc = async (req, res) => {
       const authUpdate = {};
       if (displayName !== undefined) authUpdate.displayName = displayName;
       if (email !== undefined) authUpdate.email = email;
-      if (phone !== undefined) authUpdate.phoneNumber = phone;
+      // Only update phoneNumber if phone is provided AND not empty
+      if (phone !== undefined && phone && phone.trim() !== "") {
+        authUpdate.phoneNumber = phone;
+      }
 
       if (Object.keys(authUpdate).length > 0) {
         await admin.auth().updateUser(id, authUpdate);

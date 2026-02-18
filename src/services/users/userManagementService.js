@@ -74,6 +74,32 @@ export async function deleteUserAccount(userId, authUser) {
 }
 
 /**
+ * Suspends a user account by updating their status
+ * @param {string} userId - User ID to suspend
+ * @param {Object} authUser - Firebase Auth user object
+ * @returns {Promise<Array>} - Updated list of users
+ */
+export async function suspendUserAccount(userId, authUser) {
+  const token = await getAuthToken(authUser);
+  await updateUser(userId, { accountStatus: "suspended" }, token);
+  const updatedUsers = await loadUsers();
+  return updatedUsers;
+}
+
+/**
+ * Activates a suspended user account by updating their status
+ * @param {string} userId - User ID to activate
+ * @param {Object} authUser - Firebase Auth user object
+ * @returns {Promise<Array>} - Updated list of users
+ */
+export async function activateUserAccount(userId, authUser) {
+  const token = await getAuthToken(authUser);
+  await updateUser(userId, { accountStatus: "active" }, token);
+  const updatedUsers = await loadUsers();
+  return updatedUsers;
+}
+
+/**
  * Formats user's default address for display
  * @param {Array} addresses - Array of user addresses
  * @returns {string} - Formatted address string

@@ -1,5 +1,7 @@
 import React from "react";
 import { ImSpinner2 } from "react-icons/im";
+import { FaTrash } from "react-icons/fa";
+import { MdEdit } from "react-icons/md";
 import OptimizedImage from "../../../components/ui/OptimizedImage";
 
 /**
@@ -95,16 +97,16 @@ const ProductsTable = ({
               ${product.pricing?.small?.price ?? "-"}
             </td>
             <td className="py-2 px-2 text-center">
-              <div className="flex flex-col items-center gap-2">
+              <div className="flex flex-row items-center gap-2 justify-center">
                 <button
-                  className="bg-blue-2 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-gold transition-colors w-24"
+                  className="bg-blue-2 text-white p-2 rounded-lg text-xs font-bold hover:bg-gold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   type="button"
                   onClick={() => onEdit(product)}
                 >
-                  Editar
+                  <MdEdit className="h-3.5 w-3.5" />
                 </button>
                 <button
-                  className={`bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-700 transition-colors w-24 flex items-center justify-center ${
+                  className={`bg-red-500 text-white p-2 rounded-lg text-xs font-bold hover:bg-red-700 transition-colors flex items-center justify-center ${
                     deletingId === product.id
                       ? "opacity-60 cursor-not-allowed"
                       : ""
@@ -117,7 +119,7 @@ const ProductsTable = ({
                       <ImSpinner2 className="animate-spin h-5 w-5 mx-auto text-white" />
                     </span>
                   ) : (
-                    "Eliminar"
+                    <FaTrash className="h-3.5 w-3.5" />
                   )}
                 </button>
               </div>

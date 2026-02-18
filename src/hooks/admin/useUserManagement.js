@@ -10,6 +10,8 @@ import {
   loadUsers,
   saveUserChanges,
   deleteUserAccount,
+  suspendUserAccount,
+  activateUserAccount,
 } from "../../services/users/userManagementService";
 import { normalizeUserData } from "../../services/users/userFormService";
 
@@ -99,7 +101,7 @@ export function useUserManagement() {
   };
 
   /**
-   * Confirms and executes user deletion
+   * Confirms and executes user account suspension or activation
    */
   const confirmDeleteUser = async () => {
     if (!userToDelete || deletingId || userToDelete.admin) return;
@@ -108,15 +110,20 @@ export function useUserManagement() {
     setError(null);
 
     try {
-      await deleteUserAccount(userToDelete.id, user);
-      setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
+      let updatedUsers;
+      if (userToDelete.accountStatus === "suspended") {
+        // Activate suspended user
+        updatedUsers = await activateUserAccount(userToDelete.id, user);
+      } else {
+        // Suspend active user
+        updatedUsers = await suspendUserAccount(userToDelete.id, user);
+      }
+      setUsers(updatedUsers);
       setShowDeleteModal(false);
       setUserToDelete(null);
     } catch (err) {
-      setError(err.message || "Error deleting user");
-      // Keep modal open on error or close it? usually keep it or show error
-      // Ideally we might want to show error in the modal or toast
-      setShowDeleteModal(false); // Closing for now as error state is global
+      setError(err.message || "Error updating user status");
+      setShowDeleteModal(false);
     } finally {
       setDeletingId(null);
     }

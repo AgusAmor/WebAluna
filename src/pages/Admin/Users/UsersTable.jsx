@@ -1,5 +1,6 @@
 import React from "react";
 import { ImSpinner2 } from "react-icons/im";
+import { MdLock, MdLockOpen, MdModeEditOutline } from "react-icons/md";
 import { formatDateTime } from "../../../utils/dateFormatter";
 import { formatDefaultAddress } from "../../../services/users/userManagementService";
 
@@ -157,36 +158,42 @@ const UsersTable = ({
                 </td>
                 <td className="py-2 px-2 text-center">{createdAt}</td>
                 <td className="py-2 px-2 text-center">
-                  <div className="flex flex-col items-center gap-2">
+                  <div className="flex flex-row items-center gap-2 justify-center">
                     <button
-                      className="bg-blue-2 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-gold transition-colors w-24"
+                      className="bg-blue-2 text-white p-1.5 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 hover:bg-gold cursor-pointer "
                       type="button"
                       onClick={() => onEdit(userItem)}
                     >
-                      Editar
+                      <MdModeEditOutline className="h-4 w-4" />
                     </button>
                     <button
-                      className={`bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-700 transition-colors w-24 flex items-center justify-center ${
-                        deletingId === userItem.id || userItem.admin
+                      className={`text-white p-1.5 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
+                        userItem.accountStatus === "suspended"
+                          ? "bg-green-500 hover:bg-green-700"
+                          : "bg-red-500 hover:bg-red-700"
+                      } ${
+                        deletingId === userItem.id
                           ? "opacity-60 cursor-not-allowed"
                           : ""
                       }`}
-                      disabled={deletingId === userItem.id || userItem.admin}
+                      disabled={deletingId === userItem.id}
                       title={
-                        userItem.admin
-                          ? "No se puede eliminar un usuario admin"
-                          : "Eliminar usuario"
+                        userItem.accountStatus === "suspended"
+                          ? "Activar cuenta"
+                          : "Suspender cuenta"
                       }
                       onClick={() => onDelete(userItem)}
                     >
                       {deletingId === userItem.id ? (
-                        <span className="flex items-center justify-center w-full h-full">
-                          <ImSpinner2 className="animate-spin h-5 w-5 mx-auto text-white" />
-                        </span>
-                      ) : userItem.admin ? (
-                        "Admin"
+                        <ImSpinner2 className="animate-spin h-4 w-4 text-white" />
+                      ) : userItem.accountStatus === "suspended" ? (
+                        <>
+                          <MdLockOpen className="h-4 w-4" />
+                        </>
                       ) : (
-                        "Eliminar"
+                        <>
+                          <MdLock className="h-4 w-4" />
+                        </>
                       )}
                     </button>
                   </div>

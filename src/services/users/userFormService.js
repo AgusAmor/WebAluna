@@ -110,8 +110,8 @@ export function prepareUserFormData(formData) {
     formData.phoneCountry,
     formData.phoneLocal,
   );
-  // If phone is empty string, send null to allow unsetting/ignoring in backend
-  const phone = phoneRaw || null;
+  // If phone is empty string, keep it as empty string to allow clearing the phone
+  const phone = phoneRaw || "";
 
   // Clean addresses by removing the temporary 'id' field and combining phone fields
   const cleanAddresses = formData.addresses.map(
@@ -151,7 +151,7 @@ export function prepareUserFormData(formData) {
   return {
     displayName: formData.displayName,
     email: formData.email,
-    phone, // Will be null if empty string
+    phone, // Will be empty string if not provided
     addresses: cleanAddresses,
     accountStatus: formData.accountStatus,
   };
