@@ -14,6 +14,7 @@ import { useModalScroll } from "../../hooks/ui";
  * @param {Function} onClose - Callback when modal is closed
  * @param {Function} onCancel - Callback when user wants to cancel the order
  */
+
 const OrderDetailsModal = ({ isOpen, order, onClose, onCancel }) => {
   useModalScroll(isOpen);
 
@@ -22,6 +23,20 @@ const OrderDetailsModal = ({ isOpen, order, onClose, onCancel }) => {
   const canCancel =
     order.status === ORDER_STATUS.PENDING ||
     order.status === ORDER_STATUS.CONFIRMED;
+
+  // Inline price formatter to avoid any caching issues
+  const getPriceString = (val) => {
+    const num =
+      val === null || val === undefined
+        ? 0
+        : typeof val === "number"
+          ? val
+          : parseFloat(val) || 0;
+    const rounded = Math.round(num * 100) / 100;
+    const str = rounded.toString();
+    const [whole, decimal] = str.split(".");
+    return `${whole}.${(decimal || "00").padEnd(2, "0").substring(0, 2)}`;
+  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden font-family-sora">
@@ -94,8 +109,22 @@ const OrderDetailsModal = ({ isOpen, order, onClose, onCancel }) => {
                 {order.items && order.items.length > 0 ? (
                   <div className="space-y-3">
                     {order.items.map((item, index) => {
-                      const unitPrice = item.unitPrice || 0;
-                      const quantity = item.quantity || 1;
+                      // Convert to numbers safely, handling strings and nulls
+                      const rawPrice =
+                        item.unitPrice === null || item.unitPrice === undefined
+                          ? 0
+                          : typeof item.unitPrice === "number"
+                            ? item.unitPrice
+                            : parseFloat(item.unitPrice) || 0;
+                      const rawQty =
+                        item.quantity === null || item.quantity === undefined
+                          ? 1
+                          : typeof item.quantity === "number"
+                            ? item.quantity
+                            : parseFloat(item.quantity) || 1;
+
+                      const unitPrice = rawPrice;
+                      const quantity = rawQty;
                       const subtotal = unitPrice * quantity;
 
                       return (
@@ -111,11 +140,11 @@ const OrderDetailsModal = ({ isOpen, order, onClose, onCancel }) => {
                               Tamaño: {item.size || "normal"}
                             </p>
                             <p className="text-xs text-blue-3 font-medium mt-1">
-                              ${unitPrice.toFixed(2)} x {quantity}
+                              ${getPriceString(unitPrice)} x {quantity}
                             </p>
                           </div>
                           <span className="font-bold text-gold text-sm sm:text-base shrink-0">
-                            ${subtotal.toFixed(2)}
+                            ${getPriceString(subtotal)}
                           </span>
                         </div>
                       );

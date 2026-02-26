@@ -181,8 +181,12 @@ const generateProductsHTML = (items) => {
   if (!items || items.length === 0) return "";
 
   return items
-    .map(
-      (product) => `
+    .map((product) => {
+      const rawPrice = product.price || product.unitPrice || 0;
+      const price =
+        typeof rawPrice === "number" ? rawPrice : parseFloat(rawPrice) || 0;
+
+      return `
       <div class="products-list">
         <table style="width: 100%; border-collapse: collapse;">
           <tr>
@@ -190,13 +194,13 @@ const generateProductsHTML = (items) => {
               <div class="product-name">${product.productName || product.name || "Producto"}${product.size ? " · " + product.size : ""} · x${product.quantity || 1}</div>
             </td>
             <td style="text-align: right; width: 15%; white-space: nowrap;">
-              <div class="product-price">$${(product.price || product.unitPrice || 0).toFixed(2)}</div>
+              <div class="product-price">$${price.toFixed(2)}</div>
             </td>
           </tr>
         </table>
       </div>
-    `,
-    )
+    `;
+    })
     .join("");
 };
 
