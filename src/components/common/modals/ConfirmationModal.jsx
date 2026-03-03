@@ -40,6 +40,8 @@ const ConfirmationModal = ({
         return "bg-red-500 hover:bg-red-600";
       case "warning":
         return "bg-yellow-500 hover:bg-yellow-600";
+      case "success":
+        return "bg-green-500 hover:bg-green-600";
       default:
         return "bg-blue-2 hover:bg-blue-1";
     }
@@ -129,7 +131,7 @@ ConfirmationModal.propTypes = {
   isLoading: PropTypes.bool,
   confirmText: PropTypes.string,
   cancelText: PropTypes.string,
-  variant: PropTypes.oneOf(["default", "danger", "warning"]),
+  variant: PropTypes.oneOf(["default", "danger", "warning", "success"]),
 };
 
 /**
@@ -164,6 +166,8 @@ export const SingleButtonConfirmationModal = ({
         return "bg-red-500 hover:bg-red-600";
       case "warning":
         return "bg-yellow-500 hover:bg-yellow-600";
+      case "success":
+        return "bg-green-500 hover:bg-green-600";
       default:
         return "bg-blue-2 hover:bg-blue-1";
     }
@@ -249,7 +253,7 @@ SingleButtonConfirmationModal.propTypes = {
   isLoading: PropTypes.bool,
   confirmText: PropTypes.string,
   icon: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
-  variant: PropTypes.oneOf(["default", "danger", "warning"]),
+  variant: PropTypes.oneOf(["default", "danger", "warning", "success"]),
 };
 
 export default ConfirmationModal;

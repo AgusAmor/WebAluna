@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { FaTrash, FaCheck } from "react-icons/fa";
-import { ImSpinner2 } from "react-icons/im";
-import { MdWarning } from "react-icons/md";
+import { AiOutlineLoading3Quarters, AiOutlineCheckCircle, AiOutlineCloseCircle } from "react-icons/ai";
 import { useAddressValidation } from "../../../hooks/forms/useAddressValidation";
 import { sanitizeInput } from "../../../services/validationService";
 
@@ -226,19 +225,19 @@ const AddressForm = ({ addr, idx, onChange, onRemove, canRemove }) => {
           <div className="mb-3 p-3 rounded-lg">
             {validating && (
               <div className="flex items-center gap-2 text-blue-2">
-                <ImSpinner2 className="animate-spin w-4 h-4" />
+                <AiOutlineLoading3Quarters className="animate-spin w-5 h-5 shrink-0" />
                 <span className="text-sm">Validando dirección...</span>
               </div>
             )}
             {validationErrors[fieldId] && !validating && (
-              <div className="flex items-center gap-2 text-red-500 bg-red-50">
-                <MdWarning className="w-4 h-4 shrink-0" />
+              <div className="flex items-center gap-2 text-red-500 bg-red-50 rounded-lg px-3 py-2">
+                <AiOutlineCloseCircle className="w-5 h-5 shrink-0" />
                 <span className="text-sm">{validationErrors[fieldId]}</span>
               </div>
             )}
             {validationSuccess[fieldId] && !validating && (
-              <div className="flex items-center gap-2 text-green-600 bg-green-50">
-                <FaCheck className="w-4 h-4 shrink-0" />
+              <div className="flex items-center gap-2 text-green-600 bg-green-50 rounded-lg px-3 py-2">
+                <AiOutlineCheckCircle className="w-5 h-5 shrink-0" />
                 <span className="text-sm">{validationSuccess[fieldId]}</span>
               </div>
             )}

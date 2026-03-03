@@ -53,13 +53,13 @@ const UserFilters = ({
         {/* Filter by Name */}
         <div className="flex flex-col">
           <label className="font-bold text-blue-1 font-family-sora text-xs uppercase tracking-wide mb-2">
-            Nombre
+            Buscar
           </label>
           <input
             type="text"
             value={filterName}
             onChange={(e) => setFilterName(e.target.value)}
-            placeholder="Buscar por nombre..."
+            placeholder="Buscar por texto"
             className="px-3 py-2.5 rounded-lg border-2 border-gray-1 bg-white focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all font-family-sora text-sm"
           />
         </div>
@@ -76,7 +76,6 @@ const UserFilters = ({
           >
             <option value="">Todos</option>
             <option value="active">Activo</option>
-            <option value="inactive">Inactivo</option>
             <option value="suspended">Suspendido</option>
           </select>
         </div>

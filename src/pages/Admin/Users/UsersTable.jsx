@@ -1,6 +1,7 @@
 import React from "react";
 import { ImSpinner2 } from "react-icons/im";
 import { MdLock, MdLockOpen, MdModeEditOutline } from "react-icons/md";
+import { FaRegCheckCircle, FaRegTimesCircle } from "react-icons/fa";
 import { formatDateTime } from "../../../utils/dateFormatter";
 import { formatDefaultAddress } from "../../../services/users/userManagementService";
 
@@ -8,15 +9,11 @@ import { formatDefaultAddress } from "../../../services/users/userManagementServ
  * UsersTable Component
  * Displays users list in a table format with edit and delete actions
  *
- * @param {Array} users - List of users to display
+ * @param {Array} users - List of users to display (already filtered and paginated)
  * @param {Object} currentUser - Current authenticated user
  * @param {boolean} loading - Loading state
  * @param {string} error - Error message if any
  * @param {string} deletingId - ID of user being deleted
- * @param {string} filterName - Filter by name
- * @param {string} filterStatus - Filter by account status
- * @param {string} filterDateFrom - Filter from date
- * @param {string} filterDateTo - Filter to date
  * @param {Function} onEdit - Callback when edit button is clicked
  * @param {Function} onDelete - Callback when delete button is clicked
  */
@@ -26,10 +23,6 @@ const UsersTable = ({
   loading,
   error,
   deletingId,
-  filterName,
-  filterStatus,
-  filterDateFrom,
-  filterDateTo,
   onEdit,
   onDelete,
 }) => {
@@ -50,54 +43,10 @@ const UsersTable = ({
     );
   }
 
-  // Helper function to safely convert Firestore timestamp to ISO date string
-  const getDateString = (createdAt) => {
-    if (!createdAt) return null;
-
-    try {
-      // If it's a Firestore Timestamp object with toDate method
-      if (createdAt.toDate && typeof createdAt.toDate === "function") {
-        return createdAt.toDate().toISOString().split("T")[0];
-      }
-      // If it's already a date string or valid date
-      const date = new Date(createdAt);
-      if (!isNaN(date.getTime())) {
-        return date.toISOString().split("T")[0];
-      }
-    } catch (error) {
-      console.warn("Error converting date:", error);
-    }
-    return null;
-  };
-
-  // Apply filters to users
-  const filteredUsers = users
-    .filter((userItem) => !currentUser || userItem.id !== currentUser.uid)
-    .filter((userItem) => {
-      // Filter by name
-      if (filterName) {
-        const name = (userItem.displayName || "").toLowerCase();
-        if (!name.includes(filterName.toLowerCase())) return false;
-      }
-
-      // Filter by status
-      if (filterStatus) {
-        if (userItem.accountStatus !== filterStatus) return false;
-      }
-
-      // Filter by date range
-      if (filterDateFrom) {
-        const userDate = getDateString(userItem.createdAt);
-        if (!userDate || userDate < filterDateFrom) return false;
-      }
-
-      if (filterDateTo) {
-        const userDate = getDateString(userItem.createdAt);
-        if (!userDate || userDate > filterDateTo) return false;
-      }
-
-      return true;
-    });
+  // Exclude the currently logged-in admin from the list
+  const filteredUsers = users.filter(
+    (userItem) => !currentUser || userItem.id !== currentUser.uid
+  );
 
   return (
     <table className="min-w-full font-family-sora text-xs md:text-sm">
@@ -153,8 +102,14 @@ const UsersTable = ({
                 <td className="py-2 px-2 text-center">
                   {formatDefaultAddress(userItem.addresses)}
                 </td>
-                <td className="py-2 px-2 text-center">
-                  {userItem.accountStatus || "-"}
+                <td className="py-2 px-2">
+                  <div className="flex items-center justify-center">
+                    {userItem.accountStatus === "active" ? (
+                      <FaRegCheckCircle className="text-green-500" />
+                    ) : (
+                      <FaRegTimesCircle className="text-red-500" />
+                    )}
+                  </div>
                 </td>
                 <td className="py-2 px-2 text-center">{createdAt}</td>
                 <td className="py-2 px-2 text-center">

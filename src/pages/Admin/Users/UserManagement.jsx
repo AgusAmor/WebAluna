@@ -44,12 +44,21 @@ const UserManagement = () => {
     return users
       .filter((user) => !user.admin) // Exclude admin users
       .filter((user) => {
+        const q = filterName?.toLowerCase() || "";
         const matchesName =
-          !filterName ||
-          user.displayName?.toLowerCase().includes(filterName.toLowerCase()) ||
-          user.email?.toLowerCase().includes(filterName.toLowerCase());
+          !q ||
+          user.displayName?.toLowerCase().includes(q) ||
+          user.email?.toLowerCase().includes(q) ||
+          user.phone?.toLowerCase().includes(q) ||
+          (user.addresses || []).some(
+            (addr) =>
+              addr.street?.toLowerCase().includes(q) ||
+              addr.city?.toLowerCase().includes(q) ||
+              addr.region?.toLowerCase().includes(q) ||
+              addr.recipientName?.toLowerCase().includes(q)
+          );
 
-        const matchesStatus = !filterStatus || user.status === filterStatus;
+        const matchesStatus = !filterStatus || user.accountStatus === filterStatus;
 
         const userDate = user.createdAt ? new Date(user.createdAt) : new Date();
         const matchesDateFrom =
@@ -124,7 +133,7 @@ const UserManagement = () => {
               : "Suspender"
           }
           cancelText="Cancelar"
-          variant="danger"
+          variant={userToDelete?.accountStatus === "suspended" ? "success" : "danger"}
         />
 
         {/* User Modal */}
@@ -154,10 +163,6 @@ const UserManagement = () => {
             loading={loading}
             error={error}
             deletingId={deletingId}
-            filterName={filterName}
-            filterStatus={filterStatus}
-            filterDateFrom={filterDateFrom}
-            filterDateTo={filterDateTo}
             onEdit={handleEditUser}
             onDelete={handleDeleteUser}
           />
