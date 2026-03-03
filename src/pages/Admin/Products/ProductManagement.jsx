@@ -1,11 +1,16 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { MdAdd } from "react-icons/md";
 import { Hero, ConfirmationModal } from "../../../components/common";
 import Pagination from "../../../components/common/Pagination";
 import ProductModal from "./ProductModal";
+import ProductFilters from "./ProductFilters";
 import ProductsTable from "./ProductsTable";
 import { useProductManagement } from "../../../hooks";
 import usePagination from "../../../hooks/admin/usePagination";
+import {
+  extractFamilies,
+  filterAndSortProducts,
+} from "../../../services/products/productsService";
 
 /**
  * ProductManagement Component
@@ -34,13 +39,31 @@ const ProductManagement = () => {
     cancelDeleteProduct,
   } = useProductManagement();
 
+  // Filter states
+  const [filterName, setFilterName] = useState("");
+  const [filterFamily, setFilterFamily] = useState("all");
+  const [priceSort, setPriceSort] = useState("none");
+
+  // Compute families for the filter dropdown
+  const families = useMemo(() => extractFamilies(products), [products]);
+
+  // Apply text search, family filter and price sort
+  const filteredProducts = useMemo(() => {
+    let result = filterAndSortProducts(products, filterFamily, priceSort);
+    if (filterName.trim()) {
+      const q = filterName.trim().toLowerCase();
+      result = result.filter((p) => (p.name || "").toLowerCase().includes(q));
+    }
+    return result;
+  }, [products, filterName, filterFamily, priceSort]);
+
   // Paginación
   const {
     paginatedItems: paginatedProducts,
     currentPage,
     setCurrentPage,
     totalItems: totalProducts,
-  } = usePagination(products, 20, [products.length]);
+  } = usePagination(filteredProducts, 20, [filteredProducts.length]);
 
   return (
     <div className="min-h-screen bg-gray-3 px-4 py-2 pb-20">
@@ -58,6 +81,18 @@ const ProductManagement = () => {
             Agregar producto
           </button>
         </div>
+
+        {/* Filters */}
+        <ProductFilters
+          products={products}
+          families={families}
+          filterName={filterName}
+          setFilterName={setFilterName}
+          filterFamily={filterFamily}
+          setFilterFamily={setFilterFamily}
+          priceSort={priceSort}
+          setPriceSort={setPriceSort}
+        />
 
         {/* Product Modal */}
         <ProductModal

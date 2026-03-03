@@ -55,10 +55,11 @@ const UserManagement = () => {
               addr.street?.toLowerCase().includes(q) ||
               addr.city?.toLowerCase().includes(q) ||
               addr.region?.toLowerCase().includes(q) ||
-              addr.recipientName?.toLowerCase().includes(q)
+              addr.recipientName?.toLowerCase().includes(q),
           );
 
-        const matchesStatus = !filterStatus || user.accountStatus === filterStatus;
+        const matchesStatus =
+          !filterStatus || user.accountStatus === filterStatus;
 
         const userDate = user.createdAt ? new Date(user.createdAt) : new Date();
         const matchesDateFrom =
@@ -133,7 +134,9 @@ const UserManagement = () => {
               : "Suspender"
           }
           cancelText="Cancelar"
-          variant={userToDelete?.accountStatus === "suspended" ? "success" : "danger"}
+          variant={
+            userToDelete?.accountStatus === "suspended" ? "success" : "danger"
+          }
         />
 
         {/* User Modal */}

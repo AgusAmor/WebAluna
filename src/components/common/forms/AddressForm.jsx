@@ -1,6 +1,10 @@
 import React, { useEffect } from "react";
 import { FaTrash, FaCheck } from "react-icons/fa";
-import { AiOutlineLoading3Quarters, AiOutlineCheckCircle, AiOutlineCloseCircle } from "react-icons/ai";
+import {
+  AiOutlineLoading3Quarters,
+  AiOutlineCheckCircle,
+  AiOutlineCloseCircle,
+} from "react-icons/ai";
 import { useAddressValidation } from "../../../hooks/forms/useAddressValidation";
 import { sanitizeInput } from "../../../services/validationService";
 

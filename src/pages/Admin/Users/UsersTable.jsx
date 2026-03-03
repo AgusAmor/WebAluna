@@ -45,7 +45,7 @@ const UsersTable = ({
 
   // Exclude the currently logged-in admin from the list
   const filteredUsers = users.filter(
-    (userItem) => !currentUser || userItem.id !== currentUser.uid
+    (userItem) => !currentUser || userItem.id !== currentUser.uid,
   );
 
   return (
