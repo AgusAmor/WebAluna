@@ -47,16 +47,42 @@ const useOrderFiltering = () => {
     return `${year}-${month}-${day}`;
   }, []);
 
+  const FINISHED_STATUSES = ["delivered", "withdrawn", "cancelled"];
+
   // Filter function
   const getFilteredOrders = useCallback(
-    (orders, filterUser, filterStatus, filterDateFrom, filterDateTo) => {
+    (
+      orders,
+      filterUser,
+      filterStatus,
+      filterProduct,
+      filterDelivery,
+      hideFinished,
+    ) => {
       let filtered = orders.filter((order) => {
-        // Filter by user
-        if (
-          filterUser &&
-          !order.userName.toLowerCase().includes(filterUser.toLowerCase())
-        ) {
+        // Hide finished orders
+        if (hideFinished && FINISHED_STATUSES.includes(order.status)) {
           return false;
+        }
+
+        // Filter by text: name, email, address, or order code
+        if (filterUser) {
+          const q = filterUser.toLowerCase();
+          const matchesName = order.userName?.toLowerCase().includes(q);
+          const matchesEmail = order.userEmail?.toLowerCase().includes(q);
+          const matchesAddress = order.deliveryAddress
+            ?.toLowerCase()
+            .includes(q);
+          const matchesOrderNumber =
+            order.orderNumber?.toString().toLowerCase().includes(q) ||
+            order.id?.toLowerCase().includes(q);
+          if (
+            !matchesName &&
+            !matchesEmail &&
+            !matchesAddress &&
+            !matchesOrderNumber
+          )
+            return false;
         }
 
         // Filter by status
@@ -64,20 +90,17 @@ const useOrderFiltering = () => {
           return false;
         }
 
-        // Filter by date range
-        if (filterDateFrom || filterDateTo) {
-          const orderDate = getOrderDate(order.createdAt);
-          const orderDateString = getLocalDateString(orderDate);
+        // Filter by product name
+        if (filterProduct) {
+          const hasProduct = order.items?.some(
+            (item) => item.productName === filterProduct,
+          );
+          if (!hasProduct) return false;
+        }
 
-          // If filterDateFrom is set, compare date strings
-          if (filterDateFrom && orderDateString < filterDateFrom) {
-            return false;
-          }
-
-          // If filterDateTo is set, compare date strings
-          if (filterDateTo && orderDateString > filterDateTo) {
-            return false;
-          }
+        // Filter by delivery type
+        if (filterDelivery && order.deliveryType !== filterDelivery) {
+          return false;
         }
 
         return true;
@@ -92,7 +115,7 @@ const useOrderFiltering = () => {
 
       return filtered;
     },
-    [getOrderDate, getLocalDateString],
+    [getOrderDate, getLocalDateString, FINISHED_STATUSES],
   );
 
   return {

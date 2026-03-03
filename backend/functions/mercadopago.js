@@ -396,6 +396,18 @@ exports.mercadopagoWebhook = async (req, res) => {
         }),
       });
 
+      // Increment totalSpent now that payment is confirmed
+      if (orderData.userId) {
+        const orderTotal = orderData.summary?.total || 0;
+        await admin
+          .firestore()
+          .collection("users")
+          .doc(orderData.userId)
+          .update({
+            totalSpent: admin.firestore.FieldValue.increment(orderTotal),
+          });
+      }
+
       // Email will be sent by emailService.js via Firestore trigger
       console.log(`Order confirmed: ${orderId}`);
     } else if (MP_CONFIG.FAILURE_STATUSES.includes(paymentInfo.status)) {

@@ -12,6 +12,7 @@ import { showCustomToast } from "../../../services/ui/toastService";
 import { notifyOrders } from "../../../services/ui/notificationService";
 import { formatDefaultAddress } from "../../../services/users/userManagementService";
 import { ORDER_STATUS } from "../../../constants";
+import { loadProducts } from "../../../services/products/productsService";
 
 // Modular components and hooks
 import OrderFilters from "./OrderFilters";
@@ -37,8 +38,10 @@ const OrderManagement = () => {
   // Filter states
   const [filterUser, setFilterUser] = React.useState("");
   const [filterStatus, setFilterStatus] = React.useState("");
-  const [filterDateFrom, setFilterDateFrom] = React.useState("");
-  const [filterDateTo, setFilterDateTo] = React.useState("");
+  const [filterProduct, setFilterProduct] = React.useState("");
+  const [filterDelivery, setFilterDelivery] = React.useState("");
+  const [hideFinished, setHideFinished] = React.useState(true);
+  const [productsList, setProductsList] = React.useState([]);
 
   // Order management hook
   const {
@@ -57,6 +60,13 @@ const OrderManagement = () => {
 
   // Filtering hook
   const { getFilteredOrders } = useOrderFiltering();
+
+  // Load products list for filter
+  React.useEffect(() => {
+    loadProducts()
+      .then((prods) => setProductsList(prods))
+      .catch(() => setProductsList([]));
+  }, []);
 
   // Initialize: Load orders from backend
   React.useEffect(() => {
@@ -179,8 +189,9 @@ const OrderManagement = () => {
     orders,
     filterUser,
     filterStatus,
-    filterDateFrom,
-    filterDateTo,
+    filterProduct,
+    filterDelivery,
+    hideFinished,
   );
 
   // Paginación
@@ -189,11 +200,12 @@ const OrderManagement = () => {
     currentPage,
     setCurrentPage,
     totalItems: totalOrders,
-  } = usePagination(filteredOrders, 10, [
+  } = usePagination(filteredOrders, 20, [
     filterUser,
     filterStatus,
-    filterDateFrom,
-    filterDateTo,
+    filterProduct,
+    filterDelivery,
+    hideFinished,
   ]);
 
   return (
@@ -213,15 +225,18 @@ const OrderManagement = () => {
         {/* Filters Section */}
         {!loading && orders.length > 0 && (
           <OrderFilters
+            orders={orders}
+            products={productsList}
             filterUser={filterUser}
             setFilterUser={setFilterUser}
             filterStatus={filterStatus}
             setFilterStatus={setFilterStatus}
-            filterDateFrom={filterDateFrom}
-            setFilterDateFrom={setFilterDateFrom}
-            filterDateTo={filterDateTo}
-            setFilterDateTo={setFilterDateTo}
-            orders={orders}
+            filterProduct={filterProduct}
+            setFilterProduct={setFilterProduct}
+            filterDelivery={filterDelivery}
+            setFilterDelivery={setFilterDelivery}
+            hideFinished={hideFinished}
+            setHideFinished={setHideFinished}
           />
         )}
 
@@ -254,7 +269,7 @@ const OrderManagement = () => {
             />
             <Pagination
               totalItems={totalOrders}
-              itemsPerPage={10}
+              itemsPerPage={20}
               currentPage={currentPage}
               onPageChange={setCurrentPage}
             />

@@ -119,10 +119,9 @@ export const saveProfileChanges = async ({
   const updateData = {
     displayName: editFormData.displayName,
     email: editFormData.email,
-    phone: combinePhoneNumber(
-      editFormData.phoneCountry,
-      editFormData.phoneLocal,
-    ) || "", // Send empty string if phone is empty, not null
+    phone:
+      combinePhoneNumber(editFormData.phoneCountry, editFormData.phoneLocal) ||
+      "", // Send empty string if phone is empty, not null
     addresses: cleanAddresses,
   };
 

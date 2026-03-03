@@ -5,11 +5,11 @@ import React from "react";
  * Maneja toda la lógica de paginación de forma reutilizable
  *
  * @param {Array} items - Array de items a paginar
- * @param {number} itemsPerPage - Items por página (default 10)
+ * @param {number} itemsPerPage - Items por página (default 20)
  * @param {Array} dependencies - Dependencias para resetear a página 1
  * @returns {Object} - { paginatedItems, currentPage, setCurrentPage, totalPages }
  */
-const usePagination = (items = [], itemsPerPage = 10, dependencies = []) => {
+const usePagination = (items = [], itemsPerPage = 20, dependencies = []) => {
   const [currentPage, setCurrentPage] = React.useState(1);
 
   // Reset a página 1 cuando cambian las dependencias

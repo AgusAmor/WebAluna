@@ -181,6 +181,25 @@ const OrderDetailsModal = ({
                       "0"}
                   </p>
                 )}
+                {/* Recipient info */}
+                {(() => {
+                  const addr = selectedOrder.delivery?.shippingAddress;
+                  const recipientName = addr?.recipientName || "";
+                  const recipientPhone = addr?.recipientPhone || "";
+                  if (!recipientName && !recipientPhone) return null;
+                  return (
+                    <div className="mt-2 pt-2 border-t border-gold/30">
+                      {recipientName && (
+                        <p className="text-blue-1 font-bold text-sm">
+                          {recipientName}
+                        </p>
+                      )}
+                      {recipientPhone && (
+                        <p className="text-blue-2 text-sm">{recipientPhone}</p>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
 

@@ -59,6 +59,23 @@ const NavigationWrapper = () => {
 };
 
 /**
+ * AdminMainWrapper
+ * Adds left margin on desktop so content is never hidden behind the collapsed sidebar.
+ * The sidebar is fixed w-16 when collapsed; this margin compensates for it.
+ */
+const AdminMainWrapper = ({ children }) => {
+  const { user, loading } = useAuth();
+  const isAdmin = !loading && isUserAdmin(user);
+  return (
+    <main
+      className={`flex-1 transition-all duration-300${isAdmin ? " lg:ml-16" : ""}`}
+    >
+      {children}
+    </main>
+  );
+};
+
+/**
  * Scroll to Top Component
  * Uses the useScrollToTop hook to scroll when routes change
  */
@@ -178,9 +195,9 @@ const AppRouter = () => {
       <ScrollToTop />
       <div className="flex flex-col min-h-screen">
         <NavigationWrapper />
-        <main className="flex-1">
+        <AdminMainWrapper>
           <RouteContent />
-        </main>
+        </AdminMainWrapper>
         <Footer />
 
         {/* Floating Cart Button */}

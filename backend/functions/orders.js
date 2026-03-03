@@ -70,6 +70,15 @@ exports.createOrder = async (req, res) => {
     const createdOrder = await docRef.get();
     const orderData = createdOrder.data();
 
+    // Increment totalOrders when order is created (regardless of payment outcome)
+    await admin
+      .firestore()
+      .collection("users")
+      .doc(body.userId)
+      .update({
+        totalOrders: admin.firestore.FieldValue.increment(1),
+      });
+
     sendSuccess(
       res,
       {
@@ -276,6 +285,45 @@ exports.updateOrderStatus = async (req, res) => {
       note: body.note || `Estado actualizado a ${body.newStatus}`,
       updatedBy: body.updatedBy || decoded.uid,
     };
+
+    // Statuses that count as "confirmed or beyond" (already charged to the user)
+    const confirmedStatuses = [
+      "confirmed",
+      "printing",
+      "dispatched",
+      "delivered",
+      "withdrawn",
+    ];
+
+    // Only increment totalSpent when order reaches confirmed for the first time
+    if (
+      body.newStatus === "confirmed" &&
+      !confirmedStatuses.includes(currentStatus)
+    ) {
+      const orderTotal = orderData.summary?.total || 0;
+      await admin
+        .firestore()
+        .collection("users")
+        .doc(orderData.userId)
+        .update({
+          totalSpent: admin.firestore.FieldValue.increment(orderTotal),
+        });
+    }
+
+    // Only reverse totalSpent if cancelling from confirmed or beyond (totalOrders is never decremented)
+    if (
+      body.newStatus === "cancelled" &&
+      confirmedStatuses.includes(currentStatus)
+    ) {
+      const orderTotal = orderData.summary?.total || 0;
+      await admin
+        .firestore()
+        .collection("users")
+        .doc(orderData.userId)
+        .update({
+          totalSpent: admin.firestore.FieldValue.increment(-orderTotal),
+        });
+    }
 
     // Update order with new status and add to history
     // Email will be sent automatically by onOrderStatusChanged Firestore trigger

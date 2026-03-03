@@ -40,7 +40,7 @@ const ProductManagement = () => {
     currentPage,
     setCurrentPage,
     totalItems: totalProducts,
-  } = usePagination(products, 10, [products.length]);
+  } = usePagination(products, 20, [products.length]);
 
   return (
     <div className="min-h-screen bg-gray-3 px-4 py-2 pb-20">
@@ -83,7 +83,7 @@ const ProductManagement = () => {
           />
           <Pagination
             totalItems={totalProducts}
-            itemsPerPage={10}
+            itemsPerPage={20}
             currentPage={currentPage}
             onPageChange={setCurrentPage}
           />

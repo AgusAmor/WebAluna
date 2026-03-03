@@ -68,7 +68,7 @@ const UserManagement = () => {
     currentPage,
     setCurrentPage,
     totalItems: totalUsers,
-  } = usePagination(filteredUsers, 10, [
+  } = usePagination(filteredUsers, 20, [
     filterName,
     filterStatus,
     filterDateFrom,
@@ -163,7 +163,7 @@ const UserManagement = () => {
           />
           <Pagination
             totalItems={totalUsers}
-            itemsPerPage={10}
+            itemsPerPage={20}
             currentPage={currentPage}
             onPageChange={setCurrentPage}
           />

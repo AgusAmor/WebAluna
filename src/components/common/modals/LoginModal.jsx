@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
-import { useEffect } from "react";
-import { FiMail, FiLock, FiUser } from "react-icons/fi";
+import { useEffect, useState } from "react";
+import { FiMail, FiLock, FiUser, FiEye, FiEyeOff } from "react-icons/fi";
 import { IoIosClose } from "react-icons/io";
 import { toast } from "react-toastify";
 import { GoogleLoginButton } from "../../ui";
@@ -14,6 +14,8 @@ import { sanitizeInput } from "../../../services/validationService";
 
 const LoginModal = ({ isOpen, onClose }) => {
   useModalScroll(isOpen);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const {
     isLogin,
     showReset,
@@ -312,16 +314,33 @@ const LoginModal = ({ isOpen, onClose }) => {
                     <div className="relative">
                       <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-1" />
                       <input
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         name="password"
                         value={formData.password}
                         onChange={handleInputChange}
-                        className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-2 ${
+                        className={`w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-2 ${
                           errors.password ? "border-red-500" : "border-gray-2"
                         }`}
                         placeholder="••••••••"
                         disabled={loading}
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-1 hover:text-blue-2 transition-colors"
+                        tabIndex={-1}
+                        aria-label={
+                          showPassword
+                            ? "Ocultar contraseña"
+                            : "Mostrar contraseña"
+                        }
+                      >
+                        {showPassword ? (
+                          <FiEyeOff size={16} />
+                        ) : (
+                          <FiEye size={16} />
+                        )}
+                      </button>
                     </div>
                     {errors.password && (
                       <p className="text-red-500 text-xs mt-1">
@@ -337,11 +356,11 @@ const LoginModal = ({ isOpen, onClose }) => {
                       <div className="relative">
                         <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-1" />
                         <input
-                          type="password"
+                          type={showConfirmPassword ? "text" : "password"}
                           name="confirmPassword"
                           value={formData.confirmPassword}
                           onChange={handleInputChange}
-                          className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-2 ${
+                          className={`w-full pl-10 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-2 ${
                             errors.confirmPassword
                               ? "border-red-500"
                               : "border-gray-2"
@@ -349,6 +368,23 @@ const LoginModal = ({ isOpen, onClose }) => {
                           placeholder="••••••••"
                           disabled={loading}
                         />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword((v) => !v)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-1 hover:text-blue-2 transition-colors"
+                          tabIndex={-1}
+                          aria-label={
+                            showConfirmPassword
+                              ? "Ocultar contraseña"
+                              : "Mostrar contraseña"
+                          }
+                        >
+                          {showConfirmPassword ? (
+                            <FiEyeOff size={16} />
+                          ) : (
+                            <FiEye size={16} />
+                          )}
+                        </button>
                       </div>
                       {errors.confirmPassword && (
                         <p className="text-red-500 text-xs mt-1">
