@@ -22,6 +22,7 @@ import {
   SelectAddressModal,
   SingleButtonConfirmationModal,
 } from "../../components/common/modals";
+import TermsModal from "../../components/common/modals/TermsModal";
 import { getCartItemKey } from "../../utils/cartItemUtils";
 import {
   createOrderSummary,
@@ -77,6 +78,20 @@ const Checkout = () => {
       navigate("/");
     }
   }, [items, navigate]);
+
+  // Terms & Conditions gate before payment
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [pendingAddress, setPendingAddress] = useState(null);
+
+  const handlePayButtonClick = (addr) => {
+    setPendingAddress(addr);
+    setShowTermsModal(true);
+  };
+
+  const handleTermsAccepted = () => {
+    setShowTermsModal(false);
+    handlePayClick(pendingAddress);
+  };
 
   // handleAddressSelected logic moved to hook
 
@@ -453,7 +468,7 @@ const Checkout = () => {
 
             {/* Pay Button */}
             <button
-              onClick={() => handlePayClick(selectedShippingAddress)}
+              onClick={() => handlePayButtonClick(selectedShippingAddress)}
               disabled={
                 loadingOrder ||
                 loading ||
@@ -499,6 +514,14 @@ const Checkout = () => {
       />
 
       {/* Order Confirmation Modal - Now handled in Home.jsx */}
+
+      {/* Terms & Conditions Modal */}
+      <TermsModal
+        isOpen={showTermsModal}
+        mode="accept"
+        onClose={() => setShowTermsModal(false)}
+        onAccept={handleTermsAccepted}
+      />
 
       {/* Payment Error Modal */}
       <SingleButtonConfirmationModal
