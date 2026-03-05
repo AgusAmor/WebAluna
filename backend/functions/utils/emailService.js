@@ -511,6 +511,93 @@ exports.sendAdminCancellationNotification = async (
 };
 
 /**
+ * Sends notification to admins about order payment confirmation
+ * @param {Object} orderData - Order information
+ * @param {string} customerEmail - Customer email
+ * @param {string} customerName - Customer name
+ * @returns {Promise<Object>} Email send result
+ */
+exports.sendAdminConfirmationNotification = async (
+  orderData,
+  customerEmail,
+  customerName,
+) => {
+  try {
+    const adminEmail = emailUser.value() || "admin@aluna.com";
+    const logoUrl =
+      "https://firebasestorage.googleapis.com/v0/b/aluna-1af1f.firebasestorage.app/o/brand%2Flogotipo.png?alt=media";
+
+    const content = `
+      <div class="alert-box" style="background-color: #d4edda; color: #155724; border-left-color: #28a745;">¡Un cliente ha realizado un pedido!</div>
+      <div class="info-section">
+        <div class="info-label">Cliente</div>
+        <div class="info-value">${customerName}</div>
+        <div class="info-label" style="margin-top: 10px;">Email</div>
+        <div class="info-value">${customerEmail}</div>
+        <div class="info-label" style="margin-top: 10px;">Orden</div>
+        <div class="info-value">#${orderData.orderNumber || "N/A"}</div>
+      </div>
+      <div class="divider"></div>
+      <div style="font-weight: 600; color: ${COLORS.blue2}; margin: 15px 0;">Productos Confirmados</div>
+      ${generateProductsHTML(
+        (orderData.items || []).map((item) => ({
+          name: item.productName || item.name || "Producto",
+          quantity: item.quantity || 1,
+          price: item.unitPrice || item.price || 0,
+          size: item.size,
+        })),
+      )}
+      <div class="totals">
+        <div class="total-row">
+          <span>Subtotal:</span>
+          <span>$${(orderData.summary?.subtotal || 0).toLocaleString("es-AR")}</span>
+        </div>
+        <div class="total-row">
+          <span>Envío:</span>
+          <span>$${(orderData.summary?.shipping || 0).toLocaleString("es-AR")}</span>
+        </div>
+        <div class="total-row total-amount">
+          <span>Total Pagado:</span>
+          <span>$${(orderData.totalAmount || orderData.summary?.total || 0).toLocaleString("es-AR")}</span>
+        </div>
+      </div>
+    `;
+
+    const footer = `
+      <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
+      <p>© 2026 Aluna - Lámparas impresas en 3D, hechas con intención.</p>
+    `;
+
+    const transporter = createTransporter();
+    const mailOptions = {
+      from: `Aluna <${emailUser.value() || "noreply@aluna.com"}>`,
+      to: adminEmail,
+      subject: `Pago Confirmado - Orden #${orderData.orderNumber || "N/A"}`,
+      html: getBaseTemplate(
+        logoUrl,
+        "Nuevo Pedido Confirmado",
+        content,
+        footer,
+      ),
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+
+    console.log("Admin confirmation notification sent:", result.messageId);
+    return {
+      success: true,
+      messageId: result.messageId,
+    };
+  } catch (error) {
+    console.error("Error sending admin confirmation notification:", error);
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+};
+
+/**
  * Sends a contact form email
  * @param {Object} data - { name, email, phone, message, subject }
  * @returns {Promise<Object>} Email send result
@@ -622,6 +709,36 @@ exports.onOrderStatusChanged = onDocumentWritten(
           console.error(
             `[onOrderStatusChanged] ✗ Failed to send email: ${result.error}`,
           );
+        }
+
+        // --- Admin Notifications ---
+        // Send admin notification if order was confirmed
+        if (newStatus === "confirmed") {
+          const adminResult = await exports.sendAdminConfirmationNotification(
+            newData,
+            customerEmail,
+            customerName,
+          );
+          if (!adminResult.success) {
+            console.error(
+              `[onOrderStatusChanged] ✗ Failed to send admin confirmation email: ${adminResult.error}`,
+            );
+          }
+        }
+
+        // Send admin notification if order was cancelled
+        // Exclude failed pending orders that are deleted directly (handled gracefully or not notified as per rules)
+        if (newStatus === "cancelled") {
+          const adminResult = await exports.sendAdminCancellationNotification(
+            newData,
+            customerEmail,
+            customerName,
+          );
+          if (!adminResult.success) {
+            console.error(
+              `[onOrderStatusChanged] ✗ Failed to send admin cancellation email: ${adminResult.error}`,
+            );
+          }
         }
       } catch (error) {
         console.error(

@@ -326,8 +326,8 @@ const TermsModal = ({ isOpen, mode = "read", onClose, onAccept }) => {
             {mode === "accept" ? (
               <div className="space-y-4">
                 {/* Checkbox */}
-                <label className="flex items-start gap-3 cursor-pointer select-none group">
-                  <div className="relative mt-0.5 shrink-0">
+                <label className="flex items-center gap-3 cursor-pointer select-none group">
+                  <div className="relative shrink-0">
                     <input
                       type="checkbox"
                       checked={accepted}

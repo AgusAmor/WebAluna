@@ -467,7 +467,7 @@ const Profile = () => {
             {/* Recent Orders / Activity */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-lg font-bold font-family-comfortaa text-blue-2 mb-1">
-                Actividad Reciente
+                Mis Pedidos
               </h3>
 
               {loadingOrders ? (
