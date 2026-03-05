@@ -9,7 +9,10 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import { useShippingCost } from "../checkout/useShippingCost";
-import { createOrder as createOrderViaCloudFunction } from "../../services/firebase/firebaseOrderService";
+import {
+  createOrder as createOrderViaCloudFunction,
+  cancelFailedOrder,
+} from "../../services/firebase/firebaseOrderService";
 import { redirectToMercadoPago } from "../../services/mercadopagoService";
 import {
   fetchUserById,
@@ -57,8 +60,9 @@ export function useCheckout() {
   const [showOrderConfirmModal, setShowOrderConfirmModal] = useState(false);
   const [showPaymentErrorModal, setShowPaymentErrorModal] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
+  const [returnedFromMP, setReturnedFromMP] = useState(false);
   const [createdOrder, setCreatedOrder] = useState(null);
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [pollingActive, setPollingActive] = useState(false);
 
   /**
@@ -167,40 +171,69 @@ export function useCheckout() {
     // console.log("[Checkout] preference_id:", preferenceId);
     // console.log("[Checkout] createdOrder:", createdOrder?.id);
 
-    // Only process if we have a collection_status param (MP returned the user)
-    if (collectionStatus) {
-      // console.log(
-      //   "[Checkout] ✓ User returned from MP with status:",
-      //   collectionStatus,
-      // );
-
+    // Check our own mp_return marker first — it's always present on failure redirects
+    // because we embed it in the back_url. MP appends its own params after ours.
+    if (searchParams.get("mp_return") === "failure") {
+      sessionStorage.removeItem("pendingMPRedirect");
+      // Wait until user auth is restored before cancelling (fresh page load from MP)
+      if (!user) return;
+      // Cancel the pending order — delete it from Firebase and revert totalOrders
+      const failedOrderId = localStorage.getItem("pendingOrderId");
+      if (failedOrderId) {
+        localStorage.removeItem("pendingOrderId");
+        localStorage.removeItem("pendingOrderData");
+        user
+          .getIdToken()
+          .then((token) => cancelFailedOrder(failedOrderId, token))
+          .catch(() => {});
+      }
+      setReturnedFromMP(true);
+      setPaymentError(
+        "No pudimos procesar el pago. Por favor intente nuevamente.",
+      );
+      setShowPaymentErrorModal(true);
+      setPollingActive(false);
+      // NOTE: URL is cleared when user closes the modal (handleClosePaymentErrorModal)
+      // to prevent ShippingInfoBanner from triggering while modal is open
+    } else if (collectionStatus && collectionStatus !== "null") {
+      // User returned from MP with a valid collection_status — clear the bfcache flag
+      sessionStorage.removeItem("pendingMPRedirect");
       if (collectionStatus === "approved") {
-        // console.log("[Checkout] ✓ Payment approved!");
-        // Payment was approved - show confirmation modal immediately
+        setReturnedFromMP(true);
         setShowOrderConfirmModal(true);
-        // Also start polling to update order data when it gets confirmed
         setPollingActive(true);
+        setSearchParams({}, { replace: true });
       } else if (
         collectionStatus === "rejected" ||
         collectionStatus === "cancelled"
       ) {
-        // console.log("[Checkout] ✗ Payment rejected/cancelled");
-        // Payment was rejected or cancelled
+        // Wait until user auth is restored before cancelling (fresh page load from MP)
+        if (!user) return;
+        // Cancel the pending order — delete it from Firebase and revert totalOrders
+        const failedOrderId = localStorage.getItem("pendingOrderId");
+        if (failedOrderId) {
+          localStorage.removeItem("pendingOrderId");
+          localStorage.removeItem("pendingOrderData");
+          user
+            .getIdToken()
+            .then((token) => cancelFailedOrder(failedOrderId, token))
+            .catch(() => {});
+        }
+        setReturnedFromMP(true);
         setPaymentError(
           collectionStatus === "rejected"
-            ? "El pago fue rechazado. Intenta nuevamente."
+            ? "El pago fue rechazado. Intentá con otro medio de pago."
             : "El pago fue cancelado.",
         );
         setShowPaymentErrorModal(true);
         setPollingActive(false);
+        // NOTE: URL is cleared when user closes the modal
       } else if (collectionStatus === "pending") {
-        // console.log("[Checkout] ⏳ Payment pending");
-        // Payment is pending - start polling
         setPollingActive(true);
-        // Don't show modal here anymore, wait for Home logic or manual intervention if pending persists
+        setSearchParams({}, { replace: true });
       }
     }
-  }, [searchParams, createdOrder]);
+  }, [searchParams, createdOrder, user]);
 
   /**
    * Polling to detect when order status changes to "confirmed"
@@ -490,6 +523,8 @@ export function useCheckout() {
           );
 
           // Redirect to Mercado Pago
+          // Set flag so pageshow handler knows we left to MP (for browser-back detection)
+          sessionStorage.setItem("pendingMPRedirect", "true");
           window.location.href = mpPaymentUrl;
         } catch (mpError) {
           // If MP redirect fails, show error modal and keep user in checkout
@@ -511,6 +546,55 @@ export function useCheckout() {
       setShowPaymentErrorModal(true);
       setLoadingOrder(false);
     }
+  };
+
+  /**
+   * Reset loading states when page is restored from bfcache (browser back button).
+   * window.location.href navigation leaves loading=true in frozen state.
+   * If the user had been redirected to MP, also show the payment error modal.
+   */
+  useEffect(() => {
+    const handlePageShow = (e) => {
+      if (e.persisted) {
+        setLoading(false);
+        setLoadingOrder(false);
+        // If we set this flag before redirecting to MP, the user pressed Back
+        if (sessionStorage.getItem("pendingMPRedirect") === "true") {
+          sessionStorage.removeItem("pendingMPRedirect"); // Cancel the pending order silently
+          const failedOrderId = localStorage.getItem("pendingOrderId");
+          if (failedOrderId && user) {
+            user
+              .getIdToken()
+              .then((token) => cancelFailedOrder(failedOrderId, token))
+              .catch(() => {});
+          }
+          localStorage.removeItem("pendingOrderId");
+          localStorage.removeItem("pendingOrderData");
+          setReturnedFromMP(true);
+          setPaymentError(
+            "No pudimos procesar el pago. Por favor intente nuevamente.",
+          );
+          setShowPaymentErrorModal(true);
+          setPollingActive(false);
+        }
+      }
+    };
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, []);
+
+  /**
+   * Handle closing the payment error modal.
+   * Clears URL params here (not on detect) so ShippingInfoBanner
+   * doesn't open while the error modal is still visible.
+   * Does NOT reset returnedFromMP — that stays true so the empty-cart
+   * redirect guard doesn't fire and the user remains in checkout.
+   */
+  const handleClosePaymentErrorModal = () => {
+    setShowPaymentErrorModal(false);
+    setLoadingOrder(false);
+    setLoading(false);
+    setSearchParams({}, { replace: true });
   };
 
   /**
@@ -570,7 +654,9 @@ export function useCheckout() {
     // Payment error modal
     showPaymentErrorModal,
     setShowPaymentErrorModal,
+    handleClosePaymentErrorModal,
     paymentError,
+    returnedFromMP,
     // Checkout
     handlePayClick,
     loading,

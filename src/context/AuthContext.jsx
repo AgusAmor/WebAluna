@@ -22,10 +22,19 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Track whether we have ever seen an authenticated user in this listener.
+    // We use a local variable (not a ref) so it's scoped to this effect instance.
+    // This lets us distinguish "user just logged out" (wasAuthenticated=true → null)
+    // from "initial page load before auth is restored" (wasAuthenticated=false → null).
+    // We only clear the cart on the former to preserve cart data across full-page
+    // redirects (e.g. MercadoPago failure redirects back to the checkout page).
+    let wasAuthenticated = false;
+
     // Listen for authentication state changes in Firebase Auth and update user role using custom claims
     const unsubscribe = authService.auth.onAuthStateChanged(
       async (currentUser) => {
         if (currentUser) {
+          wasAuthenticated = true;
           try {
             // Parallelize validations for faster response
             const [tokenResult, userDocExists] = await Promise.all([
@@ -79,8 +88,13 @@ export const AuthProvider = ({ children }) => {
           }
         } else {
           setUser(null);
-          // Clear cart when user logs out
-          cartStorageService.clearCart();
+          // Only clear the cart when the user actively logs out (wasAuthenticated=true).
+          // Skip on initial page load where auth briefly resolves to null before
+          // restoring the persisted session — clearing here would erase cart data
+          // that CartContext just loaded from sessionStorage (e.g. after a MP redirect).
+          if (wasAuthenticated) {
+            cartStorageService.clearCart();
+          }
         }
         setLoading(false);
       },

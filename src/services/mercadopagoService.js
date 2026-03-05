@@ -66,8 +66,8 @@ export async function redirectToMercadoPago(orderData, token) {
     const baseURL = window.location.origin;
     const returnUrls = {
       success: `${baseURL}/`, // Redirects to Home component
-      failure: `${baseURL}/checkout`,
-      pending: `${baseURL}/checkout`,
+      failure: `${baseURL}/checkout?mp_return=failure`,
+      pending: `${baseURL}/checkout?mp_return=pending`,
     };
     // console.log("[MP Service] Return URLs:", returnUrls);
 

@@ -11,12 +11,20 @@ import ShippingInfoModal from "./ShippingInfoModal";
 const ShippingInfoBanner = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
 
-  // Show modal when user navigates to checkout page
+  // Show modal when user navigates to checkout page,
+  // but NOT when returning from MercadoPago (mp_return param present)
   useEffect(() => {
     if (location.pathname === "/checkout") {
-      setIsOpen(true);
+      const params = new URLSearchParams(location.search);
+      const isMPReturn =
+        params.has("mp_return") ||
+        params.has("collection_status") ||
+        params.has("preference_id");
+      if (!isMPReturn) {
+        setIsOpen(true);
+      }
     }
-  }, [location.pathname, setIsOpen]);
+  }, [location.pathname, location.search, setIsOpen]);
 
   return <ShippingInfoModal isOpen={isOpen} onClose={() => setIsOpen(false)} />;
 };

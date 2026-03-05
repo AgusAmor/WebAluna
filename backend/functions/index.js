@@ -25,6 +25,7 @@ const {
   getAllOrders,
   updateOrderStatus,
   deleteOrder,
+  cancelFailedOrder,
 } = require("./orders.js");
 
 const { onOrderStatusChanged } = require("./utils/emailService.js");
@@ -123,6 +124,7 @@ exports.getUserOrders = createCloudFunction(getUserOrders);
 exports.getAllOrders = createCloudFunction(getAllOrders);
 exports.updateOrderStatus = createCloudFunction(updateOrderStatus);
 exports.deleteOrder = createCloudFunction(deleteOrder);
+exports.cancelFailedOrder = createCloudFunction(cancelFailedOrder);
 
 // ============================================
 // FIRESTORE TRIGGERS

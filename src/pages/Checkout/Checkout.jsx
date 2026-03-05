@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   FaArrowLeft,
   FaTruck,
@@ -34,6 +34,7 @@ import { notifyCart } from "../../services/ui/notificationService";
 
 const Checkout = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   // UI logic now managed in hook
   const {
     userProfile,
@@ -61,7 +62,9 @@ const Checkout = () => {
     createdOrder,
     showPaymentErrorModal,
     setShowPaymentErrorModal,
+    handleClosePaymentErrorModal,
     paymentError,
+    returnedFromMP,
     // New hook exports
     showSelectAddressModal,
     setShowSelectAddressModal,
@@ -72,12 +75,23 @@ const Checkout = () => {
     handleAddressSelected,
   } = useCheckout();
 
-  // Redirect to cart if empty
+  // returnedFromMP persists as state in the hook even after URL params are cleared,
+  // so it safely guards against the empty-cart redirect and premature return null.
+  const isMPReturn =
+    returnedFromMP ||
+    !!(
+      searchParams.get("mp_return") ||
+      searchParams.get("collection_status") ||
+      searchParams.get("preference_id")
+    );
+
+  // Redirect to home if empty, but NOT when returning from MercadoPago
+  // (cart may still be hydrating from localStorage on fresh page load)
   React.useEffect(() => {
-    if (!items || items.length === 0) {
+    if (!isMPReturn && (!items || items.length === 0)) {
       navigate("/");
     }
-  }, [items, navigate]);
+  }, [items, navigate, isMPReturn]);
 
   // Terms & Conditions gate before payment
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -106,7 +120,7 @@ const Checkout = () => {
     );
   }
 
-  if (!items || items.length === 0) {
+  if (!isMPReturn && (!items || items.length === 0)) {
     return null;
   }
 
@@ -528,7 +542,7 @@ const Checkout = () => {
         isOpen={showPaymentErrorModal}
         title="Error en el pago"
         message={paymentError || "Ocurrió un error al procesar el pago"}
-        onConfirm={() => setShowPaymentErrorModal(false)}
+        onConfirm={handleClosePaymentErrorModal}
         confirmText="Intentar de nuevo"
         icon={<FaInfoCircle className="text-red-600" />}
         isLoading={false}

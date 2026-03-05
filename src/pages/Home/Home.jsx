@@ -18,12 +18,9 @@ const Home = () => {
   // Payment Confirmation Logic detached to hook
   const {
     showSuccessModal,
-    showErrorModal,
     processingOrder,
     createdOrderNumber,
-    errorMessage,
     handleCloseSuccessModal,
-    handleCloseErrorModal,
   } = usePaymentConfirmation();
 
   return (
@@ -37,18 +34,6 @@ const Home = () => {
           description="Te enviamos un email con los detalles. Puedes ver el estado en tu perfil."
           confirmText="Ver Pedido"
           onConfirm={handleCloseSuccessModal}
-        />
-      )}
-
-      {/* Payment Error Modal */}
-      {showErrorModal && (
-        <SingleButtonConfirmationModal
-          isOpen={showErrorModal}
-          title="Error en el Pago"
-          message={errorMessage}
-          description="Intenta nuevamente o contacta a soporte si el problema persiste."
-          confirmText="Volver al Inicio"
-          onConfirm={handleCloseErrorModal}
         />
       )}
 

@@ -144,7 +144,7 @@ export async function updateOrderStatus(updateData, token) {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(
-        errorData.error || "No se pudo actualizar el estado del pedido"
+        errorData.error || "No se pudo actualizar el estado del pedido",
       );
     }
 
@@ -156,12 +156,39 @@ export async function updateOrderStatus(updateData, token) {
 }
 
 /**
- * Deletes an order (admin only)
+ * Cancels a pending order that failed payment (user-owned, still "pending").
+ * Deletes the order doc and decrements the user's totalOrders counter.
  * @param {string} orderId - Order document ID
  * @param {string} token - Firebase Auth token
- * @returns {Promise<Object>} - Deletion confirmation
- * @throws {Error} - If deletion fails or not admin
+ * @returns {Promise<Object>} - Cancellation confirmation
  */
+export async function cancelFailedOrder(orderId, token) {
+  try {
+    const response = await fetch(`${BASE_URL}/cancelFailedOrder`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ orderId }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.warn(
+        "[cancelFailedOrder] Could not cancel order:",
+        errorData.error || errorData,
+      );
+      return; // Don't throw — this is a cleanup call, don't block the UX
+    }
+
+    return response.json().catch(() => ({}));
+  } catch (error) {
+    console.warn("[cancelFailedOrder] Error:", error);
+    // Silently fail — cleanup is best-effort
+  }
+}
+
 export async function deleteOrder(orderId, token) {
   try {
     const response = await fetch(`${BASE_URL}/deleteOrder`, {

@@ -49,16 +49,8 @@ export const usePaymentConfirmation = () => {
         clearCart();
       } else if (collectionStatus === "pending") {
         console.log("[Payment Confirmation] Payment pending");
-        setShowErrorModal(true);
-        setErrorMessage(
-          "Tu pago está en proceso. Te notificaremos cuando se confirme.",
-        );
       } else if (collectionStatus === "rejected") {
         console.log("[Payment Confirmation] Payment rejected");
-        setShowErrorModal(true);
-        setErrorMessage(
-          "El pago fue rechazado. Intenta con otro método de pago.",
-        );
       }
 
       // Clean up localStorage and URL params

@@ -158,6 +158,8 @@ export const SingleButtonConfirmationModal = ({
   icon,
   variant = "default",
 }) => {
+  useModalScroll(isOpen);
+
   if (!isOpen) return null;
 
   const getButtonColors = () => {
@@ -174,8 +176,6 @@ export const SingleButtonConfirmationModal = ({
   };
 
   const DisplayIcon = icon || FaCheckCircle;
-
-  useModalScroll(isOpen);
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden font-family-sora">

@@ -339,9 +339,7 @@ const TermsModal = ({ isOpen, mode = "read", onClose, onAccept }) => {
                     </span>
                   </div>
                   <span className="text-sm text-blue-1 leading-snug">
-                    He leído y acepto los Términos y Condiciones de Aluna.
-                    Comprendo que el producto es fabricado a pedido y no admite
-                    devoluciones salvo defecto de fabricación.
+                    He leído y acepto los Términos y Condiciones.
                   </span>
                 </label>
                 {/* Buttons */}

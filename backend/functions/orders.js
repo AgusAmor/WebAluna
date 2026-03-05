@@ -113,7 +113,7 @@ exports.getOrder = async (req, res) => {
       .doc(orderId)
       .get();
 
-    if (!orderDoc.exists()) {
+    if (!orderDoc.exists) {
       return sendError(res, 404, "Order not found");
     }
 
@@ -359,6 +359,65 @@ exports.updateOrderStatus = async (req, res) => {
 };
 
 /**
+ * Cancels a pending order that never reached payment confirmation.
+ * Called by the frontend when MercadoPago fails before completing payment.
+ * POST /cancelFailedOrder
+ * Body: { orderId }
+ * Requires: User authentication (must own the order)
+ */
+exports.cancelFailedOrder = async (req, res) => {
+  try {
+    const body = parseBody(req.body);
+    const decoded = await verifyToken(req.headers.authorization);
+
+    validateId(body.orderId);
+
+    const orderRef = admin.firestore().collection("orders").doc(body.orderId);
+    const orderDoc = await orderRef.get();
+
+    if (!orderDoc.exists) {
+      // Already deleted or never existed — treat as success
+      return sendSuccess(res, { message: "Order already removed" });
+    }
+
+    const orderData = orderDoc.data();
+
+    // Only the order owner can cancel their own failed order
+    if (orderData.userId !== decoded.uid) {
+      return sendError(res, 403, "Cannot cancel this order");
+    }
+
+    // Only cancel if still pending (payment was never confirmed)
+    if (orderData.status !== "pending") {
+      return sendError(
+        res,
+        400,
+        `Cannot cancel order with status: ${orderData.status}`,
+      );
+    }
+
+    // Delete the order document
+    await orderRef.delete();
+
+    // Decrement totalOrders — it was incremented at creation but payment never succeeded
+    await admin
+      .firestore()
+      .collection("users")
+      .doc(orderData.userId)
+      .update({
+        totalOrders: admin.firestore.FieldValue.increment(-1),
+      });
+
+    sendSuccess(res, { message: "Pending order cancelled successfully" });
+  } catch (error) {
+    handleError(res, error, {
+      status: 400,
+      defaultMessage: "Error cancelling failed order",
+    });
+  }
+};
+
+/**
  * Deletes an order (admin only)
  * POST /deleteOrder
  * Body: { orderId }
@@ -374,7 +433,7 @@ exports.deleteOrder = async (req, res) => {
     const orderRef = admin.firestore().collection("orders").doc(body.orderId);
     const orderDoc = await orderRef.get();
 
-    if (!orderDoc.exists()) {
+    if (!orderDoc.exists) {
       return sendError(res, 404, "Order not found");
     }
 
