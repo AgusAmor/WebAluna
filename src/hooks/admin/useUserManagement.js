@@ -14,6 +14,7 @@ import {
   activateUserAccount,
 } from "../../services/users/userManagementService";
 import { normalizeUserData } from "../../services/users/userFormService";
+import { validateAddressStrict } from "../../services/mapbox/geocodingService";
 
 export function useUserManagement() {
   const [users, setUsers] = useState([]);
@@ -72,6 +73,21 @@ export function useUserManagement() {
     setSaving(true);
     setError(null);
     try {
+      // Add address validation for all addresses
+      if (formData?.addresses && formData.addresses.length > 0) {
+        for (let i = 0; i < formData.addresses.length; i++) {
+          const addr = formData.addresses[i];
+          const addressValidation = await validateAddressStrict(addr);
+          if (!addressValidation.isValid) {
+            const prefix =
+              formData.addresses.length > 1 ? `Dirección ${i + 1}: ` : "";
+            setError(`${prefix}${addressValidation.reason}`);
+            setSaving(false);
+            return;
+          }
+        }
+      }
+
       const updatedUsers = await saveUserChanges(editUser.id, formData, user);
       setUsers(updatedUsers);
       handleCloseModal();

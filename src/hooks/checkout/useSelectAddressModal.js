@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { combinePhoneNumber } from "../../utils/phoneUtils.js";
 import { validatePhoneMinDigits } from "../../services/validationService";
+import { validateAddressStrict } from "../../services/mapbox/geocodingService";
 
 /**
  * Custom hook to manage the SelectAddressModal logic
@@ -96,6 +97,13 @@ export const useSelectAddressModal = ({
     }
 
     try {
+      // Validate address with Mapbox
+      const addressValidation = await validateAddressStrict(newAddress);
+      if (!addressValidation.isValid) {
+        setError(addressValidation.reason);
+        return;
+      }
+
       // Combine phone number
       const recipientPhone = combinePhoneNumber(
         newAddress.recipientPhoneCountry,

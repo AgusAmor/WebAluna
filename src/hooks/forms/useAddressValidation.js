@@ -1,5 +1,8 @@
 import { useState, useCallback, useRef } from "react";
-import { geocodeAddress } from "../../services/mapbox/geocodingService";
+import {
+  geocodeAddress,
+  validateAddressMatch,
+} from "../../services/mapbox/geocodingService";
 
 /**
  * Custom Hook for Address Validation with Mapbox Geocoding
@@ -18,75 +21,6 @@ export function useAddressValidation() {
 
   // Cooldown duration in milliseconds (1 second)
   const COOLDOWN_MS = 1000;
-
-  /**
-   * Checks if address parts are present in the geocoding result
-   * @param {string} query - Original address query
-   * @param {string} result - Geocoding result address
-   * @param {Object} addressObj - Full address object with postal code and region
-   * @returns {Object} Validation details
-   */
-  const validateAddressMatch = useCallback((query, result, addressObj = {}) => {
-    const queryLower = query.toLowerCase();
-    const resultLower = result.toLowerCase();
-
-    // Extract number from query (e.g., "1234" from "Av. Corrientes 1234")
-    const numberMatch = query.match(/\s(\d+)/);
-    const queryNumber = numberMatch ? numberMatch[1] : null;
-
-    // Strict validation: Check if number exists in result
-    if (queryNumber && !resultLower.includes(queryNumber)) {
-      return {
-        isValid: false,
-        reason: "La altura no coincide con esta dirección",
-      };
-    }
-
-    // Extract street name (everything before the number)
-    const streetMatch = query.match(/^([^0-9]+)/);
-    const queryStreet = streetMatch
-      ? streetMatch[1].trim().toLowerCase()
-      : null;
-
-    // Strict validation: Check if street is in result
-    if (queryStreet && !resultLower.includes(queryStreet)) {
-      return {
-        isValid: false,
-        reason: "La calle no coincide con la dirección encontrada",
-      };
-    }
-
-    // Strict validation: Check region/barrio if provided
-    if (addressObj.region && addressObj.region.trim()) {
-      const queryRegion = addressObj.region.trim().toLowerCase();
-
-      // Check if region/barrio is in the result
-      if (!resultLower.includes(queryRegion)) {
-        return {
-          isValid: false,
-          reason: "El barrio no coincide con esta dirección",
-        };
-      }
-    }
-
-    // Strict validation: Check postal code if provided
-    if (addressObj.postalCode && addressObj.postalCode.trim()) {
-      const queryPostal = addressObj.postalCode.trim().toLowerCase();
-
-      // Check if postal code is in the result
-      if (!resultLower.includes(queryPostal)) {
-        return {
-          isValid: false,
-          reason: "El código postal no coincide con esta dirección",
-        };
-      }
-    }
-
-    return {
-      isValid: true,
-      reason: null,
-    };
-  }, []);
 
   /**
    * Validates a single address using Geocoding
@@ -157,7 +91,7 @@ export function useAddressValidation() {
         setValidating(false);
       }
     },
-    [validateAddressMatch],
+    [],
   );
 
   /**

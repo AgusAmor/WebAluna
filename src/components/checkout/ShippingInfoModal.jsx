@@ -74,11 +74,11 @@ const ShippingInfoModal = ({ isOpen, onClose }) => {
                     </h3>
                     <p className="text-blue-3 text-xs md:text-sm mb-2">
                       Realizamos envíos solamente a{" "}
-                      <span className="font-bold">CABA</span>
+                      <span className="font-bold">CABA y GBA</span>
                     </p>
                     <p className="text-gray-1 text-xs">
-                      Si tu dirección está fuera de CABA, por favor selecciona
-                      "Retiro en local"
+                      Si tu dirección está fuera de CABA y GBA, por favor
+                      selecciona "Retiro en local"
                     </p>
                   </div>
                 </div>

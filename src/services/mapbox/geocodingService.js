@@ -152,3 +152,125 @@ export const validateAddress = async (address) => {
     return false;
   }
 };
+
+/**
+ * Checks if address parts are present in the geocoding result
+ */
+export const validateAddressMatch = (query, result, addressObj = {}) => {
+  const queryLower = query.toLowerCase();
+  const resultLower = result.toLowerCase();
+
+  // Extract number from query (e.g., "1234" from "Av. Corrientes 1234")
+  const numberMatch = query.match(/\s(\d+)/);
+  const queryNumber = numberMatch ? numberMatch[1] : null;
+
+  // Strict validation: Check if number exists in result
+  if (queryNumber && !resultLower.includes(queryNumber)) {
+    return {
+      isValid: false,
+      reason: "La altura no coincide con esta dirección",
+    };
+  }
+
+  // Extract street name (everything before the number)
+  const streetMatch = query.match(/^([^0-9]+)/);
+  const queryStreet = streetMatch ? streetMatch[1].trim().toLowerCase() : null;
+
+  // Strict validation: Check if street is in result
+  if (queryStreet && !resultLower.includes(queryStreet)) {
+    return {
+      isValid: false,
+      reason: "La calle no coincide con la dirección encontrada",
+    };
+  }
+
+  // Strict validation: Check region/barrio if provided
+  if (addressObj.region && addressObj.region.trim()) {
+    const queryRegion = addressObj.region.trim().toLowerCase();
+
+    // Check if region/barrio is in the result
+    if (!resultLower.includes(queryRegion)) {
+      return {
+        isValid: false,
+        reason: "El barrio no coincide con esta dirección",
+      };
+    }
+  }
+
+  // Strict validation: Check postal code if provided
+  if (addressObj.postalCode && addressObj.postalCode.trim()) {
+    const queryPostal = addressObj.postalCode.trim().toLowerCase();
+
+    // Check if postal code is in the result
+    if (!resultLower.includes(queryPostal)) {
+      return {
+        isValid: false,
+        reason: "El código postal no coincide con esta dirección",
+      };
+    }
+  }
+
+  return {
+    isValid: true,
+    reason: null,
+  };
+};
+
+/**
+ * Strict validation function for form submissions
+ */
+export const validateAddressStrict = async (addressObj) => {
+  if (!addressObj) {
+    return { isValid: false, reason: "Dirección incompleta" };
+  }
+
+  const { street, number, city, region, postalCode } = addressObj;
+
+  // Check ALL required fields - strict check
+  if (
+    !street?.trim() ||
+    !number ||
+    !city?.trim() ||
+    !region?.trim() ||
+    !postalCode?.trim()
+  ) {
+    return {
+      isValid: false,
+      reason:
+        "Completa todos los campos: calle, número, ciudad, barrio y código postal",
+    };
+  }
+
+  // Validate number format (positive integer)
+  if (isNaN(number) || number <= 0) {
+    return {
+      isValid: false,
+      reason: "El número de altura debe ser un valor positivo",
+    };
+  }
+
+  // Build complete address string with all fields
+  const fullAddress = `${street} ${number}, ${city}, ${region} ${postalCode}`;
+
+  try {
+    const result = await geocodeAddress(fullAddress);
+
+    if (!result.success || result.results.length === 0) {
+      return {
+        isValid: false,
+        reason: "No encontramos esta dirección. Verifica que sea correcta.",
+      };
+    }
+
+    const firstResult = result.results[0];
+
+    // Strict validation: check if parts match
+    return validateAddressMatch(fullAddress, firstResult.address, addressObj);
+  } catch (error) {
+    console.error("Address strict validation error:", error);
+    return {
+      isValid: false,
+      reason: "Error al validar la dirección. Intenta de nuevo.",
+    };
+  }
+};

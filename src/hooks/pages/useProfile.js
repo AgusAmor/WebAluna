@@ -25,6 +25,7 @@ import {
   deleteOrder,
 } from "../../services/firebase/firebaseOrderService";
 import { validateEmailExistence } from "../../services/validationService";
+import { validateAddressStrict } from "../../services/mapbox/geocodingService";
 
 /**
  * Custom hook for profile management
@@ -218,6 +219,22 @@ export const useProfile = () => {
           );
           setIsSaving(false);
           return;
+        }
+      }
+
+      // Add strict validation for all addresses
+      if (editFormData?.addresses && editFormData.addresses.length > 0) {
+        for (let i = 0; i < editFormData.addresses.length; i++) {
+          const addr = editFormData.addresses[i];
+          const addressValidation = await validateAddressStrict(addr);
+          if (!addressValidation.isValid) {
+            // Include a helpful identifier if there are multiple addresses
+            const prefix =
+              editFormData.addresses.length > 1 ? `Dirección ${i + 1}: ` : "";
+            setError(`${prefix}${addressValidation.reason}`);
+            setIsSaving(false);
+            return;
+          }
         }
       }
 
